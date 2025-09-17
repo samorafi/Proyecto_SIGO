@@ -1,0 +1,165 @@
+CREATE SCHEMA IF NOT EXISTS universidad;
+SET search_path TO universidad;
+BEGIN;
+-- ======================
+-- Catálogos generales
+-- ======================
+CREATE TABLE genero (
+  genero_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE provincia (
+  provincia_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE canton (
+  canton_id SERIAL PRIMARY KEY,
+  provincia_id INT NOT NULL REFERENCES provincia(provincia_id),
+  nombre TEXT NOT NULL,
+  UNIQUE (provincia_id, nombre)
+);
+CREATE TABLE categoria_docente (
+  categoria_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE tipo_contrato (
+  tipo_contrato_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE estado_persona (
+  estado_persona_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE atestado (
+  atestado_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE sede (
+  sede_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL 
+);
+CREATE TABLE grado (
+  grado_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE horario (
+  horario_id SERIAL PRIMARY KEY,
+  dia TEXT UNIQUE NOT NULL,
+  rango TEXT UNIQUE NOT NULL
+);
+CREATE TABLE modalidad (
+  modalidad_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE accion_oferta (
+  accion_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE motivo_desvinculacion (
+  motivo_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+CREATE TABLE nomina_estado (
+  nomina_estado_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL 
+);
+CREATE TABLE periodo (
+  periodo_id SERIAL PRIMARY KEY,
+  anio INT NOT NULL,
+  numero INT NOT NULL CHECK (numero BETWEEN 1 AND 4),
+  UNIQUE (anio, numero)
+);
+CREATE TABLE rol_docente (
+  rol_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL 
+);
+-- ======================
+-- Personas
+-- ======================
+CREATE TABLE persona (
+  persona_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  cedula TEXT UNIQUE NOT NULL,
+  genero_id INT REFERENCES genero(genero_id),
+  correo TEXT UNIQUE NOT NULL,
+  telefono TEXT,
+  provincia_id INT REFERENCES provincia(provincia_id),
+  canton_id INT REFERENCES canton(canton_id),
+  categoria_id INT REFERENCES categoria_docente(categoria_id),
+  estado_persona_id INT REFERENCES estado_persona(estado_persona_id),
+  fecha_ingreso DATE,
+  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
+  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id),
+  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id),
+  comentarios TEXT
+);
+CREATE TABLE persona_atestado (
+  persona_id INT NOT NULL REFERENCES persona(persona_id) ON DELETE CASCADE,
+  atestado_id INT NOT NULL REFERENCES atestado(atestado_id),
+  PRIMARY KEY (persona_id, atestado_id)
+);
+-- ======================
+-- Académico
+-- ======================
+CREATE TABLE carrera (
+  carrera_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,  
+  UNIQUE (nombre)
+);
+CREATE TABLE curso (
+  curso_id SERIAL PRIMARY KEY,
+  codigo TEXT NOT NULL,
+  nombre TEXT NOT NULL, 
+  carrera_id INT REFERENCES carrera(carrera_id),
+  grado_id INT REFERENCES grado(grado_id),
+  es_netcad BOOLEAN NOT NULL DEFAULT FALSE,
+  UNIQUE (codigo)
+);
+CREATE TABLE oferta (
+  oferta_id SERIAL PRIMARY KEY,
+  curso_id INT NOT NULL REFERENCES curso(curso_id),
+  sede_id INT NOT NULL REFERENCES sede(sede_id),
+  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id),
+  horario_id INT NOT NULL REFERENCES horario(horario_id),
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
+  accion_id INT REFERENCES accion_oferta(accion_id),
+  coordinador_id INT REFERENCES persona(persona_id),
+  comentarios TEXT,
+  UNIQUE (curso_id, sede_id, modalidad_id, periodo_id)
+);
+CREATE TABLE grupo (  -- grupo creado despues de aceptada la oferta
+  grupo_id SERIAL PRIMARY KEY,
+  oferta_id INT NOT NULL REFERENCES oferta(oferta_id) ON DELETE CASCADE,
+  numero INT NOT NULL,        
+  cupo INT,
+  matricula INT,
+  UNIQUE (oferta_id, numero)
+);
+
+CREATE TABLE grupo_asignacion (
+  grupo_asignacion_id SERIAL PRIMARY KEY,
+  grupo_id INT NOT NULL REFERENCES grupo(grupo_id) ON DELETE CASCADE,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  rol_id INT NOT NULL REFERENCES rol_docente(rol_id),
+  UNIQUE (grupo_id, persona_id, rol_id)
+);
+CREATE TABLE coordinacion (
+  coordinacion_id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),   -- coordinador
+  carrera_id INT REFERENCES carrera(carrera_id),
+  curso_id INT REFERENCES curso(curso_id),
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
+  UNIQUE (persona_id, carrera_id, curso_id, periodo_id)
+);
+-- ======================
+-- Nómina
+-- ======================
+CREATE TABLE nomina (
+  nomina_id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  fecha_ingreso DATE NOT NULL,
+  fecha_salida DATE,
+  nomina_estado_id INT REFERENCES nomina_estado(nomina_estado_id),
+  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
+  categoria_id INT REFERENCES categoria_docente(categoria_id)
+);
