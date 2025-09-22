@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "SIGO.Application (Proyecto Biblioteca de Clases .NET)/1.0.0": {
+        "runtime": {
+          "SIGO.Application (Proyecto Biblioteca de Clases .NET).dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SIGO.Application (Proyecto Biblioteca de Clases .NET)/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
