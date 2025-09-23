@@ -29,12 +29,16 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 5,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "SIGO.Domain (Proyecto Biblioteca de Clases .NET)",
+              "Title": "SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
               "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
               "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
@@ -47,7 +51,7 @@
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)",
+              "Title": "SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
               "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
               "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
@@ -104,14 +108,10 @@
               "RelativeDocumentMoniker": "SIGO.Api (Proyecto ASP.NET Core Web API).csproj",
               "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\SIGO.Api (Proyecto ASP.NET Core Web API).csproj",
               "RelativeToolTip": "SIGO.Api (Proyecto ASP.NET Core Web API).csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-09-22T01:49:20.688Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             }
           ]
         }

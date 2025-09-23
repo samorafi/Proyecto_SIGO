@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SIGO.Api (Proyecto ASP.NET Core Web API)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da2c18dbcc5a5c1c2c757d7077877d060f3140c4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9951cb5210195e4a509ba1e9beaa2a47ab03e15a")]
 [assembly: System.Reflection.AssemblyProductAttribute("SIGO.Api (Proyecto ASP.NET Core Web API)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SIGO.Api (Proyecto ASP.NET Core Web API)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
