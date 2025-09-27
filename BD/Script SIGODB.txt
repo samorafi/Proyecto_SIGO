@@ -163,3 +163,107 @@ CREATE TABLE nomina (
   tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
   categoria_id INT REFERENCES categoria_docente(categoria_id)
 );
+-- ======================
+-- Usuario
+-- ======================
+
+CREATE SCHEMA IF NOT EXISTS universidad;
+SET search_path TO universidad;
+BEGIN;
+
+CREATE TABLE usuario (
+  usuario_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  correo TEXT UNIQUE NOT NULL,
+  contrasena TEXT NOT NULL,
+  activo BOOLEAN DEFAULT TRUE
+);
+
+-- ============================================================================================================================
+-- ROLES
+-- ============================================================================================================================
+CREATE TABLE rol (
+  rol_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL,
+  isSystem boolean
+);
+
+-- ===============================
+-- PERMISOS
+-- ===============================
+CREATE TABLE permiso (
+  permiso_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  clave TEXT UNIQUE NOT NULL,    -- Ej: DOCENTES_VIEW
+  ruta TEXT NOT NULL             -- Ej: /docentes
+);
+
+-- ===============================
+-- RELACIÓN USUARIO - ROL (N:M)
+-- ===============================
+CREATE TABLE usuario_rol (
+  usuario_id INT NOT NULL REFERENCES usuario(usuario_id) ON DELETE CASCADE,
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, rol_id)
+);
+
+-- ===============================
+-- RELACIÓN ROL - PERMISO (N:M)
+-- ===============================
+CREATE TABLE rol_permiso (
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  permiso_id INT NOT NULL REFERENCES permiso(permiso_id) ON DELETE CASCADE,
+  PRIMARY KEY (rol_id, permiso_id)
+);
+
+-- ===============================
+-- CREAR ROL ADMINISTRADOR
+-- ===============================
+
+INSERT INTO rol (nombre,isSystem)
+VALUES ('Administrador',true);
+
+-- ===============================
+-- CREAR PERMISOS (vistas actuales)
+-- ===============================
+INSERT INTO permiso (nombre, clave, ruta) VALUES
+('Gestión de Usuarios', 'USUARIOS_VIEW', '/dashboard/usuarios'),
+('Gestión de Roles', 'ROLES_VIEW', '/dashboard/roles'),
+('Gestión de Docentes', 'DOCENTES_VIEW', '/dashboard/docentes'),
+('Gestión de Ofertas', 'OFERTAS_VIEW', '/dashboard/ofertas'),
+('Reportes', 'REPORTES_VIEW', '/dashboard/reportes'),
+('Dashboard', 'DASHBOARD_VIEW', '/dashboard'),
+('Perfil', 'PERFIL_VIEW', '/dashboard/perfil');
+
+-- ===============================
+-- CREAR USUARIO ADMINISTRADOR
+-- ===============================
+INSERT INTO usuario (nombre, correo, contrasena, activo)
+VALUES ('Admin Principal', 'admin@sigo.com', 'admin123', TRUE);
+
+-- ===============================
+-- RELACIONAR USUARIO ADMINISTRADOR CON ROL ADMINISTRADOR
+-- ===============================
+INSERT INTO usuario_rol (usuario_id, rol_id)
+SELECT u.usuario_id, r.rol_id
+FROM usuario u, rol r
+WHERE u.correo = 'admin@sigo.com'
+  AND r.nombre = 'Administrador';
+
+-- ===============================
+-- DAR PERMISOS AL ROL ADMINISTRADOR
+-- (Asignar todos los permisos creados)
+-- ===============================
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.rol_id, p.permiso_id
+FROM rol r, permiso p
+WHERE r.nombre = 'Administrador'
+ON CONFLICT DO NOTHING;
+
+============================================================================================================================
+============================================================================================================================
+
+DROP TABLE IF EXISTS persona_atestado;
+
+ALTER TABLE persona
+ADD COLUMN atestado_id INT REFERENCES atestado(atestado_id);

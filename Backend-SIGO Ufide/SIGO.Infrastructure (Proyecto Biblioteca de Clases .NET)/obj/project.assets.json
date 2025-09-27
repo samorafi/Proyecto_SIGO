@@ -231,6 +231,68 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "Microsoft.IdentityModel.Abstractions/8.14.0": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Microsoft.IdentityModel.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.IdentityModel.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.IdentityModel.JsonWebTokens/8.14.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.IdentityModel.Tokens": "8.14.0"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.IdentityModel.Logging/8.14.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.IdentityModel.Abstractions": "8.14.0"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.IdentityModel.Logging.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.IdentityModel.Logging.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.IdentityModel.Tokens/8.14.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+          "Microsoft.IdentityModel.Logging": "8.14.0"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.IdentityModel.Tokens.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.IdentityModel.Tokens.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Npgsql/9.0.3": {
         "type": "package",
         "dependencies": {
@@ -263,6 +325,33 @@
           "lib/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
             "related": ".xml"
           }
+        }
+      },
+      "System.IdentityModel.Tokens.Jwt/8.14.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.IdentityModel.JsonWebTokens": "8.14.0",
+          "Microsoft.IdentityModel.Tokens": "8.14.0"
+        },
+        "compile": {
+          "lib/net9.0/System.IdentityModel.Tokens.Jwt.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.IdentityModel.Tokens.Jwt.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "SIGO.Application (Proyecto Biblioteca de Clases .NET)/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/SIGO.Application (Proyecto Biblioteca de Clases .NET).dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SIGO.Application (Proyecto Biblioteca de Clases .NET).dll": {}
         }
       },
       "SIGO.Domain (Proyecto Biblioteca de Clases .NET)/1.0.0": {
@@ -656,6 +745,102 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.IdentityModel.Abstractions/8.14.0": {
+      "sha512": "iwbCpSjD3ehfTwBhtSNEtKPK0ICun6ov7Ibx6ISNA9bfwIyzI2Siwyi9eJFCJBwxowK9xcA1mj+jBWiigeqgcQ==",
+      "type": "package",
+      "path": "microsoft.identitymodel.abstractions/8.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/net462/Microsoft.IdentityModel.Abstractions.xml",
+        "lib/net472/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/net472/Microsoft.IdentityModel.Abstractions.xml",
+        "lib/net6.0/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/net6.0/Microsoft.IdentityModel.Abstractions.xml",
+        "lib/net8.0/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/net8.0/Microsoft.IdentityModel.Abstractions.xml",
+        "lib/net9.0/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/net9.0/Microsoft.IdentityModel.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.xml",
+        "microsoft.identitymodel.abstractions.8.14.0.nupkg.sha512",
+        "microsoft.identitymodel.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.IdentityModel.JsonWebTokens/8.14.0": {
+      "sha512": "4jOpiA4THdtpLyMdAb24dtj7+6GmvhOhxf5XHLYWmPKF8ApEnApal1UnJsKO4HxUWRXDA6C4WQVfYyqsRhpNpQ==",
+      "type": "package",
+      "path": "microsoft.identitymodel.jsonwebtokens/8.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/net462/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "lib/net472/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/net472/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "lib/net6.0/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/net6.0/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "lib/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/net8.0/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.dll",
+        "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.xml",
+        "microsoft.identitymodel.jsonwebtokens.8.14.0.nupkg.sha512",
+        "microsoft.identitymodel.jsonwebtokens.nuspec"
+      ]
+    },
+    "Microsoft.IdentityModel.Logging/8.14.0": {
+      "sha512": "eqqnemdW38CKZEHS6diA50BV94QICozDZEvSrsvN3SJXUFwVB9gy+/oz76gldP7nZliA16IglXjXTCTdmU/Ejg==",
+      "type": "package",
+      "path": "microsoft.identitymodel.logging/8.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Microsoft.IdentityModel.Logging.dll",
+        "lib/net462/Microsoft.IdentityModel.Logging.xml",
+        "lib/net472/Microsoft.IdentityModel.Logging.dll",
+        "lib/net472/Microsoft.IdentityModel.Logging.xml",
+        "lib/net6.0/Microsoft.IdentityModel.Logging.dll",
+        "lib/net6.0/Microsoft.IdentityModel.Logging.xml",
+        "lib/net8.0/Microsoft.IdentityModel.Logging.dll",
+        "lib/net8.0/Microsoft.IdentityModel.Logging.xml",
+        "lib/net9.0/Microsoft.IdentityModel.Logging.dll",
+        "lib/net9.0/Microsoft.IdentityModel.Logging.xml",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Logging.dll",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Logging.xml",
+        "microsoft.identitymodel.logging.8.14.0.nupkg.sha512",
+        "microsoft.identitymodel.logging.nuspec"
+      ]
+    },
+    "Microsoft.IdentityModel.Tokens/8.14.0": {
+      "sha512": "lKIZiBiGd36k02TCdMHp1KlNWisyIvQxcYJvIkz7P4gSQ9zi8dgh6S5Grj8NNG7HWYIPfQymGyoZ6JB5d1Lo1g==",
+      "type": "package",
+      "path": "microsoft.identitymodel.tokens/8.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Microsoft.IdentityModel.Tokens.dll",
+        "lib/net462/Microsoft.IdentityModel.Tokens.xml",
+        "lib/net472/Microsoft.IdentityModel.Tokens.dll",
+        "lib/net472/Microsoft.IdentityModel.Tokens.xml",
+        "lib/net6.0/Microsoft.IdentityModel.Tokens.dll",
+        "lib/net6.0/Microsoft.IdentityModel.Tokens.xml",
+        "lib/net8.0/Microsoft.IdentityModel.Tokens.dll",
+        "lib/net8.0/Microsoft.IdentityModel.Tokens.xml",
+        "lib/net9.0/Microsoft.IdentityModel.Tokens.dll",
+        "lib/net9.0/Microsoft.IdentityModel.Tokens.xml",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.dll",
+        "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.xml",
+        "microsoft.identitymodel.tokens.8.14.0.nupkg.sha512",
+        "microsoft.identitymodel.tokens.nuspec"
+      ]
+    },
     "Npgsql/9.0.3": {
       "sha512": "tPvY61CxOAWxNsKLEBg+oR646X4Bc8UmyQ/tJszL/7mEmIXQnnBhVJZrZEEUv0Bstu0mEsHZD5At3EO8zQRAYw==",
       "type": "package",
@@ -688,6 +873,35 @@
         "postgresql.png"
       ]
     },
+    "System.IdentityModel.Tokens.Jwt/8.14.0": {
+      "sha512": "EYGgN/S+HK7S6F3GaaPLFAfK0UzMrkXFyWCvXpQWFYmZln3dqtbyIO7VuTM/iIIPMzkelg8ZLlBPvMhxj6nOAA==",
+      "type": "package",
+      "path": "system.identitymodel.tokens.jwt/8.14.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/net462/System.IdentityModel.Tokens.Jwt.xml",
+        "lib/net472/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/net472/System.IdentityModel.Tokens.Jwt.xml",
+        "lib/net6.0/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/net6.0/System.IdentityModel.Tokens.Jwt.xml",
+        "lib/net8.0/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/net8.0/System.IdentityModel.Tokens.Jwt.xml",
+        "lib/net9.0/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/net9.0/System.IdentityModel.Tokens.Jwt.xml",
+        "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.dll",
+        "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.xml",
+        "system.identitymodel.tokens.jwt.8.14.0.nupkg.sha512",
+        "system.identitymodel.tokens.jwt.nuspec"
+      ]
+    },
+    "SIGO.Application (Proyecto Biblioteca de Clases .NET)/1.0.0": {
+      "type": "project",
+      "path": "../SIGO.Application (Proyecto Biblioteca de Clases .NET)/SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj",
+      "msbuildProject": "../SIGO.Application (Proyecto Biblioteca de Clases .NET)/SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj"
+    },
     "SIGO.Domain (Proyecto Biblioteca de Clases .NET)/1.0.0": {
       "type": "project",
       "path": "../SIGO.Domain (Proyecto Biblioteca de Clases .NET)/SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
@@ -696,28 +910,31 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Microsoft.IdentityModel.Tokens >= 8.14.0",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
-      "SIGO.Domain (Proyecto Biblioteca de Clases .NET) >= 1.0.0"
+      "SIGO.Application (Proyecto Biblioteca de Clases .NET) >= 1.0.0",
+      "SIGO.Domain (Proyecto Biblioteca de Clases .NET) >= 1.0.0",
+      "System.IdentityModel.Tokens.Jwt >= 8.14.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\portu\\.nuget\\packages\\": {},
+    "C:\\Users\\sebas\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
+      "projectUniqueName": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
       "projectName": "SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)",
-      "projectPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
-      "packagesPath": "C:\\Users\\portu\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\obj\\",
+      "projectPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj",
+      "packagesPath": "C:\\Users\\sebas\\.nuget\\packages\\",
+      "outputPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\portu\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\sebas\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -732,8 +949,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj": {
-              "projectPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj"
+            "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj": {
+              "projectPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj"
+            },
+            "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj": {
+              "projectPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj"
             }
           }
         }
@@ -754,9 +974,17 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "Microsoft.IdentityModel.Tokens": {
+            "target": "Package",
+            "version": "[8.14.0, )"
+          },
           "Npgsql.EntityFrameworkCore.PostgreSQL": {
             "target": "Package",
             "version": "[9.0.4, )"
+          },
+          "System.IdentityModel.Tokens.Jwt": {
+            "target": "Package",
+            "version": "[8.14.0, )"
           }
         },
         "imports": [
@@ -775,7 +1003,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

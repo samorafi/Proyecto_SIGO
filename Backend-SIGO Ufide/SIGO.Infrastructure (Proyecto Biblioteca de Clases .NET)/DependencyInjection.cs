@@ -1,9 +1,15 @@
-﻿//(Para registrar servicios de esta capa)
+﻿using Microsoft.Extensions.DependencyInjection;
+using SIGO.Application.Abstrations;
+using SIGO.Infrastructure.Services;
 
-namespace SIGO.Infrastructure__Proyecto_Biblioteca_de_Clases_.NET_
+namespace SIGO.Infrastructure
 {
-    public class DependencyInjection
+    public static class DependencyInjection
     {
-
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+        {
+            services.AddScoped<IJwtProvider, JwtProvider>();
+            return services;
+        }
     }
 }

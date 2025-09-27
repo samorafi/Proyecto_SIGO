@@ -8,17 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Persistence\Configurations%28Entity Framework%29\" />
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Repositories\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SIGO.Application (Proyecto Biblioteca de Clases .NET)\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj" />
     <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
   </ItemGroup>
 
