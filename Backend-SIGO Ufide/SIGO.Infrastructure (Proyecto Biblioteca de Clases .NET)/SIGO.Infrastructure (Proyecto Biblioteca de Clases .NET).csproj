@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>SIGO.Infrastructure__Proyecto_Biblioteca_de_Clases_.NET_</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Configurations%28Entity Framework%29\" />
+    <Folder Include="Persistence\Migrations\" />
+    <Folder Include="Persistence\Repositories\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
+  </ItemGroup>
+
+</Project>

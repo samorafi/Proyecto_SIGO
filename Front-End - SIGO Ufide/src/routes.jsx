@@ -18,7 +18,6 @@ import OfertasPresencial from "@/pages/ofertas/presencial";
 import OfertasVirtual from "@/pages/ofertas/virtual";
 import Perfil from "@/pages/perfil";
 
-// 👇 importa las páginas de auth
 import SignIn from "@/pages/auth/sign-in";
 import SignUp from "@/pages/auth/sign-up";
 
