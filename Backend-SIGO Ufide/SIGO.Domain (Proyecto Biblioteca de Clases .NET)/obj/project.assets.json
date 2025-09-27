@@ -8,23 +8,23 @@
     "net9.0": []
   },
   "packageFolders": {
-    "C:\\Users\\sebas\\.nuget\\packages\\": {},
+    "C:\\Users\\portu\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
+      "projectUniqueName": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
       "projectName": "SIGO.Domain (Proyecto Biblioteca de Clases .NET)",
-      "projectPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
-      "packagesPath": "C:\\Users\\sebas\\.nuget\\packages\\",
-      "outputPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\obj\\",
+      "projectPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj",
+      "packagesPath": "C:\\Users\\portu\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\sebas\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\portu\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -72,7 +72,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

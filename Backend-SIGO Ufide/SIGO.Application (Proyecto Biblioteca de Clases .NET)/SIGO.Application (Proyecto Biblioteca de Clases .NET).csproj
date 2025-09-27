@@ -9,7 +9,16 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
-    <Folder Include="Features\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="13.0.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
   </ItemGroup>
 
 </Project>

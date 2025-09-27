@@ -1,10 +1,16 @@
-﻿//Para registrar servicios de esta capa
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
-
-namespace SIGO.Application__Proyecto_Biblioteca_de_Clases_.NET_
+namespace SIGO.Application
 {
-    public class DependencyInjection
+    public static class DependencyInjection
     {
+        public static IServiceCollection AddApplication(this IServiceCollection services)
+        {
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
+            return services;
+        }
     }
 }

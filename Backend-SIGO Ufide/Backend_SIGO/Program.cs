@@ -1,53 +1,39 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SIGO.Infrastructure.Persistence;
-using SIGO.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using SIGO.Application.Abstractions;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Registrar DbContext con PostgreSQL
-builder.Services.AddDbContext<SigoDbContext>(options =>
+// DbContext con PostgreSQL
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
-// Add services to the container.
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(SIGO.Application.DependencyInjection).Assembly));
+
+
+// Registrar la interfaz de ApplicationDbContext
+builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+// Registrar MediatR
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(SIGO.Application.DependencyInjection).Assembly));
+
 builder.Services.AddControllers();
-
-builder.Services.AddInfrastructure();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Swagger solo en Development
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();  
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

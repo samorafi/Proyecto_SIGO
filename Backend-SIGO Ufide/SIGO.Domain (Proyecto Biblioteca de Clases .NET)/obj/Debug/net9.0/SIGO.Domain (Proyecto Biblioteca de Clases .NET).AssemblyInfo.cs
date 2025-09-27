@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SIGO.Domain (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+23b864572c9959e478460ba0c5d1af0b568e420e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ac4515f7e2bf02ab5bebc8ef999175932b337a5")]
 [assembly: System.Reflection.AssemblyProductAttribute("SIGO.Domain (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SIGO.Domain (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
