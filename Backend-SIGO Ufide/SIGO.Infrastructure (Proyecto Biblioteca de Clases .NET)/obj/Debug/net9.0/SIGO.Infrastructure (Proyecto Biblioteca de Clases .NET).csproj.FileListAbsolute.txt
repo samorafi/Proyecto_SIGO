@@ -26,7 +26,6 @@ C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\refint\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).dll
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).pdb
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\ref\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).dll
-<<<<<<< Updated upstream
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).deps.json
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).dll
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).pdb
@@ -43,7 +42,3 @@ D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructu
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\refint\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).dll
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).pdb
 D:\Program Files\XAMPP\htdocs\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\ref\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).dll
-=======
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Application (Proyecto Biblioteca de Clases .NET).dll
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Application (Proyecto Biblioteca de Clases .NET).pdb
->>>>>>> Stashed changes

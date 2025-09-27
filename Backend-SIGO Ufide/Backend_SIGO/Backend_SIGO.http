@@ -4,17 +4,3 @@ GET {{Backend_SIGO_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
-
-### Listar usuarios
-GET https://localhost:7287/api/usuarios
-
-
-### Crear Usuario
-POST https://localhost:7287/api/usuarios
-Content-Type: application/json
-
-{
-  "nombre": "Pedro Mora",
-  "correo": "pedro@ufide.ac.cr",
-  "contrasena": "123456"
-}

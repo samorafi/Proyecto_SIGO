@@ -13,11 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-<<<<<<< Updated upstream
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
-=======
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
->>>>>>> Stashed changes
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>

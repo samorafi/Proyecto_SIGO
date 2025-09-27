@@ -22,7 +22,3 @@ C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (P
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\refint\SIGO.Application (Proyecto Biblioteca de Clases .NET).dll
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\SIGO.Application (Proyecto Biblioteca de Clases .NET).pdb
 C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\ref\SIGO.Application (Proyecto Biblioteca de Clases .NET).dll
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Domain (Proyecto Biblioteca de Clases .NET).dll
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\bin\Debug\net9.0\SIGO.Domain (Proyecto Biblioteca de Clases .NET).pdb
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj.AssemblyReference.cache
-C:\Users\portu\source\repos\Proyecto_SIGO\Backend-SIGO Ufide\SIGO.Application (Proyecto Biblioteca de Clases .NET)\obj\Debug\net9.0\SIGO.App.D55EFFA4.Up2Date
