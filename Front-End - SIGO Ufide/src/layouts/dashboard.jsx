@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import routes from "@/routes";
-import { Sidenav, DashboardNavbar, Footer } from "@/widgets/layout";
+import { Sidenav, DashboardNavbar, Footer } from "@/index";
 
 export default function Dashboard() {
   const [openSide, setOpenSide] = useState(false);
