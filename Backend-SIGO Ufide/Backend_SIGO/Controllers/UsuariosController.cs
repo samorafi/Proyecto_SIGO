@@ -1,9 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Usuarios.Commands.Create;
+using SIGO.Application.Features.Usuarios.Commands.Update;
+using SIGO.Application.Features.Usuarios.Dto;
 using SIGO.Application.Features.Usuarios.Queries.GetAll;
 using SIGO.Application.Features.Usuarios.Queries.GetId;
-using SIGO.Application.Features.Usuarios.Dto;
 
 namespace SIGO.Api.Controllers
 {
@@ -52,6 +53,19 @@ namespace SIGO.Api.Controllers
 
             // Aquí podrías emitir JWT. Por ahora devolvemos el DTO (sin contraseña).
             return Ok(usuario);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUsuarioCommand command)
+        {
+            if (id != command.UsuarioId)
+                return BadRequest("El ID de la URL no coincide con el del body.");
+
+            var result = await _mediator.Send(command);
+
+            if (!result)
+                return NotFound(new { Message = "Usuario no encontrado" });
+
+            return Ok(new { Message = "Usuario actualizado con éxito" });
         }
     }
 }

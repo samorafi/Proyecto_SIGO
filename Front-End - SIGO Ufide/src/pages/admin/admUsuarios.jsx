@@ -4,7 +4,7 @@ import {
   Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip,
 } from "@material-tailwind/react";
 import {
-  PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon
+  PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon, KeyIcon
 } from "@heroicons/react/24/outline";
 
 export default function AdmUsuarios() {
@@ -85,17 +85,36 @@ export default function AdmUsuarios() {
   // ENDPOINT 2:
   //******************************************************************************* */
 
-  // DATOS TEMPORALES
-  const [usuarios, setUsuarios] = useState([
-    { usuarioId: 1, nombre: "Harlyn Luna", correo: "harlyn@example.com", activo: true },
-    { usuarioId: 2, nombre: "Ana Pérez", correo: "ana@example.com", activo: false },
-    { usuarioId: 3, nombre: "Carlos Mora", correo: "carlos@example.com", activo: true },
-  ]);
-
-  // Búsqueda y filtrado
+  const [usuarios, setUsuarios] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [search, setSearch] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(usuarios);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Modal de edición
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+
+  const fetchUsuarios = async () => {
+    try {
+      const response = await fetch("/api/Usuarios");
+      if (!response.ok) throw new Error("Error al obtener los usuarios");
+
+      const data = await response.json();
+      setUsuarios(data);
+      setFilteredUsers(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsuarios();
+  }, []);
+
+  // Filtrado dinámico
   useEffect(() => {
     const timer = setTimeout(() => {
       const result = usuarios.filter(
@@ -116,85 +135,95 @@ export default function AdmUsuarios() {
   const totalPages = Math.ceil(total / rowsPerPage);
   const pageData = filteredUsers.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+  // Abrir modal de edición
+  const handleOpenEdit = (user) => {
+  setEditUser({
+    usuarioId: user.usuarioId,
+    nombre: user.nombre,
+    correo: user.correo,
+    contrasena: "*****",       // lo que ve el usuario
+    _realContrasena: user.contrasena, 
+    activo: user.activo,
+  });
+  setOpenEditModal(true);
+};
+
+
+  // Guardar cambios de edición
+const handleUpdate = async (e) => {
+  e.preventDefault();
+
+  if (!editUser) return;
+
+  //Siempre enviamos contraseña
+  const payload = {
+    UsuarioId: editUser.usuarioId,
+    Nombre: editUser.nombre,
+    Correo: editUser.correo,
+    Contrasena: editUser.contrasena === "*****"
+      ? editUser._realContrasena   // usamos la real si no fue modificada
+      : editUser.contrasena,       // usamos la nueva si fue cambiada
+    Activo: editUser.activo,
+  };
+
+  try {
+    const response = await fetch(`/api/Usuarios/${editUser.usuarioId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+      alert("Error al actualizar: " + (data?.message || "Error desconocido"));
+      return;
+    }
+
+    alert(data?.Message || "Usuario actualizado con éxito");
+    setOpenEditModal(false);
+    setEditUser(null);
+    fetchUsuarios();
+  } catch (err) {
+    alert("Error de conexión: " + err.message);
+  }
+};
+
 
   return (
     <div className="p-6">
+      {/* Encabezado */}
       <div className="flex items-center justify-between gap-3">
-        {/* Título de la sección */}
-        <div>
-          <Typography className="text-2xl font-extrabold text-[#2B338C]">Administrar Usuarios</Typography>
-        </div>
+        <Typography className="text-2xl font-extrabold text-[#2B338C]">
+          Administrar Usuarios
+        </Typography>
 
-        {/* Botón para registrar nuevo usuario */}
-        <div className="flex items-center gap-2">
-          <Button
-            className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
-            onClick={handleOpen}
-          >
-            <PlusIcon className="h-5 w-5" /> Registrar nuevo usuario
-          </Button>
-        </div>
+        <Button
+          className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
+          onClick={handleOpen}
+        >
+          <PlusIcon className="h-5 w-5" /> Registrar nuevo usuario
+        </Button>
       </div>
 
-      {/* Modal: Registro de un nuevo usuario */}
+      {/* Modal: Crear usuario */}
       <Dialog open={openModal} handler={handleOpen}>
-        { /* Título del modal */}
         <DialogHeader className="text-[#2B338C]">Registrar nuevo usuario</DialogHeader>
 
-        { /* Cuerpo del modal: Formulario */}
         <DialogBody divider>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-
-            {/* Campo 1: Nombre completo */}
-            <Input
-              className="!border-t-[#2B338C] focus:!border-t-[#FFFFFF]"
-              label="Nombre Completo"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              required
-            />
-
-            {/* Campo 2: Correo */}
-            <Input
-              className="!border-t-[#2B338C] focus:!border-t-[#FFFFFF]"
-              label="Correo"
-              type="email"
-              name="correo"
-              value={formData.correo}
-              onChange={handleChange}
-              required
-            />
-
-            {/* Campo 3: Contraseña */}
-            <Input
-              className="!border-t-[#2B338C] focus:!border-t-[#FFFFFF]"
-              label="Contraseña"
-              type="password"
-              name="contrasena"
-              value={formData.contrasena}
-              onChange={handleChange}
-              required
-            />
+            <Input label="Nombre Completo" name="nombre" value={formData.nombre} onChange={handleChange} required />
+            <Input label="Correo" type="email" name="correo" value={formData.correo} onChange={handleChange} required />
+            <Input label="Contraseña" type="password" name="contrasena" value={formData.contrasena} onChange={handleChange} required />
           </form>
         </DialogBody>
 
-        { /* Footer del modal:Botones de acción */}
         <DialogFooter className="gap-3">
-
-          {/* Botón de cancelar */}
-          <Button
-            className="bg-[#2B338C] text-[#FFFFFF]"
-            onClick={handleOpen}
-          >
+          <Button className="bg-[#2B338C] text-white" onClick={handleOpen}>
             Cancelar
           </Button>
-
-          {/* Botón de guardar */}
-          <Button
-            className="bg-[#FFDA00] text-[#2B338C]"
-            onClick={handleSubmit}
-          >
+          <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={handleSubmit}>
             Guardar
           </Button>
         </DialogFooter>
@@ -204,111 +233,162 @@ export default function AdmUsuarios() {
 
       <h3 className="text-lg font-semibold text-[#2B338C] mb-4">Lista de Usuarios</h3>
 
-      {/* Input de búsqueda */}
+      {/* Input búsqueda */}
       <div className="mb-4">
-        <Input
-          label="Buscar por nombre o correo"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <Input label="Buscar por nombre o correo" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
-      <p className="text-sm text-blue-gray-600">Total de usuarios: {total}</p>
+      {/* Estados */}
+      {loading && <p className="text-blue-gray-600">Cargando usuarios...</p>}
+      {error && <p className="text-red-600">Error: {error}</p>}
 
-      {/* Tabla de usuarios */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-[600px] w-full text-left">
+      {!loading && !error && (
+        <>
+          <p className="text-sm text-blue-gray-600">Total de usuarios: {total}</p>
 
-            {/* Encabezado de la tabla */}
-            <thead>
-              <tr className="bg-blue-gray-50 text-blue-gray-700">
-                <th className="p-3 text-sm font-semibold">Nombre</th>
-                <th className="p-3 text-sm font-semibold">Correo</th>
-                <th className="p-3 text-sm font-semibold">Activo</th>
-                <th className="p-3 text-sm font-semibold">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-
-              {/* Filtrado de usuarios */}
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="p-6 text-center text-blue-gray-500">
-                    Sin registros.
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers
-                  .slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                  .map((u) => (
-
-                    // Fila de registro del usuario.
-                    <tr key={u.usuarioId} className="border-b">
-                      <td className="p-3">{u.nombre}</td>
-                      <td className="p-3">{u.correo}</td>
-                      <td className="p-3">{u.activo ? "Sí" : "No"}</td>
-                     
-                     
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-
-                          {/* Acciones: Botón Editar Inactivar */}
-                          <Tooltip content="Editar">
-                            <Button size="sm" className="bg-[#FFDA00] text-[#2B338C] p-2">
-                              <PencilSquareIcon className="h-4 w-4" />
-                            </Button>
-                          </Tooltip>
-                          
-                          {/* Acciones: Botón Inactivar */}
-                          <Tooltip content="Inactivar">
-                            <Button size="sm" variant="outlined" className="border-red-500 text-red-600 p-2">
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </Tooltip>
-                        </div>
+          {/* Tabla */}
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-[600px] w-full text-left">
+                <thead>
+                  <tr className="bg-blue-gray-50 text-blue-gray-700">
+                    <th className="p-3 text-sm font-semibold">Nombre</th>
+                    <th className="p-3 text-sm font-semibold">Correo</th>
+                    <th className="p-3 text-sm font-semibold">Estado</th>
+                    <th className="p-3 text-sm font-semibold">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageData.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-blue-gray-500">
+                        Sin registros.
                       </td>
                     </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    pageData.map((u) => (
+                      <tr key={u.usuarioId} className="border-b">
+                        <td className="p-3">{u.nombre}</td>
+                        <td className="p-3">{u.correo}</td>
+                        <td className="p-3">{u.activo ? "Activo" : "Inactivo"}</td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <Tooltip content="Editar">
+                              <Button
+                                size="sm"
+                                className="bg-[#FFDA00] text-[#2B338C] p-2"
+                                onClick={() => handleOpenEdit(u)}
+                              >
+                                <PencilSquareIcon className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip content="Asignar Rol">
+                              <Button
+                                size="sm"
+                                className="bg-blue-600 text-white p-2"
+                                onClick={() => handleOpenEdit(u)}
+                              >
+                                <KeyIcon className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Paginación */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
-          <span className="text-sm text-blue-gray-600">
-            Mostrando{" "}
-            <b>
-              {filteredUsers.length === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, filteredUsers.length)}
-            </b>{" "}
-            de <b>{filteredUsers.length}</b>
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outlined"
-              size="sm"
-              className="border-[#2B338C] text-[#2B338C] px-3"
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <span className="px-2 text-sm">
-              Página <b>{page}</b> de <b>{Math.ceil(filteredUsers.length / rowsPerPage)}</b>
-            </span>
-            <Button
-              variant="outlined"
-              size="sm"
-              className="border-[#2B338C] text-[#2B338C] px-3"
-              disabled={page >= Math.ceil(filteredUsers.length / rowsPerPage)}
-              onClick={() => setPage((p) => Math.min(Math.ceil(filteredUsers.length / rowsPerPage), p + 1))}
-            >
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </Card>
+            {/* Paginación */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
+              <span className="text-sm text-blue-gray-600">
+                Mostrando <b>{pageData.length === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, filteredUsers.length)}</b>{" "}
+                de <b>{filteredUsers.length}</b>
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  className="border-[#2B338C] text-[#2B338C] px-3"
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </Button>
+                <span className="px-2 text-sm">
+                  Página <b>{page}</b> de <b>{totalPages}</b>
+                </span>
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  className="border-[#2B338C] text-[#2B338C] px-3"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
+
+      {/* Modal: Editar usuario */}
+      <Dialog open={openEditModal} handler={() => setOpenEditModal(false)}>
+        <DialogHeader className="text-[#2B338C]">Editar usuario</DialogHeader>
+
+        <DialogBody divider>
+          {editUser ? (
+            <form className="flex flex-col gap-4" onSubmit={handleUpdate}>
+              <Input
+                label="Nombre Completo"
+                name="nombre"
+                value={editUser.nombre}
+                onChange={(e) => setEditUser({ ...editUser, nombre: e.target.value })}
+                required
+              />
+              <Input
+                label="Correo"
+                type="email"
+                name="correo"
+                value={editUser.correo}
+                onChange={(e) => setEditUser({ ...editUser, correo: e.target.value })}
+                required
+              />
+              <Input
+                label="Contraseña"
+                type="password"
+                name="contrasena"
+                value={editUser.contrasena}
+                onChange={(e) => setEditUser({ ...editUser, contrasena: e.target.value })}
+              />
+              <div>
+                <label className="block text-sm font-medium text-blue-gray-700 mb-1">Estado</label>
+                <select
+                  className="border rounded-md w-full p-2"
+                  value={editUser.activo ? "1" : "0"}
+                  onChange={(e) => setEditUser({ ...editUser, activo: e.target.value === "1" })}
+                >
+                  <option value="1">Activo</option>
+                  <option value="0">Inactivo</option>
+                </select>
+              </div>
+            </form>
+          ) : (
+            <p className="text-blue-gray-500">Cargando...</p>
+          )}
+        </DialogBody>
+
+        <DialogFooter className="gap-3">
+          <Button className="bg-[#2B338C] text-white" onClick={() => setOpenEditModal(false)}>
+            Cancelar
+          </Button>
+          <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={handleUpdate}>
+            Guardar Cambios
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }
