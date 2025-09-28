@@ -2,7 +2,7 @@
 import { Navbar as MTNavbar, IconButton } from "@material-tailwind/react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 
-export default function DashboardNavbar({ onMenuClick = () => { } }) {
+export default function Yellowbar({ onMenuClick = () => { } }) {
   return (
     <>
       {/* Móvil: solo botón para abrir el sidebar */}

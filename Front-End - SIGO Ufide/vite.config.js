@@ -6,4 +6,14 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
   },
+  server: {
+    port: 5173, 
+    proxy: {
+      "/api": {
+        target: "https://host.docker.internal:7287",
+        changeOrigin: true,
+        secure: false, 
+      },
+    },
+  }
 });

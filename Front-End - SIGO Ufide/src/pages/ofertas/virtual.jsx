@@ -9,7 +9,7 @@ import {
   ArrowUpTrayIcon, ChevronLeftIcon, ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import OfertasTabs from "./OfertasTabs";
-import CuatrimestrePicker from "@/components/CuatrimestrePicker";
+import CuatrimestrePicker from "@/components/PickerQuarter";
 
 /* ------------------------ MOCK (solo UI) ------------------------ */
 const VIRTUAL = [

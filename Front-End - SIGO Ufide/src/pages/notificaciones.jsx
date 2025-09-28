@@ -13,7 +13,7 @@ import {
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { EyeIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
-import CuatrimestrePicker from "@/components/CuatrimestrePicker";
+import CuatrimestrePicker from "@/components/PickerQuarter";
 
 // --- MOCK (UI) ---
 const MOCK = [

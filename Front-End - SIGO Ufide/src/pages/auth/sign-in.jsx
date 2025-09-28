@@ -1,23 +1,41 @@
 import { useState } from "react";
 import { Card, Input, Checkbox, Button, Typography } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
-  const handleSubmit = (e) => {
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const { login } = useAuth(); 
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Opcional: “sesión” mock para cuando quieras poner un guard
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("user", JSON.stringify({ email: "usuario@ufide.ac.cr" }));
+    try {
+      const res = await fetch("/api/Usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, contrasena }),
+      });
 
-    // Pequeño delay para ver feedback (opcional)
-    setTimeout(() => {
+      if (!res.ok) throw new Error("Usuario o contraseña incorrecta");
+
+      const data = await res.json();
+
+      // Guardar usuario en AuthContext y localStorage
+      login({ id: data.usuarioId, nombre: data.nombre, correo: data.correo });
+
+      // Navegar al dashboard
       navigate("/dashboard/ofertas", { replace: true });
-    }, 300);
+
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,6 +83,8 @@ export default function SignIn() {
                   className="!border-t-[#2B338C] focus:!border-t-[#FFDA00]"
                   labelProps={{ className: "before:content-none after:content-none" }}
                   required
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
                 />
               </div>
 
@@ -82,6 +102,8 @@ export default function SignIn() {
                   className="!border-t-[#2B338C] focus:!border-t-[#FFDA00]"
                   labelProps={{ className: "before:content-none after:content-none" }}
                   required
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
                 />
               </div>
             </div>
@@ -105,13 +127,6 @@ export default function SignIn() {
             >
               {loading ? "Entrando..." : "Iniciar sesión"}
             </Button>
-
-            <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-6">
-              ¿No tienes cuenta?
-              <Link to="/auth/sign-up" className="ml-1 text-[#00A2E8] hover:text-[#7A26B2]">
-                Crear cuenta
-              </Link>
-            </Typography>
           </form>
         </Card>
       </div>

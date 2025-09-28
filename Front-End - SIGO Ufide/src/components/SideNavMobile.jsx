@@ -2,7 +2,7 @@
 import { Navbar as MTNavbar, Typography, Button } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
 
-export default function Navbar() {
+export default function SideNavMobile() {
   return (
     <MTNavbar className="rounded-xl border-0 shadow-md !bg-[#2B338C] px-4 py-3" fullWidth>
       <div className="flex items-center justify-between">

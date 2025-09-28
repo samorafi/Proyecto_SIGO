@@ -9,7 +9,7 @@ import {
     ArrowUpTrayIcon, ChevronLeftIcon, ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import OfertasTabs from "./OfertasTabs";
-import CuatrimestrePicker from "@/components/CuatrimestrePicker";
+import CuatrimestrePicker from "@/components/PickerQuarter";
 
 /* ------------------------ MOCK (solo UI) ------------------------ */
 const PRESENCIAL = [
@@ -238,9 +238,9 @@ export default function OfertasPresencial() {
                         <Option>J</Option><Option>V</Option><Option>S</Option>
                     </Select>
                     <Select label="Filas por página" value={rowsPerPage} onChange={(v) => setRowsPerPage(Number(v))}>
-                        <Option value={10}>10</Option>
-                        <Option value={20}>20</Option>
-                        <Option value={50}>50</Option>
+                        <Option value="10">10</Option>
+                        <Option value="20">20</Option>
+                        <Option value="50">50</Option>
                     </Select>
                     <div className="flex items-center justify-end">
                         <Button

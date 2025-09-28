@@ -1,7 +1,7 @@
-// src/App.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import routes from "@/routes";
 import { Dashboard, Auth } from "@/layouts";
+import ProtectedLayout from "@/components/ProtectedLayout";
 
 export default function App() {
   const dash = routes.find((r) => r.layout === "dashboard") ?? { pages: [] };
@@ -9,8 +9,15 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Layout del dashboard */}
-      <Route path="/dashboard/*" element={<Dashboard />}>
+      {/* Layout del dashboard protegido */}
+      <Route
+        path="/dashboard/*"
+        element={
+          <ProtectedLayout>
+            <Dashboard />
+          </ProtectedLayout>
+        }
+      >
         {dash.pages.map(({ path, element }) => (
           <Route key={path} path={path.replace(/^\//, "")} element={element} />
         ))}
@@ -27,16 +34,9 @@ export default function App() {
         <Route index element={<Navigate to="sign-in" replace />} />
       </Route>
 
-      {/* fallback global */}
-      <Route path="*" element={<Navigate to="/dashboard/ofertas" replace />} />
+      {/* fallback global: Pagina principal al iniciar el programa */}
+      <Route path="*" element={<Navigate to="/auth/sign-in" replace />} />
 
-      <Route path="/auth/*" element={<Auth />}>
-        {auth.pages.map(({ path, element }) => (
-          <Route key={path} path={path.replace(/^\//, "")} element={element} />
-        ))}
-        {/* /auth => /auth/sign-in */}
-        <Route index element={<Navigate to="sign-in" replace />} />
-      </Route>
     </Routes>
   );
 }

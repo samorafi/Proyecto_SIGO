@@ -2,19 +2,17 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Typography, Avatar, Button, Card, IconButton } from "@material-tailwind/react";
 import { ArrowLeftOnRectangleIcon, UserCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => {} }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const group = routes.find((r) => r.layout === "dashboard");
 
   const handleLogout = () => {
-    // limpiar “sesión” fake (opcional)
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.clear();
-
-    onClose(); // cierra el drawer en mobile
-    navigate("/auth/sign-in", { replace: true }); // redirige al login
+    logout(); 
+    onClose(); 
+    navigate("/auth/sign-in", { replace: true });
   };
 
   const Content = ({ showClose = false }) => (
