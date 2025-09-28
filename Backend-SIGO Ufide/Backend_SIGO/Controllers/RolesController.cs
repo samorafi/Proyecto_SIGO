@@ -1,12 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Application.Features.Roles.Commands.AssignToUser;
 using SIGO.Application.Features.Roles.Commands.Create;
-using SIGO.Application.Features.Roles.Commands.Update;
 using SIGO.Application.Features.Roles.Commands.Delete;
+using SIGO.Application.Features.Roles.Commands.RemoveFromUser;
+using SIGO.Application.Features.Roles.Commands.Update;
 using SIGO.Application.Features.Roles.Queries.GetAllRoles;
 using SIGO.Application.Features.Roles.Queries.GetRolById;
 using SIGO.Application.Features.Roles.Queries.GetRolesPermisos;
-using SIGO.Application.Features.Roles.Commands.AssignToUser;
+
 
 namespace SIGO.Api.Controllers
 {
@@ -105,6 +107,19 @@ namespace SIGO.Api.Controllers
             if (!success) return NotFound(new { Message = "Usuario o Rol no encontrado." });
 
             return Ok(new { Message = "Rol asignado correctamente al usuario." });
+        }
+
+        // ======================================================
+        // DELETE: api/Roles/remover
+        // Remueve un rol específico de un usuario.
+        // ======================================================
+        [HttpDelete("remover")]
+        public async Task<IActionResult> RemoveRoleFromUser([FromBody] RemoveRoleFromUserCommand command)
+        {
+            var success = await _mediator.Send(command);
+            if (!success) return NotFound(new { Message = "La relación Usuario-Rol no existe." });
+
+            return Ok(new { Message = "Rol removido correctamente del usuario." });
         }
     }
 }
