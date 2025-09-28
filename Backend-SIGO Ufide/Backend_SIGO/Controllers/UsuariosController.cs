@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Usuarios.Commands.Create;
 using SIGO.Application.Features.Usuarios.Queries.GetAll;
-using SIGO.Application.Features.Usuarios.Queries.GetId;
-using SIGO.Application.Features.Usuarios.Dto;
+using SIGO.Application.Features.Usuarios.Commands.Update;
 
 namespace SIGO.Api.Controllers
 {
@@ -32,20 +31,18 @@ namespace SIGO.Api.Controllers
             return Ok(new { Id = userId, Message = "Usuario creado con éxito" });
         }
 
-        // Endpoint: Tipo Post - Funcionalidad: Login de usuario
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUsuarioCommand command)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Correo) || string.IsNullOrWhiteSpace(request.Contrasena))
-                return BadRequest(new { message = "Correo y contraseña son requeridos." });
+            if (id != command.UsuarioId)
+                return BadRequest("El ID de la URL no coincide con el del body.");
 
-            var usuario = await _mediator.Send(new PostUsuarioLoginQuery(request.Correo, request.Contrasena));
+            var result = await _mediator.Send(command);
 
-            if (usuario == null)
-                return Unauthorized(new { message = "Credenciales inválidas." });
+            if (!result)
+                return NotFound(new { Message = "Usuario no encontrado" });
 
-            // Aquí podrías emitir JWT. Por ahora devolvemos el DTO (sin contraseña).
-            return Ok(usuario);
+            return Ok(new { Message = "Usuario actualizado con éxito" });
         }
     }
 }
