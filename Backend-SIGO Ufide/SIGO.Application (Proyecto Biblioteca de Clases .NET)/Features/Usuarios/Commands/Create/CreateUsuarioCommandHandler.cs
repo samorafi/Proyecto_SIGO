@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Domain.Entities;
 
@@ -15,6 +16,16 @@ namespace SIGO.Application.Features.Usuarios.Commands.Create
 
         public async Task<int> Handle(CreateUsuarioCommand request, CancellationToken cancellationToken)
         {
+            // Validamos antes de guardar
+            var exists = await _context.Usuarios
+                .AnyAsync(u => u.Correo.ToLower() == request.Correo.ToLower(), cancellationToken);
+
+            if (exists)
+            {
+                // Retornamos un valor especial o lanzamos un mensaje controlado
+                return -1; // <-- Indicador de que ya existe
+            }
+
             var usuario = new Usuario
             {
                 Nombre = request.Nombre,
@@ -28,5 +39,6 @@ namespace SIGO.Application.Features.Usuarios.Commands.Create
 
             return usuario.UsuarioId;
         }
+
     }
 }

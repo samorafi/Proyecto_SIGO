@@ -29,6 +29,12 @@ namespace SIGO.Api.Controllers
         public async Task<IActionResult> Create([FromBody] CreateUsuarioCommand command)
         {
             var userId = await _mediator.Send(command);
+
+            if (userId == -1)
+            {
+                return Ok(new { Id = userId, Message = "El usuario ya está registrado" });
+            }
+
             return Ok(new { Id = userId, Message = "Usuario creado con éxito" });
         }
 
