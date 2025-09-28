@@ -3,18 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SIGO.Domain.Entities
 {
-    [Table("rol", Schema = "public")]
-    public class Rol
+        public class Rol
     {
-        [Key]
-        [Column("rol_id")]
         public int RolId { get; set; }
-
-        [Column("nombre")]
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
 
         // Relaciones
-        public ICollection<UsuarioRol> UsuarioRoles { get; set; }
-        public ICollection<RolPermiso> RolPermisos { get; set; }
+        public ICollection<UsuarioRol> UsuarioRoles { get; set; } = new List<UsuarioRol>();
+        public ICollection<RolPermiso> RolPermisos { get; set; } = new List<RolPermiso>();
     }
 }

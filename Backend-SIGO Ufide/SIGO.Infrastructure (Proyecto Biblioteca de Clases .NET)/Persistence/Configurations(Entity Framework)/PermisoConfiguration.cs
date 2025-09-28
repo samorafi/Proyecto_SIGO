@@ -8,7 +8,7 @@ namespace SIGO.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Permiso> builder)
         {
-            builder.ToTable("permiso", "public");
+            builder.ToTable("permiso", "universidad");
 
             builder.HasKey(p => p.PermisoId);
 
