@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ac4515f7e2bf02ab5bebc8ef999175932b337a5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1ab01ba17d153e42a56d6663fd44b14596588bcb")]
 [assembly: System.Reflection.AssemblyProductAttribute("SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
