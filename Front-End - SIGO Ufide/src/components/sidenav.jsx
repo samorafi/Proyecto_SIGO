@@ -4,6 +4,7 @@ import { Typography, Avatar, Button, Card, IconButton } from "@material-tailwind
 import { ArrowLeftOnRectangleIcon, UserCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/AuthContext";
 
+
 export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => {} }) {
   const navigate = useNavigate();
   const { logout } = useAuth();

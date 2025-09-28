@@ -11,23 +11,16 @@ import {
 } from "@heroicons/react/24/outline";
 
 const tiles = [
-  {
+    {
+    to: "/dashboard/admin/admUsuarios",
+    title: "Gestión de Usuarios de sistema",
+    desc: "Alta/baja, asignación de roles y estados.",
+    Icon: UsersIcon,
+  },{
     to: "/dashboard/admin/roles",
     title: "Administración de Roles",
     desc: "Crea roles y define permisos por módulo.",
     Icon: ShieldCheckIcon,
-  },
-  {
-    to: "/dashboard/admin/usuarios",
-    title: "Gestión de Usuarios",
-    desc: "Alta/baja, asignación de roles y estados.",
-    Icon: UsersIcon,
-  },
-  {
-    to: "/dashboard/admin/solicitudes",
-    title: "Solicitudes de registro",
-    desc: "Aprueba o rechaza nuevas cuentas.",
-    Icon: InboxArrowDownIcon,
   },
   {
     to: "/dashboard/admin/parametros",
@@ -43,7 +36,7 @@ const tiles = [
   },
   {
     to: "/dashboard/admin/notificaciones",
-    title: "Notificaciones",
+    title: "Parámetros de Notificaciones",
     desc: "Plantillas y reglas de correo/alertas.",
     Icon: BellAlertIcon,
   },
