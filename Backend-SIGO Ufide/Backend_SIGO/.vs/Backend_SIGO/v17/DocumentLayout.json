@@ -3,14 +3,46 @@
   "WorkspaceRootPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\configurations(entity framework)\\usuarioconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\commands\\create\\createusuariocommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\commands\\update\\updateusuarioscommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\queries\\getall\\getusuariosqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\commands\\update\\updateusuariocommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\commands\\create\\createusuariocommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\usuarios\\queries\\getall\\getusuariosquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\abstrations\\iapplicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\sigo.application (proyecto biblioteca de clases .net).csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -20,7 +52,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -28,41 +60,171 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "UsuariosController.cs",
-              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\UsuariosController.cs",
-              "RelativeDocumentMoniker": "Controllers\\UsuariosController.cs",
-              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\UsuariosController.cs",
-              "RelativeToolTip": "Controllers\\UsuariosController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAfAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "CreateUsuarioCommandHandler.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommandHandler.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommandHandler.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommandHandler.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommandHandler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T01:42:36.783Z",
+              "WhenOpened": "2025-09-27T07:42:33.31Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "UpdateUsuariosCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuariosCommandHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuariosCommandHandler.cs",
-              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuariosCommandHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuariosCommandHandler.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAgwBUAAAAdAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "GetUsuariosQueryHandler.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQueryHandler.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQueryHandler.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQueryHandler.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQueryHandler.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAgwBIAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T01:42:15.674Z",
+              "WhenOpened": "2025-09-27T07:56:36.7Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "UpdateUsuarioCommand.cs",
-              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuarioCommand.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuarioCommand.cs",
-              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuarioCommand.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Update\\UpdateUsuarioCommand.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Title": "UsuariosController.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\UsuariosController.cs",
+              "RelativeDocumentMoniker": "Controllers\\UsuariosController.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\UsuariosController.cs",
+              "RelativeToolTip": "Controllers\\UsuariosController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABMAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T01:41:15.281Z",
+              "WhenOpened": "2025-09-27T07:44:46.855Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UsuarioConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\UsuarioConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\UsuarioConfiguration.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\UsuarioConfiguration.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\UsuarioConfiguration.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAIwB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:40:02.072Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-27T07:45:46.823Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CreateUsuarioCommand.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommand.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommand.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommand.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Commands\\Create\\CreateUsuarioCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:42:06.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:51:18.401Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "GetUsuariosQuery.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQuery.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQuery.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQuery.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Queries\\GetAll\\GetUsuariosQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:55:57.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DependencyInjection.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\DependencyInjection.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\DependencyInjection.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\DependencyInjection.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\DependencyInjection.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:52:17.45Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "SIGO.Application (Proyecto Biblioteca de Clases .NET)",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-27T07:49:04.736Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:44:01.529Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstrations\\IApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstrations\\IApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstrations\\IApplicationDbContext.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstrations\\IApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:43:19.88Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Usuario.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Usuario.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Usuario.cs",
+              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-27T07:40:43.541Z",
               "EditorCaption": ""
             }
           ]
