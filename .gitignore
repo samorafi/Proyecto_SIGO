@@ -1,20 +1,19 @@
-/Backend-SIGO Ufide/Backend_SIGO/bin
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/bin
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/Backend_SIGO/obj
-/Backend-SIGO Ufide/SIGO.Domain (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Domain (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)/bin
-/Backend-SIGO Ufide/SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/bin
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Application (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Domain (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)/obj
-/Backend-SIGO Ufide/SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)/obj
+# Dependencies
+**/packages/
+**/node_modules/
+
+# Build results
+**/[Bb]in/
+**/[Oo]bj/
+
+# Visual Studio specific
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider specific
+.idea/
+
+# User-specific files
+*.rsuser
