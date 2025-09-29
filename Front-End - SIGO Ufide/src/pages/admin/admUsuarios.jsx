@@ -95,6 +95,12 @@ export default function AdmUsuarios() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
 
+  // Modal para asignar roles
+  const [openRolesModal, setOpenRolesModal] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [targetUser, setTargetUser] = useState(null);
+
   const fetchUsuarios = async () => {
     try {
       const response = await fetch("/api/Usuarios");
@@ -137,58 +143,127 @@ export default function AdmUsuarios() {
 
   // Abrir modal de edición
   const handleOpenEdit = (user) => {
-  setEditUser({
-    usuarioId: user.usuarioId,
-    nombre: user.nombre,
-    correo: user.correo,
-    contrasena: "*****",       // lo que ve el usuario
-    _realContrasena: user.contrasena, 
-    activo: user.activo,
-  });
-  setOpenEditModal(true);
-};
+    setEditUser({
+      usuarioId: user.usuarioId,
+      nombre: user.nombre,
+      correo: user.correo,
+      contrasena: "*****",       // lo que ve el usuario
+      _realContrasena: user.contrasena,
+      activo: user.activo,
+    });
+    setOpenEditModal(true);
+  };
 
 
   // Guardar cambios de edición
-const handleUpdate = async (e) => {
-  e.preventDefault();
+  const handleUpdate = async (e) => {
+    e.preventDefault();
 
-  if (!editUser) return;
+    if (!editUser) return;
 
-  //Siempre enviamos contraseña
-  const payload = {
-    UsuarioId: editUser.usuarioId,
-    Nombre: editUser.nombre,
-    Correo: editUser.correo,
-    Contrasena: editUser.contrasena === "*****"
-      ? editUser._realContrasena   // usamos la real si no fue modificada
-      : editUser.contrasena,       // usamos la nueva si fue cambiada
-    Activo: editUser.activo,
+    //Siempre enviamos contraseña
+    const payload = {
+      UsuarioId: editUser.usuarioId,
+      Nombre: editUser.nombre,
+      Correo: editUser.correo,
+      Contrasena: editUser.contrasena === "*****"
+        ? editUser._realContrasena   // usamos la real si no fue modificada
+        : editUser.contrasena,       // usamos la nueva si fue cambiada
+      Activo: editUser.activo,
+    };
+
+    try {
+      const response = await fetch(`/api/Usuarios/${editUser.usuarioId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+
+      if (!response.ok) {
+        alert("Error al actualizar: " + (data?.message || "Error desconocido"));
+        return;
+      }
+
+      alert(data?.Message || "Usuario actualizado con éxito");
+      setOpenEditModal(false);
+      setEditUser(null);
+      fetchUsuarios();
+    } catch (err) {
+      alert("Error de conexión: " + err.message);
+    }
   };
 
-  try {
-    const response = await fetch(`/api/Usuarios/${editUser.usuarioId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  const handleOpenRoles = async (user) => {
+    try {
+      // Traer todos los roles disponibles
+      const rolesResp = await fetch("/api/Roles");
+      const rolesData = await rolesResp.json();
+      setRoles(rolesData);
 
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
+      // Traer los roles ya asignados a este usuario
+      const userRolesResp = await fetch(`/api/Roles/usuario/${user.usuarioId}/permisos`);
+      const userRolesData = await userRolesResp.json();
 
-    if (!response.ok) {
-      alert("Error al actualizar: " + (data?.message || "Error desconocido"));
-      return;
+      // userRolesData.roles es un array de nombres de roles
+      const assignedRoleNames = userRolesData.roles;
+
+      // Mapea nombres de roles a IDs
+      const assignedRoleIds = rolesData
+        .filter((r) => assignedRoleNames.includes(r.nombre))
+        .map((r) => r.rolId);
+
+      setSelectedRoles(assignedRoleIds);
+      setTargetUser(user);
+      setOpenRolesModal(true);
+    } catch (err) {
+      alert("Error cargando roles: " + err.message);
     }
+  };
 
-    alert(data?.Message || "Usuario actualizado con éxito");
-    setOpenEditModal(false);
-    setEditUser(null);
-    fetchUsuarios();
-  } catch (err) {
-    alert("Error de conexión: " + err.message);
-  }
-};
+  const handleSaveRoles = async () => {
+    try {
+      // Traer roles actuales del usuario para comparar
+      const currentResp = await fetch(`/api/Roles/usuario/${targetUser.usuarioId}/permisos`);
+      const currentData = await currentResp.json();
+
+      // Mapeamos nombres a IDs
+      const currentRoleIds = roles
+        .filter((r) => currentData.roles.includes(r.nombre))
+        .map((r) => r.rolId);
+
+      // Diferencias
+      const rolesToAdd = selectedRoles.filter((id) => !currentRoleIds.includes(id));
+      const rolesToRemove = currentRoleIds.filter((id) => !selectedRoles.includes(id));
+
+      // Asignar roles nuevos
+      for (const rolId of rolesToAdd) {
+        await fetch("/api/Roles/asignar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuarioId: targetUser.usuarioId, rolId }),
+        });
+      }
+
+      // Remover roles desmarcados
+      for (const rolId of rolesToRemove) {
+        await fetch("/api/Roles/remover", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuarioId: targetUser.usuarioId, rolId }),
+        });
+      }
+
+      alert("Roles del usuario actualizados con éxito");
+      setOpenRolesModal(false);
+      setTargetUser(null);
+      fetchUsuarios();
+    } catch (err) {
+      alert("Error al actualizar roles: " + err.message);
+    }
+  };
 
 
   return (
@@ -206,6 +281,46 @@ const handleUpdate = async (e) => {
           <PlusIcon className="h-5 w-5" /> Registrar nuevo usuario
         </Button>
       </div>
+
+      {/* Modal: Asignar roles */}
+      <Dialog open={openRolesModal} handler={() => setOpenRolesModal(false)}>
+        <DialogHeader className="text-[#2B338C]">
+          Asignar roles a {targetUser?.nombre}
+        </DialogHeader>
+        <DialogBody divider>
+          {roles.map((r) => (
+            <div key={r.rolId} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedRoles.includes(r.rolId)}
+                onChange={() =>
+                  setSelectedRoles((prev) =>
+                    prev.includes(r.rolId)
+                      ? prev.filter((id) => id !== r.rolId)
+                      : [...prev, r.rolId]
+                  )
+                }
+              />
+              <label>{r.nombre}</label>
+            </div>
+          ))}
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            className="bg-[#2B338C] text-white"
+            onClick={() => setOpenRolesModal(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="bg-[#FFDA00] text-[#2B338C]"
+            onClick={handleSaveRoles}
+          >
+            Guardar
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
 
       {/* Modal: Crear usuario */}
       <Dialog open={openModal} handler={handleOpen}>
@@ -286,7 +401,7 @@ const handleUpdate = async (e) => {
                               <Button
                                 size="sm"
                                 className="bg-blue-600 text-white p-2"
-                                onClick={() => handleOpenEdit(u)}
+                                onClick={() => handleOpenRoles(u)}
                               >
                                 <KeyIcon className="h-4 w-4" />
                               </Button>

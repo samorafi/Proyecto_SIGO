@@ -17,7 +17,7 @@ const tiles = [
     desc: "Alta/baja, asignación de roles y estados.",
     Icon: UsersIcon,
   },{
-    to: "/dashboard/admin/roles",
+    to: "/dashboard/admin/admRolesPermisos",
     title: "Administración de Roles",
     desc: "Crea roles y define permisos por módulo.",
     Icon: ShieldCheckIcon,

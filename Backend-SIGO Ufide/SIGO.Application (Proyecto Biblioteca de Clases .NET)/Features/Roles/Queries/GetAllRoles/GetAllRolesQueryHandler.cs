@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
+using SIGO.Application.Features.Permisos.Dto;
 using SIGO.Application.Features.Roles.Dto;
 
 namespace SIGO.Application.Features.Roles.Queries.GetAllRoles
@@ -23,7 +24,13 @@ namespace SIGO.Application.Features.Roles.Queries.GetAllRoles
                 {
                     RolId = r.RolId,
                     Nombre = r.Nombre,
-                    Permisos = r.RolPermisos.Select(rp => rp.Permiso.Clave).ToList()
+                    Permisos = r.RolPermisos.Select(rp => new PermisoDto
+                    {
+                        PermisoId = rp.Permiso.PermisoId,
+                        Nombre = rp.Permiso.Nombre,
+                        Clave = rp.Permiso.Clave,
+                        Ruta = rp.Permiso.Ruta
+                    }).ToList()
                 })
                 .ToListAsync(cancellationToken);
         }

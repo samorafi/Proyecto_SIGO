@@ -14,6 +14,7 @@ import Reportes from "@/pages/reportes";
 import Bitacoras from "@/pages/bitacoras";
 import Admin from "@/pages/admin";
 import AdmUsuarios from "@/pages/admin/admUsuarios";
+import AdmRolesPermisos from "@/pages/admin/admRolesPermisos";
 import Notificaciones from "@/pages/notificaciones";
 import Nomina from "@/pages/nomina";
 import OfertasIndex from "@/pages/ofertas";
@@ -39,6 +40,7 @@ export const routes = [
       { name: "Ofertas Presencial", path: "/ofertas/presencial", element: <OfertasPresencial />, hidden: true },
       { name: "Ofertas Virtual", path: "/ofertas/virtual", element: <OfertasVirtual />, hidden: true },
       { name: "Administrar Usuarios", path: "/admin/admUsuarios", element: <AdmUsuarios />, hidden: true },
+      { name: "Administrar Roles", path: "/admin/admRolesPermisos", element: <AdmRolesPermisos />, hidden: true },
       { name: "Mi perfil", path: "/perfil", element: <Perfil />, hidden: true },
     ],
   },
