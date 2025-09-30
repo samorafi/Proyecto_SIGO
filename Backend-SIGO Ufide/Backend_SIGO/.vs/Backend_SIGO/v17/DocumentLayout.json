@@ -1,16 +1,56 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
+  "WorkspaceRootPath": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
   "Documents": [
     {
-<<<<<<< Updated upstream
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\configurations(entity framework)\\provinciaconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\provincia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\abstractions\\iapplicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\configurations(entity framework)\\personaconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CA5B82E3-74DB-4476-ADDE-D4B59DA31DEF}|..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.infrastructure (proyecto biblioteca de clases .net)\\persistence\\configurations(entity framework)\\rolpermisoconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\create\\createpersonacommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\provinciacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\provinciacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\permisoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\permisoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\permisos\\queries\\getallpermisosqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\queries\\getallroles\\getallrolesqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\queries\\getrolbyid\\getrolbyidqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\permisos\\queries\\getallpermisosqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\dto\\roldto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
@@ -19,15 +59,7 @@
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\permisos\\queries\\getallpermisosquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\permisoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\permisoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\permisos\\dto\\permisodto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuariosCommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
@@ -37,65 +69,34 @@
       "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\usuarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuarioCommandHandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-=======
-      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\permiso.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\update\\updatepersonacommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\assigntouser\\assignroletousercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
->>>>>>> Stashed changes
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\assigntouser\\assignroletousercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\delete\\deletepersonacommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\queries\\getbyid\\getpersonabyidqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-<<<<<<< Updated upstream
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\removefromuser\\removerolefromusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-=======
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\queries\\getbyid\\getpersonabyidquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
->>>>>>> Stashed changes
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\queries\\getall\\getallpersonasqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\queries\\getrolbyid\\getrolbyidquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-<<<<<<< Updated upstream
       "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\queries\\getallroles\\getallrolesquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-=======
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\queries\\getall\\getallpersonasquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\create\\createpersonacommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
->>>>>>> Stashed changes
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\delete\\deleterolcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\delete\\deletepersonacommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\delete\\deleterolcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\commands\\update\\updatepersonacommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\update\\updaterolcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\persona\\dto\\personadto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\provincia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\canton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\program files\\xampp\\htdocs\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\roles\\commands\\update\\updaterolcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -105,12 +106,128 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-<<<<<<< Updated upstream
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Provincia.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
+              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:47:57.325Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ProvinciaConfiguration.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\ProvinciaConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\ProvinciaConfiguration.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\ProvinciaConfiguration.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\ProvinciaConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:32:51.144Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAqwBcAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:16:53.86Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstractions\\IApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstractions\\IApplicationDbContext.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstractions\\IApplicationDbContext.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Abstractions\\IApplicationDbContext.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA5wA4AAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:16:37.298Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PersonaConfiguration.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\PersonaConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\PersonaConfiguration.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\PersonaConfiguration.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\PersonaConfiguration.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:16:05.53Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "RolPermisoConfiguration.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\RolPermisoConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\RolPermisoConfiguration.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\RolPermisoConfiguration.cs",
+              "RelativeToolTip": "..\\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\\Persistence\\Configurations(Entity Framework)\\RolPermisoConfiguration.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:16:03.818Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ProvinciaController.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\ProvinciaController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProvinciaController.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\ProvinciaController.cs",
+              "RelativeToolTip": "Controllers\\ProvinciaController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:07:40.926Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PersonasController.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PersonasController.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
+              "RelativeToolTip": "Controllers\\PersonasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:07:11.417Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "CreatePersonaCommandValidator.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandValidator.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandValidator.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandValidator.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T23:05:32.163Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "GetAllPermisosQueryHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQueryHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQueryHandler.cs",
@@ -123,7 +240,79 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-28T20:25:08.727Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "GetRolByIdQueryHandler.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAA7wBoAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-28T06:47:32.764Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "GetAllPermisosQuery.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T01:03:30.41Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "RolesController.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\RolesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\RolesController.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\RolesController.cs",
+              "RelativeToolTip": "Controllers\\RolesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-28T06:48:37.408Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "UpdateUsuariosCommand.cs",
+              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuariosCommand.cs",
+              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuariosCommand.cs",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-28T21:36:54.349Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "PermisosController.cs",
+              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PermisosController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PermisosController.cs",
+              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PermisosController.cs",
+              "RelativeToolTip": "Controllers\\PermisosController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T01:05:26.092Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
               "Title": "UpdateUsuarioCommandHandler.cs",
               "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuarioCommandHandler.cs",
               "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuarioCommandHandler.cs",
@@ -133,55 +322,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "UpdateUsuariosCommand.cs",
-              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuariosCommand.cs",
-              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Usuarios\\Update\\UpdateUsuariosCommand.cs",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T21:36:54.349Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-09-28T20:25:08.727Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "GetRolByIdQueryHandler.cs",
-              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
-              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQueryHandler.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAA7wBoAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T06:47:32.764Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GetAllPermisosQuery.cs",
-              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
-              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Queries\\GetAllPermisosQuery.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T01:03:30.41Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 13,
               "Title": "GetAllRolesQueryHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQueryHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQueryHandler.cs",
@@ -194,20 +335,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "PermisosController.cs",
-              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PermisosController.cs",
-              "RelativeDocumentMoniker": "Controllers\\PermisosController.cs",
-              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PermisosController.cs",
-              "RelativeToolTip": "Controllers\\PermisosController.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAQwBwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T01:05:26.092Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 15,
               "Title": "RolDto.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Dto\\RolDto.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Dto\\RolDto.cs",
@@ -215,12 +343,11 @@
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Dto\\RolDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T01:36:37.859Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-29T01:36:37.859Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 19,
               "Title": "UsuariosController.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\UsuariosController.cs",
               "RelativeDocumentMoniker": "Controllers\\UsuariosController.cs",
@@ -232,7 +359,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 17,
               "Title": "PermisoDto.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Dto\\PermisoDto.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Dto\\PermisoDto.cs",
@@ -240,12 +367,11 @@
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Permisos\\Dto\\PermisoDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T01:02:02.956Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-29T01:02:02.956Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 21,
               "Title": "AssignRoleToUserCommandHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\AssignToUser\\AssignRoleToUserCommandHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\AssignToUser\\AssignRoleToUserCommandHandler.cs",
@@ -257,7 +383,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 22,
               "Title": "AssignRoleToUserCommand.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\AssignToUser\\AssignRoleToUserCommand.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\AssignToUser\\AssignRoleToUserCommand.cs",
@@ -269,19 +395,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "RolesController.cs",
-              "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\RolesController.cs",
-              "RelativeDocumentMoniker": "Controllers\\RolesController.cs",
-              "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\RolesController.cs",
-              "RelativeToolTip": "Controllers\\RolesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-28T06:48:37.408Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 23,
               "Title": "RemoveRoleFromUserCommandHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\RemoveFromUser\\RemoveRoleFromUserCommandHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\RemoveFromUser\\RemoveRoleFromUserCommandHandler.cs",
@@ -293,247 +407,75 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 24,
               "Title": "GetRolByIdQuery.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQuery.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQuery.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQuery.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetRolByID\\GetRolByIdQuery.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-=======
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Permiso.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Permiso.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Permiso.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Permiso.cs",
-              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Permiso.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T21:58:13.38Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-28T06:47:22.621Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "GetAllPersonasQueryHandler.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQueryHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQueryHandler.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQueryHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQueryHandler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAsAAAAAAAAAA==",
->>>>>>> Stashed changes
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:03:08.153Z"
-            },
-            {
-              "$type": "Document",
-<<<<<<< Updated upstream
-              "DocumentIndex": 16,
+              "DocumentIndex": 25,
               "Title": "GetAllRolesQuery.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQuery.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQuery.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQuery.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Queries\\GetAllRoles\\GetAllRolesQuery.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-=======
-              "DocumentIndex": 5,
-              "Title": "GetPersonaByIdQuery.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQuery.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQuery.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQuery.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQuery.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:09:47.616Z"
+              "WhenOpened": "2025-09-28T06:46:49.255Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GetPersonaByIdQueryHandler.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQueryHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQueryHandler.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQueryHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetById\\GetPersonaByIdQueryHandler.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:10:20.291Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "UpdatePersonaCommandHandler.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommandHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommandHandler.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommandHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommandHandler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:31:26.349Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "CreatePersonaCommandHandler.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandHandler.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Create\\CreatePersonaCommandHandler.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABIAAAArAAAAAAAAAA==",
->>>>>>> Stashed changes
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T21:10:01.513Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PersonasController.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
-              "RelativeDocumentMoniker": "Controllers\\PersonasController.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
-              "RelativeToolTip": "Controllers\\PersonasController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAABGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T21:00:50.14Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DeletePersonaCommandHandler.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommandHandler.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommandHandler.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommandHandler.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommandHandler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:59:36.447Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "GetAllPersonasQuery.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQuery.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQuery.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQuery.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Queries\\GetAll\\GetAllPersonasQuery.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T19:47:12.929Z"
-            },
-            {
-              "$type": "Document",
-<<<<<<< Updated upstream
-              "DocumentIndex": 17,
+              "DocumentIndex": 26,
               "Title": "DeleteRolCommandHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommandHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommandHandler.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommandHandler.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommandHandler.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAA==",
-=======
-              "DocumentIndex": 9,
-              "Title": "DeletePersonaCommand.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommand.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommand.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommand.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Delete\\DeletePersonaCommand.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
->>>>>>> Stashed changes
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:58:58.963Z"
+              "WhenOpened": "2025-09-28T06:46:31.131Z"
             },
             {
               "$type": "Document",
-<<<<<<< Updated upstream
-              "DocumentIndex": 18,
+              "DocumentIndex": 27,
               "Title": "DeleteRolCommand.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommand.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommand.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommand.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Delete\\DeleteRolCommand.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-=======
-              "DocumentIndex": 10,
-              "Title": "UpdatePersonaCommand.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommand.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommand.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommand.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\Commands\\Update\\UpdatePersonaCommand.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
->>>>>>> Stashed changes
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T20:21:27.046Z"
+              "WhenOpened": "2025-09-28T06:46:22.114Z"
             },
             {
               "$type": "Document",
-<<<<<<< Updated upstream
-              "DocumentIndex": 19,
+              "DocumentIndex": 28,
               "Title": "UpdateRolCommandHandler.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommandHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommandHandler.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommandHandler.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommandHandler.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
-=======
-              "DocumentIndex": 11,
-              "Title": "PersonaDto.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\DTO\\PersonaDto.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\DTO\\PersonaDto.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\DTO\\PersonaDto.cs",
-              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Persona\\DTO\\PersonaDto.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAACoAAAAOAAAAAAAAAA==",
->>>>>>> Stashed changes
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T19:48:08.737Z"
+              "WhenOpened": "2025-09-28T06:45:50.904Z"
             },
             {
               "$type": "Document",
-<<<<<<< Updated upstream
-              "DocumentIndex": 20,
+              "DocumentIndex": 29,
               "Title": "UpdateRolCommand.cs",
               "DocumentMoniker": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommand.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommand.cs",
               "ToolTip": "D:\\Program Files\\XAMPP\\htdocs\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommand.cs",
               "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Roles\\Commands\\Update\\UpdateRolCommand.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-=======
-              "DocumentIndex": 12,
-              "Title": "Persona.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
-              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
-              "ViewState": "AgIAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
->>>>>>> Stashed changes
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T19:49:34.715Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "Provincia.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
-              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Provincia.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAzAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T19:48:30.139Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "Canton.cs",
-              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Canton.cs",
-              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Canton.cs",
-              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Canton.cs",
-              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Canton.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T19:49:01.382Z"
+              "WhenOpened": "2025-09-28T06:45:41.871Z"
             }
           ]
         }

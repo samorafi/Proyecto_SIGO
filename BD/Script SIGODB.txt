@@ -267,3 +267,45 @@ DROP TABLE IF EXISTS persona_atestado;
 
 ALTER TABLE persona
 ADD COLUMN atestado_id INT REFERENCES atestado(atestado_id);
+
+
+----------------------------------------------
+--Insertar datos en las tablas genero--------
+---------------------------------------------
+-- Poblar la tabla de géneros
+INSERT INTO universidad.genero (nombre) VALUES ('Masculino'), ('Femenino'), ('Otro');
+
+
+-- Poblar la tabla de provincias
+INSERT INTO universidad.provincia (nombre) VALUES ('San José'), ('Alajuela'), ('Cartago'), ('Heredia'), ('Guanacaste'), ('Puntarenas'), ('Limón');
+
+-- Poblar la tabla de cantones (ejemplos)
+INSERT INTO universidad.canton (provincia_id, nombre) VALUES
+(1, 'San José'), (1, 'Desamparados'), (1, 'Pérez Zeledón'),
+(2, 'Alajuela'), (2, 'San Carlos'), (2, 'Grecia'),
+(3, 'Cartago'), (3, 'Paraíso'), (3, 'La Unión'),
+(4, 'Heredia'), (4, 'Barva'), (4, 'Santo Domingo'),
+(5, 'Liberia'), (5, 'Nicoya'), (5, 'Santa Cruz'),
+(6, 'Puntarenas'), (6, 'Esparza'), (6, 'Buenos Aires'),
+(7, 'Limón'), (7, 'Pococí'), (7, 'Siquirres');
+
+-- Poblar la tabla de categorías de docente
+INSERT INTO universidad.categoria_docente (nombre) VALUES ('Bachiller'), ('Licenciado'), ('Máster'), ('Doctor');
+
+-- Poblar la tabla de tipos de contrato
+INSERT INTO universidad.tipo_contrato (nombre) VALUES ('Tiempo Completo'), ('Medio Tiempo'), ('Servicios Profesionales');
+
+
+-- Poblar la tabla de estados de persona
+INSERT INTO universidad.estado_persona (nombre) VALUES ('Activo'), ('Inactivo'), ('Pendiente');
+
+-- Poblar la tabla de motivos de desvinculación
+INSERT INTO universidad.motivo_desvinculacion (nombre) VALUES ('Renuncia'), ('Pensión'), ('Finalización de Contrato'), ('Despido');
+
+-- Poblar la tabla de periodos (ejemplos)
+INSERT INTO universidad.periodo (anio, numero) VALUES (2025, 1), (2025, 2), (2025, 3);
+
+SELECT * FROM universidad.genero;
+SELECT * FROM universidad.provincia;
+SELECT * FROM universidad.persona;
+

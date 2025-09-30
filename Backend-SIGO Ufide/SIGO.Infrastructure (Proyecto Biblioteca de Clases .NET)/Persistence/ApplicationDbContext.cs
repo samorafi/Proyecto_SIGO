@@ -16,6 +16,22 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<RolPermiso> RolPermisos { get; set; }
 
 
+        /// <summary>
+        /// /////////////////////////////
+        /// 
+        /// 
+        /// </summary>
+        public DbSet<Genero> Generos { get; set; }
+        public DbSet<Persona> Personas { get; set; }
+        public DbSet<Provincia> Provincias { get; set; }
+        public DbSet<Canton> Cantones { get; set; }
+        public DbSet<CategoriaDocente> CategoriasDocentes { get; set; }
+        public DbSet<EstadoPersona> EstadosPersonas { get; set; }
+        public DbSet<TipoContrato> TiposContratos { get; set; }
+        public DbSet<MotivoDesvinculacion> MotivosDesvinculacion { get; set; }
+        public DbSet<Periodo> Periodos { get; set; }
+
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
