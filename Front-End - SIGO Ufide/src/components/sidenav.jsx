@@ -5,9 +5,17 @@ import { ArrowLeftOnRectangleIcon, UserCircleIcon, XMarkIcon } from "@heroicons/
 import { useAuth } from "@/context/AuthContext";
 
 
+
 export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => {} }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+
+  // Traer el hook de autenticación
+  const { user, logout, loading } = useAuth();
+
+  // Mostrar un indicador de carga mientras se verifica el estado de autenticación
+  if (loading) 
+    return <div className="flex items-center justify-center h-full">Cargando...</div>;
+
   const group = routes.find((r) => r.layout === "dashboard");
 
   const handleLogout = () => {
@@ -74,15 +82,22 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
 
       {/* Usuario (abajo) */}
       <div className="p-4">
+        <p className="text-sm font-semibold truncate">Bienvenido</p>
         <div className="flex items-center gap-3">
-          <Avatar src="/img/Profile-Holder.png" alt="Usuario Demo" className="ring-2 ring-white/40" />
+        {/*<Avatar src="/img/Profile-Holder.png" alt="Usuario Demo" className="ring-2 ring-white/40" /> */}
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">Usuario Demo</p>
-            <p className="text-xs text-white/80 truncate">usuario@ufide.ac.cr</p>
+            <p className="text-sm font-semibold truncate">
+               {user ? user.nombre : 'Invitado'}
+            </p>
+            <p className="text-xs text-white/80 truncate">
+               {user ? user.correo : 'invitado@ufide.ac.cr'}
+            </p>
           </div>
         </div>
-
+        
+        
         <div className="mt-3 grid grid-cols-2 gap-2">
+          {/* Perfil 
           <Link to="/dashboard/perfil" className="col-span-1">
             <Button
               variant="outlined"
@@ -94,8 +109,11 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
               <span>Mi perfil</span>
             </Button>
           </Link>
-
-          <div className="col-span-1" title="Cerrar sesión">
+          */}
+        </div>
+        
+        
+         <div className="col-span-1" title="Cerrar sesión">
             <Button
               size="sm"
               onClick={handleLogout}
@@ -105,7 +123,6 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
               <span>Cerrar sesión</span>
             </Button>
           </div>
-        </div>
       </div>
     </Card>
   );

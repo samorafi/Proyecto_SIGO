@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import {
     Card, Input, Button, Typography,
     Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip,
-    Checkbox,
+    Checkbox, Select, Option
 } from "@material-tailwind/react";
 import {
     PlusIcon, PencilSquareIcon, ShieldCheckIcon,
     ChevronLeftIcon, ChevronRightIcon, TrashIcon
 } from "@heroicons/react/24/outline";
+
 
 export default function AdmRolesPermisos() {
     //***************************************************************************
@@ -68,10 +69,14 @@ export default function AdmRolesPermisos() {
     // PAGINACIÓN
     //***************************************************************************
     const [page, setPage] = useState(1);
-    const rowsPerPage = 5;
-    const total = filteredRoles.length;
-    const totalPages = Math.ceil(total / rowsPerPage);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const total = filteredRoles.length;;
     const pageData = filteredRoles.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [totalPages, page, rowsPerPage, total]);
+
 
     //***************************************************************************
     // CREAR ROL
@@ -232,6 +237,64 @@ export default function AdmRolesPermisos() {
 
             <div className="my-6 border-b border-blue-gray-50" />
 
+            {/* Filtros */}
+            <Card className="p-3">
+
+                {/* Contenedor Principal de Controles */}
+                <div className="grid grid-cols-1 md:flex items-end gap-4">
+
+                    {/* 1. Barra de búsqueda */}
+                    <div className="md:flex-1" id="search-bar">
+                        <Input
+                            label="Buscar por nombre de rol"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+
+                     {/* 2. Filtro por activo o inactivo */}
+                    <div className="min-w-[140px]">
+                        <Select
+                            label="Estado"
+                            value={String(rowsPerPage)}
+                            onChange={(v) => setRowsPerPage(Number(v))}
+                        >
+                            <Option value="1">Activo</Option>
+                            <Option value="0">Inactivo</Option>
+                        </Select>
+                    </div>
+
+                    {/* 2. Filas por página (Ancho fijo) */}
+                    <div className="min-w-[140px]">
+                        <Select
+                            label="Filas por página"
+                            value={String(rowsPerPage)}
+                            onChange={(v) => setRowsPerPage(Number(v))}
+                        >
+                            <Option value="10">10</Option>
+                            <Option value="20">20</Option>
+                            <Option value="50">50</Option>
+                        </Select>
+                    </div>
+
+                    {/* 3. Botón de limpiar filtros (Ancho fijo) */}
+                    <div className="min-w-[140px]">
+                        <Button
+                            variant="outlined"
+                            className="w-full border-[#2B338C] text-[#2B338C]"
+                            onClick={() => {
+                                setSearch("");
+                                setRowsPerPage(10);
+                            }}
+                        >
+                            Limpiar filtros
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+
+            <div className="my-6 border-b border-blue-gray-50" />
+
             {/* Tabla */}
             {loading && <p>Cargando roles...</p>}
             {error && <p className="text-red-600">Error: {error}</p>}
@@ -241,14 +304,18 @@ export default function AdmRolesPermisos() {
                         <table className="min-w-[600px] w-full text-left">
                             <thead>
                                 <tr className="bg-blue-gray-50 text-blue-gray-700">
+                                    <th className="p-3 text-sm font-semibold">Id</th>
                                     <th className="p-3 text-sm font-semibold">Rol</th>
+                                    <th className="p-3 text-sm font-semibold">Estado</th>
                                     <th className="p-3 text-sm font-semibold">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {pageData.map((r) => (
                                     <tr key={r.rolId} className="border-b">
+                                        <td className="p-3">{r.rolId}</td>
                                         <td className="p-3">{r.nombre}</td>
+                                        <td className="p-3">PENDIENTE</td>
                                         <td className="p-3 flex gap-2">
                                             <Tooltip content="Editar">
                                                 <Button
@@ -299,6 +366,9 @@ export default function AdmRolesPermisos() {
                             >
                                 <ChevronLeftIcon className="h-4 w-4" />
                             </Button>
+                            <span className="px-2 text-sm">
+                                Página <b>{page}</b> de <b>{totalPages}</b>
+                            </span>
                             <Button
                                 variant="outlined"
                                 size="sm"
@@ -316,7 +386,7 @@ export default function AdmRolesPermisos() {
             <Dialog open={openEditModal} handler={() => setOpenEditModal(false)}>
                 <DialogHeader className="text-[#2B338C]">Editar Rol</DialogHeader>
                 <DialogBody divider>
-                    {editRol && (
+                    {editRol ? (
                         <form className="flex flex-col gap-4" onSubmit={handleUpdateRol}>
                             <Input
                                 label="Nombre del Rol"
@@ -324,6 +394,8 @@ export default function AdmRolesPermisos() {
                                 onChange={(e) => setEditRol({ ...editRol, nombre: e.target.value })}
                             />
                         </form>
+                    ) : (
+                        <Typography>Cargando datos del rol...</Typography>
                     )}
                 </DialogBody>
                 <DialogFooter>
@@ -340,22 +412,27 @@ export default function AdmRolesPermisos() {
             <Dialog open={openPermisosModal} handler={() => setOpenPermisosModal(false)}>
                 <DialogHeader className="text-[#2B338C]">Asignar permisos</DialogHeader>
                 <DialogBody divider>
-                    {permisos.map((p) => (
-                        <Checkbox
-                            key={p.permisoId}
-                            label={p.nombre}
-                            checked={selectedPermisos.includes(p.permisoId)}
-                            onChange={() =>
-                                setSelectedPermisos((prev) =>
-                                    prev.includes(p.permisoId)
-                                        ? prev.filter((id) => id !== p.permisoId)
-                                        : [...prev, p.permisoId]
-                                )
-                            }
-                        />
-                    ))}
+                    {permisos.length > 0 ? (
+                        permisos.map((p) => (
+                            <Checkbox
+                                key={p.permisoId}
+                                label={p.nombre}
+                                checked={selectedPermisos.includes(p.permisoId)}
+                                onChange={() =>
+                                    setSelectedPermisos((prev) =>
+                                        prev.includes(p.permisoId)
+                                            ? prev.filter((id) => id !== p.permisoId)
+                                            : [...prev, p.permisoId]
+                                    )
+                                }
+                            />
+                        ))
+                    ) : (
+                        <Typography>Cargando permisos...</Typography>
+                    )}
                 </DialogBody>
                 <DialogFooter>
+
                     <Button
                         className="bg-[#2B338C] text-white"
                         onClick={() => setOpenPermisosModal(false)}

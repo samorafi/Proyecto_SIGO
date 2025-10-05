@@ -24,7 +24,7 @@ namespace SIGO.Infrastructure.Persistence.Configurations
                 .HasColumnName("correo")
                 .IsRequired();
 
-            builder.Property(u => u.Contrasena)
+            builder.Property(u => u.PasswordHash)
                 .HasColumnName("contrasena")
                 .IsRequired();
 

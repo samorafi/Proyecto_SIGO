@@ -6,6 +6,7 @@ import {
 import {
   PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon, KeyIcon
 } from "@heroicons/react/24/outline";
+import { UserIcon } from "@heroicons/react/24/solid";
 
 export default function AdmUsuarios() {
   //******************************************************************************* */
@@ -147,8 +148,6 @@ export default function AdmUsuarios() {
       usuarioId: user.usuarioId,
       nombre: user.nombre,
       correo: user.correo,
-      contrasena: "*****",       // lo que ve el usuario
-      _realContrasena: user.contrasena,
       activo: user.activo,
     });
     setOpenEditModal(true);
@@ -166,9 +165,6 @@ export default function AdmUsuarios() {
       UsuarioId: editUser.usuarioId,
       Nombre: editUser.nombre,
       Correo: editUser.correo,
-      Contrasena: editUser.contrasena === "*****"
-        ? editUser._realContrasena   // usamos la real si no fue modificada
-        : editUser.contrasena,       // usamos la nueva si fue cambiada
       Activo: editUser.activo,
     };
 
@@ -177,6 +173,7 @@ export default function AdmUsuarios() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       const text = await response.text();
@@ -265,6 +262,65 @@ export default function AdmUsuarios() {
     }
   };
 
+  // ------------------------------------------------------------------------------ */
+  // EndPoint 3:
+  // ------------------------------------------------------------------------------ */
+
+  // Modal para cambio de contraseña
+  const [openPasswordModal, setOpenPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    usuarioId: null,
+    contrasena: "",
+    confirmar: ""
+  });
+
+  const handleOpenPassword = (user) => {
+    setPasswordData({ usuarioId: user.usuarioId, contrasena: "", confirmar: "" });
+    setOpenPasswordModal(true);
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+
+    if (!passwordData.contrasena.trim() || !passwordData.confirmar.trim()) {
+      alert("Todos los campos son obligatorios");
+      return;
+    }
+
+    if (passwordData.contrasena !== passwordData.confirmar) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+
+    if (passwordData.contrasena.length < 8) {
+      alert("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/Autenticacion/updatePassword", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuarioId: passwordData.usuarioId,
+          contrasena: passwordData.contrasena,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Error al actualizar la contraseña");
+        return;
+      }
+
+      alert(data.message || "Contraseña actualizada correctamente");
+      setOpenPasswordModal(false);
+      setPasswordData({ usuarioId: null, contrasena: "", confirmar: "" });
+    } catch (err) {
+      alert("Error de conexión: " + err.message);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -403,6 +459,15 @@ export default function AdmUsuarios() {
                                 className="bg-blue-600 text-white p-2"
                                 onClick={() => handleOpenRoles(u)}
                               >
+                                <UserIcon className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip content="Cambiar Contraseña">
+                              <Button
+                                size="sm"
+                                className="bg-orange-600 text-white p-2"
+                                onClick={() => handleOpenPassword(u)}
+                              >
                                 <KeyIcon className="h-4 w-4" />
                               </Button>
                             </Tooltip>
@@ -471,13 +536,6 @@ export default function AdmUsuarios() {
                 onChange={(e) => setEditUser({ ...editUser, correo: e.target.value })}
                 required
               />
-              <Input
-                label="Contraseña"
-                type="password"
-                name="contrasena"
-                value={editUser.contrasena}
-                onChange={(e) => setEditUser({ ...editUser, contrasena: e.target.value })}
-              />
               <div>
                 <label className="block text-sm font-medium text-blue-gray-700 mb-1">Estado</label>
                 <select
@@ -504,6 +562,48 @@ export default function AdmUsuarios() {
           </Button>
         </DialogFooter>
       </Dialog>
+
+      {/* Modal: Cambiar Contraseña */}
+      <Dialog open={openPasswordModal} handler={() => setOpenPasswordModal(false)}>
+        <DialogHeader className="text-[#2B338C]">Cambiar Contraseña</DialogHeader>
+
+        <DialogBody divider>
+          <form className="flex flex-col gap-4" onSubmit={handleUpdatePassword}>
+            <Input
+              label="Nueva Contraseña"
+              type="password"
+              name="contrasena"
+              value={passwordData.contrasena}
+              onChange={(e) => setPasswordData({ ...passwordData, contrasena: e.target.value })}
+              required
+            />
+            <Input
+              label="Confirmar Contraseña"
+              type="password"
+              name="confirmar"
+              value={passwordData.confirmar}
+              onChange={(e) => setPasswordData({ ...passwordData, confirmar: e.target.value })}
+              required
+            />
+          </form>
+        </DialogBody>
+
+        <DialogFooter className="gap-3">
+          <Button
+            className="bg-[#2B338C] text-white"
+            onClick={() => setOpenPasswordModal(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="bg-[#FFDA00] text-[#2B338C]"
+            onClick={handleUpdatePassword}
+          >
+            Guardar
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
     </div>
   );
 }

@@ -14,29 +14,32 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/Usuarios/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, contrasena }),
-      });
+        const res = await fetch("/api/Autenticacion/login", { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ correo, contrasena }),
+            credentials: 'include', 
+        });
 
-      if (!res.ok) throw new Error("Usuario o contraseña incorrecta");
+        if (!res.ok) {
+            // El backend retorna 401 Unauthorized si falla (Credenciales inválidas)
+            const errorData = await res.json();
+            throw new Error(errorData.message || "Credenciales inválidas");
+        }
 
-      const data = await res.json();
+        // Ya NO guardamos la data. Solo llamamos a login() para que el AuthContext
+        // llame a /api/Auth/perfil y obtenga la data de los Claims del cookie.
+        await login(); 
 
-      // Guardar usuario en AuthContext y localStorage
-      login({ id: data.usuarioId, nombre: data.nombre, correo: data.correo });
-
-      // Navegar al dashboard
-      navigate("/dashboard/ofertas", { replace: true });
+        navigate("/dashboard/ofertas", { replace: true });
 
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+        console.error(error);
+        alert(error.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   return (
     <section className="min-h-screen grid lg:grid-cols-5">
