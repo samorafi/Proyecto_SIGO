@@ -315,15 +315,15 @@ SELECT * FROM universidad.persona;
 
 -- 1. Contador de intentos fallidos (CRÍTICO: Para contar hasta 3)
 
-ALTER TABLE "USUARIO"
+ALTER TABLE "usuario"
 ADD COLUMN "AccessFailedCount" INTEGER NOT NULL DEFAULT 0;
 
-- - 2. Fecha de fin de bloqueo (CRÍTICO: Para saber cuándo desbloquear)
-ALTER TABLE "USUARIO"
+-- 2. Fecha de fin de bloqueo (CRÍTICO: Para saber cuándo desbloquear)
+ALTER TABLE "usuario"
 ADD COLUMN "LockoutEnd" TIMESTAMPTZ NULL;
 
-- - 3. Habilitación de bloqueo (OPCIONAL: Para que el administrador lo gestione)
-ALTER TABLE "USUARIO"
+-- 3. Habilitación de bloqueo (OPCIONAL: Para que el administrador lo gestione)
+ALTER TABLE "usuario"
 ADD COLUMN "LockoutEnabled" BOOLEAN NOT NULL DEFAULT TRUE;
 
 
