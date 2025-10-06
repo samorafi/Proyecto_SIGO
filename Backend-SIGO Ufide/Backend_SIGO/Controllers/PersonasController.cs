@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Application.Features.Persona.Commands.Activate;
+using SIGO.Application.Features.Persona.Commands.Deactivate;
 using SIGO.Application.Features.Persona.Commands.Delete;
 using SIGO.Application.Features.Persona.Commands.Update;
 using SIGO.Application.Features.Persona.Queries.GetAll;
@@ -70,6 +72,28 @@ namespace SIGO.Api.Controllers
             var result = await _mediator.Send(new DeletePersonaCommand { Id = id });
             // Si el resultado es true, la desactivación fue exitosa (204 No Content).
             // Si es false, no se encontró la persona (404 Not Found).
+            return result ? NoContent() : NotFound();
+        }
+
+        // PUT: api/Personas/5/inactivar
+        [HttpPut("{id}/inactivar")]
+        public async Task<IActionResult> Inactivar(int id, [FromBody] DeactivatePersonaCommand command)
+        {
+            // Asegurarnos de que el ID de la ruta y el del comando coinciden
+            command.Id = id;
+
+            var result = await _mediator.Send(command);
+
+            return result ? NoContent() : NotFound();
+        }
+
+        // --- NUEVO ENDPOINT PARA ACTIVAR ---
+        // PUT: api/Personas/5/activate
+        [HttpPut("{id}/activate")]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var command = new ActivatePersonaCommand { Id = id };
+            var result = await _mediator.Send(command);
             return result ? NoContent() : NotFound();
         }
     }
