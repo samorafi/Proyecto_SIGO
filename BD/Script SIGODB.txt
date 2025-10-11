@@ -327,3 +327,88 @@ ALTER TABLE "usuario"
 ADD COLUMN "LockoutEnabled" BOOLEAN NOT NULL DEFAULT TRUE;
 
 
+-- =============================
+-- CAMBIOS E INSERTS PARA PROBAR OFERTAS
+-- =============================
+--Importante aplicar estos ALTER
+ALTER TABLE universidad.curso ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE universidad.horario DROP CONSTRAINT IF EXISTS horario_dia_key;
+ALTER TABLE universidad.horario DROP CONSTRAINT IF EXISTS horario_rango_key;
+ALTER TABLE universidad.oferta DROP CONSTRAINT IF EXISTS oferta_curso_id_sede_id_modalidad_id_periodo_id_key;
+ALTER TABLE universidad.oferta ADD CONSTRAINT ux_oferta_curso UNIQUE (oferta_id);
+ALTER TABLE universidad.carrera ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
+  
+-- MODALIDAD
+INSERT INTO universidad.modalidad (modalidad_id, nombre) VALUES
+  (1,'Presencial'),
+  (2,'Virtual')
+ON CONFLICT DO NOTHING;
+
+-- ACCIÓN DE OFERTA (workflow)
+INSERT INTO universidad.accion_oferta (accion_id, nombre) VALUES
+  (1,'Enviada'),
+  (2,'Pendiente'),
+  (3,'Aceptada'),
+  (4,'Rechazada'),
+  (5,'Cancelada')
+ON CONFLICT DO NOTHING;
+
+-- SEDES
+INSERT INTO universidad.sede (sede_id, nombre) VALUES
+  (1,'Sede Heredia'),
+  (2,'Sede San Pedro'),
+  (3,'Campus Virtual')
+ON CONFLICT DO NOTHING;
+
+-- HORARIOS
+INSERT INTO universidad.horario (dia, rango) VALUES
+  ('Lunes','09:00-12:00'),
+  ('Lunes','14:00-17:00'),
+  ('Lunes','18:00-21:00'),
+  ('Martes','09:00-12:00'),
+  ('Martes','14:00-17:00'),
+  ('Martes','18:00-21:00'),
+  ('Miercoles','09:00-12:00'),
+  ('Miercoles','14:00-17:00'),
+  ('Miercoles','18:00-21:00'),
+  ('Jueves','09:00-12:00'),
+  ('Jueves','14:00-17:00'),
+  ('Jueves','18:00-21:00'),
+  ('Viernes','09:00-12:00'),
+  ('Viernes','14:00-17:00'),
+  ('Viernes','18:00-21:00'),
+  ('Sabado','8:00-11:00')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO universidad.grado (grado_id, nombre) VALUES
+  (1,'Diplomado'),
+  (2,'Bachillerato'),
+  (3,'Licenciatura'),
+  (4,'Maestría')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO universidad.carrera (carrera_id, nombre) VALUES
+  (1,'Ingeniería en Sistemas de Computación'),
+  (2,'Administración de Empresas'),
+  (3,'Ingeniería Electrónica')
+ON CONFLICT DO NOTHING;
+
+-- PERIODOS
+INSERT INTO universidad.periodo (periodo_id, anio, numero) VALUES
+  (4, 2026, 1),
+  (5, 2026, 2),
+  (6, 2026, 3)
+ON CONFLICT DO NOTHING;
+
+-- CURSOS
+INSERT INTO universidad.curso (curso_id, codigo, nombre, carrera_id, grado_id, es_netcad) VALUES
+  (1, 'CS101',  'Introducción a Programación', NULL, NULL, FALSE),
+  (2, 'BD201',  'Bases de Datos I',            NULL, NULL, FALSE),
+  (3, 'NETC01', 'Fundamentos De Redes',         NULL, NULL, TRUE)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO universidad.oferta
+  (oferta_id, curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+VALUES
+  (1, 1, 1, 1, 1, 1, 1, NULL, 'CS101 Presencial 2025-3')
+ON CONFLICT DO NOTHING;

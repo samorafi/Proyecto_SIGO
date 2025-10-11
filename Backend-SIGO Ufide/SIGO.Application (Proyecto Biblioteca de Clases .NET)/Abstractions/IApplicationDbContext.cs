@@ -20,8 +20,14 @@ namespace SIGO.Application.Abstractions
         DbSet<TipoContrato> TiposContratos { get; set; }
         DbSet<MotivoDesvinculacion> MotivosDesvinculacion { get; set; }
         DbSet<Periodo> Periodos { get; set; }
-
-
+        DbSet<Oferta> Ofertas { get; }
+        DbSet<Curso> Cursos { get; }
+        DbSet<Sede> Sedes { get; }
+        DbSet<Modalidad> Modalidades { get; }
+        DbSet<Horario> Horarios { get; }
+        DbSet<AccionOferta> AccionesOferta { get; }
+        DbSet<Grado> Grados { get; }
+        DbSet<Carrera> Carreras { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

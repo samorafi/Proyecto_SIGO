@@ -30,7 +30,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/api/Autenticacion/unauthorized";
     });
 
-
 builder.Services.AddScoped<IHashService, SIGO.Application.Services.BCryptHashService>();
 
 // Registrar MediatR

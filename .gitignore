@@ -18,3 +18,5 @@
 # User-specific files
 *.rsuser
 Backend-SIGO Ufide/Backend_SIGO/appsettings.json
+/Backend-SIGO Ufide/Backend_SIGO/.vs
+/Backend-SIGO Ufide/Backend_SIGO/.vs

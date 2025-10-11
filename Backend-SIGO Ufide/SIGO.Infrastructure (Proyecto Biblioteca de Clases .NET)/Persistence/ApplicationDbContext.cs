@@ -14,13 +14,6 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<Permiso> Permisos { get; set; }
         public DbSet<UsuarioRol> UsuarioRoles { get; set; }
         public DbSet<RolPermiso> RolPermisos { get; set; }
-
-
-        /// <summary>
-        /// /////////////////////////////
-        /// 
-        /// 
-        /// </summary>
         public DbSet<Genero> Generos { get; set; }
         public DbSet<Persona> Personas { get; set; }
         public DbSet<Provincia> Provincias { get; set; }
@@ -30,6 +23,15 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<TipoContrato> TiposContratos { get; set; }
         public DbSet<MotivoDesvinculacion> MotivosDesvinculacion { get; set; }
         public DbSet<Periodo> Periodos { get; set; }
+        public DbSet<Oferta> Ofertas => Set<Oferta>();
+        public DbSet<Modalidad> Modalidades => Set<Modalidad>();
+        public DbSet<Sede> Sedes => Set<Sede>();
+        public DbSet<Horario> Horarios => Set<Horario>();
+        public DbSet<AccionOferta> AccionesOferta => Set<AccionOferta>();
+        public DbSet<Curso> Cursos => Set<Curso>();
+        public DbSet<Carrera> Carreras => Set<Carrera>();
+        public DbSet<Grado> Grados => Set<Grado>();
+
 
 
 
