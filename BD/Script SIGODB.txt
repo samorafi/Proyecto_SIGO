@@ -80,17 +80,17 @@ CREATE TABLE persona (
   persona_id SERIAL PRIMARY KEY,
   nombre TEXT NOT NULL,
   cedula TEXT UNIQUE NOT NULL,
-  genero_id INT REFERENCES genero(genero_id),
+  genero_id INT REFERENCES genero(genero_id),  --
   correo TEXT UNIQUE NOT NULL,
   telefono TEXT,
-  provincia_id INT REFERENCES provincia(provincia_id),
-  canton_id INT REFERENCES canton(canton_id),
-  categoria_id INT REFERENCES categoria_docente(categoria_id),
-  estado_persona_id INT REFERENCES estado_persona(estado_persona_id),
+  provincia_id INT REFERENCES provincia(provincia_id), --
+  canton_id INT REFERENCES canton(canton_id), --
+  categoria_id INT REFERENCES categoria_docente(categoria_id), --
+  estado_persona_id INT REFERENCES estado_persona(estado_persona_id), --
   fecha_ingreso DATE,
-  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
-  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id),
-  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id),
+  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id), --
+  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id), --
+  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id), --
   comentarios TEXT
 );
 CREATE TABLE persona_atestado (
@@ -118,12 +118,12 @@ CREATE TABLE curso (
 CREATE TABLE oferta (
   oferta_id SERIAL PRIMARY KEY,
   curso_id INT NOT NULL REFERENCES curso(curso_id),
-  sede_id INT NOT NULL REFERENCES sede(sede_id),
-  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id),
-  horario_id INT NOT NULL REFERENCES horario(horario_id),
-  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
-  accion_id INT REFERENCES accion_oferta(accion_id),
-  coordinador_id INT REFERENCES persona(persona_id),
+  sede_id INT NOT NULL REFERENCES sede(sede_id), --
+  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id), --
+  horario_id INT NOT NULL REFERENCES horario(horario_id), --
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id), --
+  accion_id INT REFERENCES accion_oferta(accion_id), --
+  coordinador_id INT REFERENCES persona(persona_id), --
   comentarios TEXT,
   UNIQUE (curso_id, sede_id, modalidad_id, periodo_id)
 );
@@ -412,3 +412,50 @@ INSERT INTO universidad.oferta
 VALUES
   (1, 1, 1, 1, 1, 1, 1, NULL, 'CS101 Presencial 2025-3')
 ON CONFLICT DO NOTHING;
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+ALTER TABLE universidad.periodo ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
+
+
+DO $$
+DECLARE
+  chkname text;
+BEGIN
+  SELECT conname INTO chkname
+  FROM pg_constraint c
+  JOIN pg_class t ON t.oid = c.conrelid
+  JOIN pg_namespace n ON n.oid = t.relnamespace
+  WHERE c.contype = 'c'
+    AND n.nspname = 'universidad'
+    AND t.relname = 'periodo'
+    AND pg_get_constraintdef(c.oid) ILIKE '%numero%between%1%and%4%';
+
+  IF chkname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE universidad.periodo DROP CONSTRAINT %I', chkname);
+  END IF;
+
+  EXECUTE 'ALTER TABLE universidad.periodo
+           ADD CONSTRAINT ck_periodo_numero_1_3
+           CHECK (numero BETWEEN 1 AND 3)';
+END$$;
+
+drop table coordinacion;
+
+CREATE TABLE IF NOT EXISTS coordinacion (
+  coordinacion_id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  carrera_id INT REFERENCES carrera(carrera_id),
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  comentarios TEXT
+);
+
+CREATE TABLE IF NOT EXISTS coordinacion_curso (
+  coordinacion_curso_id SERIAL PRIMARY KEY,
+  coordinacion_id INT NOT NULL REFERENCES universidad.coordinacion(coordinacion_id) ON DELETE CASCADE,
+  curso_id INT NOT NULL REFERENCES universidad.curso(curso_id),
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  comentarios TEXT
+);

@@ -16,7 +16,7 @@ public sealed class GetAllOfertasQueryHandler
     {
         return await _db.Ofertas
             .AsNoTracking()
-            .OrderByDescending(o => o.PeriodoId).ThenBy(o => o.CursoId) // orden sugerido
+            .OrderByDescending(o => o.PeriodoId).ThenBy(o => o.CursoId)
             .Select(o => new OfertaResponseDto
             {
                 OfertaId = o.OfertaId,

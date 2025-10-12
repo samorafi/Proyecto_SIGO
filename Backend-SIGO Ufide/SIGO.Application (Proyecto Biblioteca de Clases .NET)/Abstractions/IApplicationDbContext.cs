@@ -28,6 +28,8 @@ namespace SIGO.Application.Abstractions
         DbSet<AccionOferta> AccionesOferta { get; }
         DbSet<Grado> Grados { get; }
         DbSet<Carrera> Carreras { get; }
+        DbSet<Coordinacion> Coordinaciones { get; }
+        DbSet<CoordinacionCurso> CoordinacionesCursos { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

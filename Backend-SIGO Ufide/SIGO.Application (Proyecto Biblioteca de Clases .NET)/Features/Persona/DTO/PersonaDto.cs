@@ -1,6 +1,4 @@
-﻿//Data Transfer Object: para controlar qué datos enviamos al frontend. Esto evita exponer nuestras entidades de dominio directamente.
-
-using SIGO.Domain.Entities;
+﻿using SIGO.Domain.Entities;
 using System;
 
 namespace SIGO.Application.Features.Persona.DTO

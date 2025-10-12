@@ -24,7 +24,6 @@ namespace SIGO.Application.Features.Persona.Commands.Update
                 return;
             }
 
-            // Mapeo de los campos a actualizar
             persona.Nombre = request.Nombre;
             persona.Cedula = request.Cedula;
             persona.Correo = request.Correo;

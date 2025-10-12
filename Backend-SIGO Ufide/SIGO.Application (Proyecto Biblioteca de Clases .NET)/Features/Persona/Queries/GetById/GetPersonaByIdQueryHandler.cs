@@ -27,9 +27,9 @@ namespace SIGO.Application.Features.Persona.Queries.GetById
                 .Include(p => p.TipoContrato)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
-            return persona == null ? null : PersonaDto.FromEntity(persona);//Si la variable persona es null (lo que significa que no se
-                                                                           //encontró a la
-                                                                           //persona en la base de datos), el método devuelve null.
+            return persona == null ? null : PersonaDto.FromEntity(persona);
+                                                                           
+                                                                           
         }
     }
 }

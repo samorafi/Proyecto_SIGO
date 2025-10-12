@@ -8,6 +8,8 @@ using SIGO.Application.Features.Persona.Commands.Update;
 using SIGO.Application.Features.Persona.Queries.GetAll;
 using SIGO.Application.Features.Persona.Queries.GetById;
 using SIGO.Application.Features.Personas.Commands.Create;
+using SIGO.Application.Features.Personas.Dto;
+using SIGO.Application.Features.Personas.Queries;
 using System.Threading.Tasks;
 
 namespace SIGO.Api.Controllers
@@ -29,7 +31,6 @@ namespace SIGO.Api.Controllers
         public async Task<IActionResult> Create(CreatePersonaCommand command)
         {
             var personaId = await _mediator.Send(command);
-            // Devuelve 201 Created y la ruta para obtener el nuevo recurso
             return CreatedAtAction(nameof(GetById), new { id = personaId }, new { id = personaId });
         }
 
@@ -47,7 +48,6 @@ namespace SIGO.Api.Controllers
         {
             var query = new GetPersonaByIdQuery { Id = id };
             var persona = await _mediator.Send(query);
-            // Si la persona no se encuentra, devuelve 404 Not Found
             return persona != null ? Ok(persona) : NotFound();
         }
 
@@ -61,7 +61,6 @@ namespace SIGO.Api.Controllers
                 return BadRequest("El ID de la ruta no coincide con el ID del cuerpo de la solicitud.");
             }
             await _mediator.Send(command);
-            // Devuelve 204 No Content, la respuesta estándar para un PUT exitoso
             return NoContent();
         }
 
@@ -70,8 +69,6 @@ namespace SIGO.Api.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _mediator.Send(new DeletePersonaCommand { Id = id });
-            // Si el resultado es true, la desactivación fue exitosa (204 No Content).
-            // Si es false, no se encontró la persona (404 Not Found).
             return result ? NoContent() : NotFound();
         }
 
@@ -87,7 +84,6 @@ namespace SIGO.Api.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        // --- NUEVO ENDPOINT PARA ACTIVAR ---
         // PUT: api/Personas/5/activate
         [HttpPut("{id}/activate")]
         public async Task<IActionResult> Activate(int id)
@@ -95,6 +91,16 @@ namespace SIGO.Api.Controllers
             var command = new ActivatePersonaCommand { Id = id };
             var result = await _mediator.Send(command);
             return result ? NoContent() : NotFound();
+        }
+
+        // GET api/personas/coordinadores?soloActivas=true
+        [HttpGet("coordinadores")]
+        public async Task<ActionResult<List<CoordinadorResponseDto>>> GetCoordinadores(
+            [FromQuery] bool soloActivas = true,
+            CancellationToken ct = default)
+        {
+            var list = await _mediator.Send(new GetCoordinadoresQuery(soloActivas), ct);
+            return Ok(list);
         }
     }
 }

@@ -31,6 +31,8 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<Curso> Cursos => Set<Curso>();
         public DbSet<Carrera> Carreras => Set<Carrera>();
         public DbSet<Grado> Grados => Set<Grado>();
+        public DbSet<Coordinacion> Coordinaciones => Set<Coordinacion>();
+        public DbSet<CoordinacionCurso> CoordinacionesCursos => Set<CoordinacionCurso>();
 
 
 

@@ -65,7 +65,7 @@ public class CursosController : ControllerBase
         return dto is null ? NotFound(new { message = $"No se encontró el curso con id {id}." }) : Ok(dto);
     }
 
-    // GET api/cursos?estado=true|false (si omites 'estado', trae todos)
+    // GET api/cursos?estado=true|false (si se omite 'estado', trae todos)
     [HttpGet]
     public async Task<ActionResult<List<CursoResponseDto>>> GetAll([FromQuery] bool? estado, CancellationToken ct)
     {

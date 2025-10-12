@@ -18,10 +18,6 @@ namespace SIGO.Infrastructure.Persistence.Configurations
             builder.Property(ur => ur.RolId)
                    .HasColumnName("rol_id");
 
-           // builder.HasOne(ur => ur.Usuario)
-           //        .WithMany(u => u.UsuarioRoles)
-           //        .HasForeignKey(ur => ur.UsuarioId);
-
             builder.HasOne(ur => ur.Rol)
                    .WithMany(r => r.UsuarioRoles)
                    .HasForeignKey(ur => ur.RolId);

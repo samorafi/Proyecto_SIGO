@@ -14,6 +14,8 @@ namespace SIGO.Domain.Entities
         public int PeriodoId { get; set; }
         public int Anio { get; set; }
         public int Numero { get; set; }
+        public bool Estado { get; set; } = true;
+
     }
 
 }

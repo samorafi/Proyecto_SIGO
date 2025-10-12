@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace SIGO.Application.Features.Persona.Commands.Deactivate
 {
-    // This class contains the logic to update the database.
     public class DeactivatePersonaCommandHandler : IRequestHandler<DeactivatePersonaCommand, bool>
     {
         private readonly IApplicationDbContext _context;
@@ -27,17 +26,17 @@ namespace SIGO.Application.Features.Persona.Commands.Deactivate
 
             if (persona is null)
             {
-                return false; // If not found, return false.
+                return false; 
             }
 
             // 1. Actualiza el estado Inactivo' (ID 2 es 'Inactivo').
             persona.EstadoPersonaId = 2;
 
-            // 2. Save the deactivation information.
+        
             persona.MotivoDesvinculacionId = request.MotivoDesvinculacionId;
             persona.PeriodoDesvinculacionId = request.PeriodoDesvinculacionId;
 
-            // 3. Add the comment to the existing history.
+  
             string currentDate = DateTime.Now.ToString("dd/MM/yyyy");
             persona.Comentarios += $"\n[DEACTIVATED ON {currentDate}]: {request.Comentarios}";
 
