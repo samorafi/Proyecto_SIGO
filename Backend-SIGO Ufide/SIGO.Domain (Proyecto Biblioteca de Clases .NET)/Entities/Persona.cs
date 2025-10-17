@@ -23,6 +23,7 @@ public class Persona
 
     // Foreign Keys
     public int? GeneroId { get; set; }
+    public int? AtestadoId { get; set; }
     public int? ProvinciaId { get; set; }
     public int? CantonId { get; set; }
     public int? CategoriaId { get; set; }
@@ -33,6 +34,8 @@ public class Persona
 
     // Navigation Properties (relaciones)
     public virtual Genero? Genero { get; set; }
+
+    public virtual Atestado? Atestado { get; set; }
     public virtual Provincia? Provincia { get; set; }
     public virtual Canton? Canton { get; set; }
     public virtual CategoriaDocente? CategoriaDocente { get; set; }

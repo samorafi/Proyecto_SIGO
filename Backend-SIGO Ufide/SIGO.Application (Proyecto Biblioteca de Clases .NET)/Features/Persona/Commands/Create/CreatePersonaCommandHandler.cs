@@ -29,6 +29,7 @@ namespace SIGO.Application.Features.Personas.Commands.Create
                 ProvinciaId = request.ProvinciaId,
                 CantonId = request.CantonId,
                 CategoriaId = request.CategoriaId,
+                AtestadoId = request.AtestadoId,
                 EstadoPersonaId = request.EstadoPersonaId,
                 TipoContratoId = request.TipoContratoId,
                 MotivoDesvinculacionId = request.MotivoDesvinculacionId,

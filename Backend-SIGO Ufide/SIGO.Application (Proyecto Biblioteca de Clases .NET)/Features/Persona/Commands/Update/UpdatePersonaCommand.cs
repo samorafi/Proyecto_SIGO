@@ -15,6 +15,7 @@ namespace SIGO.Application.Features.Persona.Commands.Update
         public int? ProvinciaId { get; set; }
         public int? CantonId { get; set; }
         public int? CategoriaId { get; set; }
+        public int? AtestadoId { get; set; }
         public int? EstadoPersonaId { get; set; }
         public int? TipoContratoId { get; set; }
         public int? MotivoDesvinculacionId { get; set; }

@@ -15,6 +15,7 @@ namespace SIGO.Application.Abstractions
         DbSet<Provincia> Provincias { get; set; }
         DbSet<Canton> Cantones { get; set; }
         DbSet<Genero> Generos { get;}
+        DbSet<Atestado> Atestados { get; set; }
         DbSet<CategoriaDocente> CategoriasDocentes { get; set; }
         DbSet<EstadoPersona> EstadosPersonas { get; set; }
         DbSet<TipoContrato> TiposContratos { get; set; }

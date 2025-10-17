@@ -18,6 +18,7 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<Persona> Personas { get; set; }
         public DbSet<Provincia> Provincias { get; set; }
         public DbSet<Canton> Cantones { get; set; }
+        public DbSet<Atestado> Atestados { get; set; }
         public DbSet<CategoriaDocente> CategoriasDocentes { get; set; }
         public DbSet<EstadoPersona> EstadosPersonas { get; set; }
         public DbSet<TipoContrato> TiposContratos { get; set; }

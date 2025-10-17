@@ -24,6 +24,7 @@ namespace SIGO.Application.Features.Personas.Commands.Create
             RuleFor(p => p.ProvinciaId).GreaterThan(0).WithMessage("Debe seleccionar una provincia válida.");
             RuleFor(p => p.CantonId).GreaterThan(0).WithMessage("Debe seleccionar un cantón válido.");
             RuleFor(p => p.CategoriaId).GreaterThan(0).WithMessage("Debe seleccionar una categoría de docente válida.");
+            RuleFor(p => p.AtestadoId).GreaterThan(0).WithMessage("Debe seleccionar un atestado válido.");
             RuleFor(p => p.EstadoPersonaId).GreaterThan(0).WithMessage("Debe seleccionar un estado válido.");
             RuleFor(p => p.TipoContratoId).GreaterThan(0).WithMessage("Debe seleccionar un tipo de contrato válido.");
         }

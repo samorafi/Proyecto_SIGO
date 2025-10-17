@@ -18,6 +18,7 @@ namespace SIGO.Application.Features.Persona.DTO
         public string? Provincia { get; set; }
         public string? Canton { get; set; }
         public string? Categoria { get; set; }
+        public string? Atestado { get; set; }
         public string? Estado { get; set; }
         public string? TipoContrato { get; set; }
 
@@ -36,6 +37,7 @@ namespace SIGO.Application.Features.Persona.DTO
                 Provincia = persona.Provincia?.Nombre,
                 Canton = persona.Canton?.Nombre,
                 Categoria = persona.CategoriaDocente?.Nombre,
+                Atestado = persona.Atestado?.Nombre,
                 Estado = persona.EstadoPersona?.Nombre,
                 TipoContrato = persona.TipoContrato?.Nombre
             };

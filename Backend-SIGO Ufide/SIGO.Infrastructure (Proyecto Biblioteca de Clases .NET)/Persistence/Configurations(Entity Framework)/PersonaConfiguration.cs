@@ -24,6 +24,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
 
         // Mapeo de Claves Foráneas
         builder.Property(p => p.GeneroId).HasColumnName("genero_id");
+        builder.Property(p => p.AtestadoId).HasColumnName("atestado_id");
         builder.Property(p => p.ProvinciaId).HasColumnName("provincia_id");
         builder.Property(p => p.CantonId).HasColumnName("canton_id");
         builder.Property(p => p.CategoriaId).HasColumnName("categoria_id");
@@ -34,6 +35,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
 
         // Definición de Relaciones (Navigation Properties)
         builder.HasOne(p => p.Genero).WithMany().HasForeignKey(p => p.GeneroId);
+        builder.HasOne(p => p.Atestado).WithMany().HasForeignKey(p => p.AtestadoId);
         builder.HasOne(p => p.Provincia).WithMany().HasForeignKey(p => p.ProvinciaId);
         builder.HasOne(p => p.Canton).WithMany().HasForeignKey(p => p.CantonId);
         builder.HasOne(p => p.CategoriaDocente).WithMany().HasForeignKey(p => p.CategoriaId);

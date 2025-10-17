@@ -15,6 +15,7 @@ namespace SIGO.Application.Features.Personas.Commands.Create
 
         // Campos de Relación (Claves Foráneas)
         public int GeneroId { get; set; }
+        public int AtestadoId { get; set; }
         public int ProvinciaId { get; set; }
         public int CantonId { get; set; }
         public int CategoriaId { get; set; }

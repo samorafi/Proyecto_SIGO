@@ -34,6 +34,7 @@ namespace SIGO.Application.Features.Persona.Commands.Update
             persona.ProvinciaId = request.ProvinciaId;
             persona.CantonId = request.CantonId;
             persona.CategoriaId = request.CategoriaId;
+            persona.AtestadoId = request.AtestadoId;
             persona.EstadoPersonaId = request.EstadoPersonaId;
             persona.TipoContratoId = request.TipoContratoId;
             persona.MotivoDesvinculacionId = request.MotivoDesvinculacionId;

@@ -27,6 +27,7 @@ namespace SIGO.Application.Features.Persona.Queries.GetAll
                 .Include(p => p.Provincia)
                 .Include(p => p.Canton)
                 .Include(p => p.CategoriaDocente)
+                .Include(p => p.Atestado)
                 .Include(p => p.EstadoPersona)
                 .Include(p => p.TipoContrato)
                 .ToListAsync(cancellationToken);//Convierte los Resultados en una Lista
