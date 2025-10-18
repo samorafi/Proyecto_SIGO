@@ -39,6 +39,7 @@ async function fetchArray(url) {
       x.id ?? x.Id ?? x.ID ?? x.valor ?? x.value ??
       x.generoId ?? x.provinciaId ?? x.cantonId ?? x.categoriaId ??
       x.estadoPersonaId ?? x.tipoContratoId ?? x.atestadoId ?? x.rolDocenteId ??
+      x.rolId ??                         
       x.motivoDesvinculacionId ?? x.periodoDesvinculacionId
     ),
     nombre: String(
@@ -53,10 +54,13 @@ async function fetchArray(url) {
 const matches = (t, q) => !q || String(t ?? "").toLowerCase().includes(String(q ?? "").toLowerCase());
 const findLabel = (list, id) => (list || []).find(x => String(x.id) === String(id))?.nombre ?? "";
 
-
+/* Z-index/menu fixes */
 const MENU_CLS =
-  "z-[2147483000] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
-const CONT_CLS = "relative z-[1000]";
+  "z-[2147483647] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
+const CONT_CLS = "relative z-0";
+const Field = ({ children }) => (
+  <div className="relative z-0 focus-within:z-[500]">{children}</div>
+);
 
 /* ===================== Chips / filas ===================== */
 const Pill = ({ children, className = "" }) => (
@@ -110,6 +114,7 @@ function FichaDocente({ open, onClose, id }) {
   const categoriaTxt = p?.categoria?.nombre ?? p?.categoria;
   const contratoTxt = p?.tipoContrato?.nombre ?? p?.tipoContrato;
   const estadoTxt = typeof p?.estado === "boolean" ? (p.estado ? "Activo" : "Inactivo") : (p?.estadoPersona?.nombre ?? p?.estado);
+  const rolTxt = p?.rolDocente?.nombre ?? p?.rol ?? p?.rolDocente ?? "—";
   const motivoTxt = p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
   const periodoTxt = p?.periodoDesvinculacion?.nombre ?? p?.periodoDesvinculacion ?? "—";
   const enLineaTxt = p?.enLinea ? "Sí" : "No";
@@ -123,7 +128,6 @@ function FichaDocente({ open, onClose, id }) {
         {!loading && !error && !p && <p className="text-blue-gray-600">No hay datos.</p>}
         {!loading && !!p && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* ORDEN SOLICITADO */}
             <RowInfo label="Nombre" value={p.nombre} />
             <RowInfo label="Género" value={generoTxt} />
             <RowInfo label="Cédula" value={p.cedula} />
@@ -136,6 +140,7 @@ function FichaDocente({ open, onClose, id }) {
             <RowInfo label="Categoría" value={categoriaTxt} />
             <RowInfo label="Tipo de contrato" value={contratoTxt} />
             <RowInfo label="Estado" value={<EstadoChip value={estadoTxt} />} />
+            <RowInfo label="Rol docente" value={rolTxt} />
             <RowInfo label="¿Imparte 100% en línea?" value={enLineaTxt} />
             <RowInfo label="Motivo de desvinculación" value={motivoTxt} />
             <RowInfo label="Periodo de desvinculación" value={periodoTxt} />
@@ -152,7 +157,7 @@ function FichaDocente({ open, onClose, id }) {
   );
 }
 
-/* ===================== ENDPOINT 4: AGREGAR DOCENTE (orden y menús claros) ===================== */
+/* ===================== ENDPOINT 4: AGREGAR DOCENTE ===================== */
 function AgregarDocente({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
 
@@ -160,13 +165,14 @@ function AgregarDocente({ open, onClose, onSaved }) {
     nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
     provinciaId: "", cantonId: "", fechaIngreso: "",
     atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
-    enLinea: false, comentarios: "", rolDocenteId: "" 
+    rolDocenteId: "",   
+    enLinea: false, comentarios: ""
   });
   const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
 
   const [cat, setCat] = useState({
     generos: [], provincias: [], categorias: [], estados: [],
-    tiposContrato: [], atestados: []
+    tiposContrato: [], atestados: [], roles: [] 
   });
 
   const [cantonesByProv, setCantonesByProv] = useState({});
@@ -177,13 +183,14 @@ function AgregarDocente({ open, onClose, onSaved }) {
     let live = true;
     (async () => {
       try {
-        const [generos, provincias, categorias, estados, tiposContrato, atestados] = await Promise.all([
+        const [generos, provincias, categorias, estados, tiposContrato, atestados, roles] = await Promise.all([
           fetchArray(URL.generos),
           fetchArray(URL.provincias),
           fetchArray(URL.categorias),
           fetchArray(URL.estados),
           fetchArray(URL.tiposContrato),
           fetchArray(URL.atestados),
+          fetchArray(URL.roles),                    
         ]);
         if (!live) return;
         const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
@@ -194,6 +201,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
           estados: norm(estados),
           tiposContrato: norm(tiposContrato),
           atestados: norm(atestados),
+          roles: norm(roles),                    
         });
       } catch (e) { console.error("catálogos:", e); }
     })();
@@ -237,7 +245,8 @@ function AgregarDocente({ open, onClose, onSaved }) {
     const req = [
       ["nombre", f.nombre], ["generoId", f.generoId], ["cedula", f.cedula], ["correo", f.correo], ["telefono", f.telefono],
       ["provinciaId", f.provinciaId], ["cantonId", f.cantonId], ["fechaIngreso", f.fechaIngreso],
-      ["atestadoId", f.atestadoId], ["categoriaId", f.categoriaId], ["tipoContratoId", f.tipoContratoId], ["estadoPersonaId", f.estadoPersonaId]
+      ["atestadoId", f.atestadoId], ["categoriaId", f.categoriaId], ["tipoContratoId", f.tipoContratoId],
+      ["estadoPersonaId", f.estadoPersonaId], ["rolDocenteId", f.rolDocenteId]  
     ];
     if (req.some(([_, v]) => !v)) { alert("Completa los campos obligatorios."); return false; }
     return true;
@@ -260,6 +269,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
         categoriaId: Number(f.categoriaId),
         tipoContratoId: Number(f.tipoContratoId),
         estadoPersonaId: Number(f.estadoPersonaId),
+        rolDocenteId: Number(f.rolDocenteId),     
         enLinea: !!f.enLinea,
         comentarios: f.comentarios ?? ""
       };
@@ -269,7 +279,21 @@ function AgregarDocente({ open, onClose, onSaved }) {
         body: JSON.stringify(body),
       });
       if (!r.ok) throw new Error("POST persona");
-      onSaved && onSaved();
+
+      let newId = null;
+      try {
+        const txt = await r.text();
+        if (txt) {
+          const j = JSON.parse(txt);
+          newId = j?.id ?? j?.data?.id ?? j?.result?.id ?? j?.personaId ?? j?.data?.personaId ?? null;
+        }
+      } catch {}
+      if (!newId) {
+        const loc = r.headers.get("Location");
+        if (loc) newId = loc.split("/").pop();
+      }
+
+      onSaved && onSaved(newId);
       onClose && onClose();
     } catch (e) {
       console.error(e);
@@ -283,7 +307,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
         nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
         provinciaId: "", cantonId: "", fechaIngreso: "",
         atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
-        enLinea: false, comentarios: ""
+        rolDocenteId: "", enLinea: false, comentarios: ""
       });
     }
   }, [open]);
@@ -299,100 +323,137 @@ function AgregarDocente({ open, onClose, onSaved }) {
     >
       <DialogHeader className="text-[#2B338C]">Agregar docente</DialogHeader>
 
-   
       <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
-   
-        <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
+        <Field>
+          <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
+        </Field>
 
-        <Select
-          label="Género *"
-          value={f.generoId}
-          onChange={v => onChange("generoId", String(v ?? ""))}
-          selected={() => findLabel(cat.generos, f.generoId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Select
+            label="Género *"
+            value={f.generoId}
+            onChange={v => onChange("generoId", String(v ?? ""))}
+            selected={() => findLabel(cat.generos, f.generoId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
+          </Select>
+        </Field>
 
-        <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
-        <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
-        <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
+        <Field>
+          <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
+        </Field>
 
-        <Select
-          label="Provincia *"
-          value={f.provinciaId}
-          onChange={(v) => onProvinciaChange(String(v ?? ""))}
-          selected={() => findLabel(cat.provincias, f.provinciaId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.provincias.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
+        </Field>
 
-        <Select
-          label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
-          value={f.cantonId}
-          onChange={(v) => onChange("cantonId", String(v ?? ""))}
-          selected={() => findLabel(cantonesVisibles, f.cantonId)}
-          disabled={!f.provinciaId}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
+        </Field>
 
-        <Input
-          type="date"
-          label="Fecha de ingreso *"
-          value={f.fechaIngreso}
-          onChange={e => onChange("fechaIngreso", e.target.value)}
-          crossOrigin=""
-        />
+        <Field>
+          <Select
+            label="Provincia *"
+            value={f.provinciaId}
+            onChange={(v) => onProvinciaChange(String(v ?? ""))}
+            selected={() => findLabel(cat.provincias, f.provinciaId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.provincias.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+          </Select>
+        </Field>
 
-        <Select
-          label="Atestado *"
-          value={f.atestadoId}
-          onChange={(v) => onChange("atestadoId", String(v ?? ""))}
-          selected={() => findLabel(cat.atestados, f.atestadoId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.atestados.map(a => <Option key={a.id} value={a.id} className="bg-white">{a.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Select
+            label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
+            value={f.cantonId}
+            onChange={(v) => onChange("cantonId", String(v ?? ""))}
+            selected={() => findLabel(cantonesVisibles, f.cantonId)}
+            disabled={!f.provinciaId}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+          </Select>
+        </Field>
 
-        <Select
-          label="Categoría *"
-          value={f.categoriaId}
-          onChange={(v) => onChange("categoriaId", String(v ?? ""))}
-          selected={() => findLabel(cat.categorias, f.categoriaId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Input
+            type="date"
+            label="Fecha de ingreso *"
+            value={f.fechaIngreso}
+            onChange={e => onChange("fechaIngreso", e.target.value)}
+            crossOrigin=""
+          />
+        </Field>
 
-        <Select
-          label="Tipo de contrato *"
-          value={f.tipoContratoId}
-          onChange={(v) => onChange("tipoContratoId", String(v ?? ""))}
-          selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.tiposContrato.map(t => <Option key={t.id} value={t.id} className="bg-white">{t.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Select
+            label="Atestado *"
+            value={f.atestadoId}
+            onChange={(v) => onChange("atestadoId", String(v ?? ""))}
+            selected={() => findLabel(cat.atestados, f.atestadoId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.atestados.map(a => <Option key={a.id} value={a.id} className="bg-white">{a.nombre}</Option>)}
+          </Select>
+        </Field>
 
-        <Select
-          label="Estado *"
-          value={f.estadoPersonaId}
-          onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
-          selected={() => findLabel(cat.estados, f.estadoPersonaId)}
-          menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-          containerProps={{ className: CONT_CLS }}
-        >
-          {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
-        </Select>
+        <Field>
+          <Select
+            label="Categoría *"
+            value={f.categoriaId}
+            onChange={(v) => onChange("categoriaId", String(v ?? ""))}
+            selected={() => findLabel(cat.categorias, f.categoriaId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+          </Select>
+        </Field>
+
+        <Field>
+          <Select
+            label="Tipo de contrato *"
+            value={f.tipoContratoId}
+            onChange={(v) => onChange("tipoContratoId", String(v ?? ""))}
+            selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.tiposContrato.map(t => <Option key={t.id} value={t.id} className="bg-white">{t.nombre}</Option>)}
+          </Select>
+        </Field>
+
+        <Field>
+          <Select
+            label="Estado *"
+            value={f.estadoPersonaId}
+            onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+            selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+          </Select>
+        </Field>
+
+        <Field>
+          <Select
+            label="Rol docente *"                
+            value={f.rolDocenteId}
+            onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
+            selected={() => findLabel(cat.roles, f.rolDocenteId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+          </Select>
+        </Field>
 
         <div className="md:col-span-2 flex items-center gap-3">
           <Typography className="text-blue-gray-700 font-medium">
@@ -406,9 +467,11 @@ function AgregarDocente({ open, onClose, onSaved }) {
           />
         </div>
 
-        <div className="md:col-span-2">
-          <Input label="Comentarios" value={f.comentarios} onChange={e => onChange("comentarios", e.target.value)} crossOrigin="" />
-        </div>
+        <Field>
+          <div className="md:col-span-2">
+            <Input label="Comentarios" value={f.comentarios} onChange={e => onChange("comentarios", e.target.value)} crossOrigin="" />
+          </div>
+        </Field>
       </DialogBody>
 
       <DialogFooter className="gap-2">
@@ -417,6 +480,401 @@ function AgregarDocente({ open, onClose, onSaved }) {
         </Button>
         <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={submit} disabled={saving}>
           {saving ? "Guardando..." : "Guardar"}
+        </Button>
+      </DialogFooter>
+    </Dialog>
+  );
+}
+
+/* ===================== ENDPOINT 3: EDITAR DOCENTE ===================== */
+function EditarDocente({ open, onClose, id, onSaved }) {
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [f, setF] = useState({
+    nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
+    provinciaId: "", cantonId: "", fechaIngreso: "",
+    atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
+    rolDocenteId: "",                                
+    enLinea: false, comentarios: ""
+  });
+  const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
+
+  const [cat, setCat] = useState({
+    generos: [], provincias: [], categorias: [], estados: [],
+    tiposContrato: [], atestados: [], roles: []   
+  });
+
+  const [cantonesByProv, setCantonesByProv] = useState({});
+  const [loadingCantones, setLoadingCantones] = useState(false);
+  const [catsReady, setCatsReady] = useState(false);
+
+  const pickId = (obj, ...paths) => {
+    for (const p of paths) {
+      const v = p.split(".").reduce((a, k) => (a ? a[k] : undefined), obj);
+      if (v != null && v !== "") return String(v);
+    }
+    return "";
+  };
+  const byNombre = (arr, nombre) =>
+    (arr || []).find(x => String(x.nombre).toLowerCase() === String(nombre ?? "").toLowerCase());
+  const findIdByNombre = (arr, nombre) => byNombre(arr, nombre)?.id ?? "";
+  const mapEstadoToId = (estados, x) => {
+    const idDirecto = pickId(x, "estadoPersonaId", "estadoPersona.id");
+    if (idDirecto) return String(idDirecto);
+    const boolNombre = (typeof x?.estado === "boolean") ? (x.estado ? "Activo" : "Inactivo") : "";
+    const nombre = x?.estadoPersona?.nombre ?? x?.estado ?? boolNombre ?? "";
+    return nombre ? (findIdByNombre(estados, nombre) || "") : "";
+  };
+
+  // Cargar catálogos
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    (async () => {
+      try {
+        const [generos, provincias, categorias, estados, tiposContrato, atestados, roles] = await Promise.all([
+          fetchArray(URL.generos),
+          fetchArray(URL.provincias),
+          fetchArray(URL.categorias),
+          fetchArray(URL.estados),
+          fetchArray(URL.tiposContrato),
+          fetchArray(URL.atestados),
+          fetchArray(URL.roles),         
+        ]);
+        if (!live) return;
+        const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
+        setCat({
+          generos: norm(generos),
+          provincias: norm(provincias),
+          categorias: norm(categorias),
+          estados: norm(estados),
+          tiposContrato: norm(tiposContrato),
+          atestados: norm(atestados),
+          roles: norm(roles),                    
+        });
+      } catch (e) {
+        console.error("catálogos (editar):", e);
+        setCat({ generos: [], provincias: [], categorias: [], estados: [], tiposContrato: [], atestados: [], roles: [] });
+      } finally {
+        if (live) setCatsReady(true);
+      }
+    })();
+    return () => { live = false; };
+  }, [open]);
+
+  const loadCantones = async (provIdStr) => {
+    if (!provIdStr) return [];
+    const pid = String(provIdStr);
+    if (cantonesByProv[pid]) return cantonesByProv[pid];
+    setLoadingCantones(true);
+    try {
+      const lista = await fetchArray(URL.cantones(pid));
+      const filtered = lista.filter(c => {
+        const raw = c.__raw ?? {};
+        const cid =
+          raw.provinciaId ?? raw.provincia_id ?? raw.ProvinciaId ?? raw.ProvinciaID ??
+          raw.provincia?.id ?? raw.provinciaIdFk ?? null;
+        return cid == null ? true : String(cid) === pid;
+      });
+      const final = filtered.length ? filtered : lista;
+      setCantonesByProv(prev => ({ ...prev, [pid]: final }));
+      return final;
+    } catch (e) {
+      console.error("cantones (editar):", e);
+      setCantonesByProv(prev => ({ ...prev, [pid]: [] }));
+      return [];
+    } finally { setLoadingCantones(false); }
+  };
+
+  const onProvinciaChange = async (pid) => {
+    const val = String(pid ?? "");
+    onChange("provinciaId", val);
+    onChange("cantonId", "");
+    await loadCantones(val);
+  };
+
+  const cantonesVisibles = cantonesByProv[String(f.provinciaId)] ?? [];
+
+  // Cargar persona por id y setear formulario (espera catálogos)
+  useEffect(() => {
+    let live = true;
+    const load = async () => {
+      if (!open || !id || !catsReady) return;
+      setLoading(true);
+      try {
+        const r = await fetch(URL.personaById(id));
+        if (!r.ok) throw new Error("GET persona");
+        const x = await r.json();
+
+        const generoId =
+          pickId(x, "generoId", "genero.id") ||
+          findIdByNombre(cat.generos, x?.genero?.nombre ?? x?.genero ?? "");
+
+        const provinciaId =
+          pickId(x, "provinciaId", "provincia.id", "provinciaIdFk") ||
+          findIdByNombre(cat.provincias, x?.provincia?.nombre ?? x?.provincia ?? "");
+
+        const atestadoId =
+          pickId(x, "atestadoId", "atestado.id") ||
+          findIdByNombre(cat.atestados, x?.atestado?.nombre ?? x?.atestado ?? "");
+
+        const categoriaId =
+          pickId(x, "categoriaId", "categoria.id") ||
+          findIdByNombre(cat.categorias, x?.categoria?.nombre ?? x?.categoria ?? "");
+
+        const tipoContratoId =
+          pickId(x, "tipoContratoId", "tipoContrato.id") ||
+          findIdByNombre(cat.tiposContrato, x?.tipoContrato?.nombre ?? x?.tipoContrato ?? "");
+
+        const estadoPersonaId = mapEstadoToId(cat.estados, x);
+
+        const rolDocenteId =
+          pickId(x, "rolDocenteId", "rolId", "rolDocente.id") ||   
+          findIdByNombre(cat.roles, x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? "");
+
+        let cantonId = "";
+        if (provinciaId) {
+          const cantonesList = await loadCantones(provinciaId);
+          cantonId =
+            pickId(x, "cantonId", "canton.id") ||
+            findIdByNombre(cantonesList, x?.canton?.nombre ?? x?.canton ?? "");
+        }
+
+        if (!live) return;
+        setF({
+          nombre: x?.nombre ?? "",
+          generoId: String(generoId || ""),
+          cedula: x?.cedula ?? "",
+          correo: x?.correo ?? "",
+          telefono: x?.telefono ?? "",
+          provinciaId: String(provinciaId || ""),
+          cantonId: String(cantonId || ""),
+          fechaIngreso: x?.fechaIngreso ? String(x.fechaIngreso).slice(0, 10) : "",
+          atestadoId: String(atestadoId || ""),
+          categoriaId: String(categoriaId || ""),
+          tipoContratoId: String(tipoContratoId || ""),
+          estadoPersonaId: String(estadoPersonaId || ""),
+          rolDocenteId: String(rolDocenteId || ""), 
+          enLinea: !!x?.enLinea,
+          comentarios: x?.comentarios ?? "",
+        });
+      } catch (e) {
+        console.error("editar GET:", e);
+        alert("No fue posible cargar la información del docente.");
+        onClose && onClose();
+      } finally {
+        if (live) setLoading(false);
+      }
+    };
+    load();
+    return () => { live = false; };
+  }, [open, id, catsReady]);
+
+  const validar = () => {
+    const req = [
+      ["nombre", f.nombre], ["generoId", f.generoId], ["cedula", f.cedula], ["correo", f.correo], ["telefono", f.telefono],
+      ["provinciaId", f.provinciaId], ["cantonId", f.cantonId], ["fechaIngreso", f.fechaIngreso],
+      ["atestadoId", f.atestadoId], ["categoriaId", f.categoriaId], ["tipoContratoId", f.tipoContratoId],
+      ["estadoPersonaId", f.estadoPersonaId], ["rolDocenteId", f.rolDocenteId]  
+    ];
+    if (req.some(([_, v]) => !v)) { alert("Completa los campos obligatorios."); return false; }
+    return true;
+  };
+
+  const submit = async () => {
+    if (!validar()) return;
+    setSaving(true);
+    try {
+      const body = {
+        id: Number(id),
+        personaId: Number(id),
+        nombre: f.nombre,
+        generoId: Number(f.generoId),
+        cedula: f.cedula,
+        correo: f.correo,
+        telefono: f.telefono,
+        provinciaId: Number(f.provinciaId),
+        cantonId: Number(f.cantonId),
+        fechaIngreso: new Date(f.fechaIngreso).toISOString(),
+        atestadoId: Number(f.atestadoId),
+        categoriaId: Number(f.categoriaId),
+        tipoContratoId: Number(f.tipoContratoId),
+        estadoPersonaId: Number(f.estadoPersonaId),
+        rolDocenteId: Number(f.rolDocenteId),   
+        enLinea: !!f.enLinea,
+        comentarios: f.comentarios ?? ""
+      };
+      const r = await fetch(URL.personaById(id), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) throw new Error("PUT persona");
+      onSaved && onSaved(id);
+      onClose && onClose();
+    } catch (e) {
+      console.error("editar PUT:", e);
+      alert("No fue posible guardar los cambios.");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      handler={onClose}
+      size="lg"
+      className="z-[2147482000]"
+      overlayProps={{ className: "z-[2147481000]" }}
+      containerProps={{ className: "z-[2147481500]" }}
+    >
+      <DialogHeader className="text-[#2B338C]">Editar docente</DialogHeader>
+
+      <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
+        {loading ? (
+          <div className="md:col-span-2 text-blue-gray-600">Cargando…</div>
+        ) : (
+          <>
+            <Field><Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" /></Field>
+
+            <Field>
+              <Select
+                label="Género *"
+                value={f.generoId}
+                onChange={v => onChange("generoId", String(v ?? ""))}
+                selected={() => findLabel(cat.generos, f.generoId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field><Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" /></Field>
+            <Field><Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" /></Field>
+            <Field><Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" /></Field>
+
+            <Field>
+              <Select
+                label="Provincia *"
+                value={f.provinciaId}
+                onChange={(v) => onProvinciaChange(String(v ?? ""))}
+                selected={() => findLabel(cat.provincias, f.provinciaId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.provincias.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field>
+              <Select
+                label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
+                value={f.cantonId}
+                onChange={(v) => onChange("cantonId", String(v ?? ""))}
+                selected={() => findLabel(cantonesVisibles, f.cantonId)}
+                disabled={!f.provinciaId}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field><Input type="date" label="Fecha de ingreso *" value={f.fechaIngreso} onChange={e => onChange("fechaIngreso", e.target.value)} crossOrigin="" /></Field>
+
+            <Field>
+              <Select
+                label="Atestado *"
+                value={f.atestadoId}
+                onChange={(v) => onChange("atestadoId", String(v ?? ""))}
+                selected={() => findLabel(cat.atestados, f.atestadoId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.atestados.map(a => <Option key={a.id} value={a.id} className="bg-white">{a.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field>
+              <Select
+                label="Categoría *"
+                value={f.categoriaId}
+                onChange={(v) => onChange("categoriaId", String(v ?? ""))}
+                selected={() => findLabel(cat.categorias, f.categoriaId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field>
+              <Select
+                label="Tipo de contrato *"
+                value={f.tipoContratoId}
+                onChange={(v) => onChange("tipoContratoId", String(v ?? ""))}
+                selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.tiposContrato.map(t => <Option key={t.id} value={t.id} className="bg-white">{t.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field>
+              <Select
+                label="Estado *"
+                value={f.estadoPersonaId}
+                onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+                selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <Field>
+              <Select
+                label="Rol docente *"                 
+                value={f.rolDocenteId}
+                onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
+                selected={() => findLabel(cat.roles, f.rolDocenteId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+              </Select>
+            </Field>
+
+            <div className="md:col-span-2 flex items-center gap-3">
+              <Typography className="text-blue-gray-700 font-medium">
+                ¿El docente imparte clases 100% en línea?
+              </Typography>
+              <Switch
+                checked={!!f.enLinea}
+                onChange={(e) => onChange("enLinea", !!e.target.checked)}
+                label={f.enLinea ? "Sí" : "No"}
+                ripple={false}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Field>
+                <Input label="Comentarios" value={f.comentarios} onChange={e => onChange("comentarios", e.target.value)} crossOrigin="" />
+              </Field>
+            </div>
+          </>
+        )}
+      </DialogBody>
+
+      <DialogFooter className="gap-2">
+        <Button variant="outlined" className="border-blue-gray-300 text-blue-gray-700" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={submit} disabled={saving || loading}>
+          {saving ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -444,10 +902,15 @@ export default function Docentes() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
 
+  // Para priorizar último agregado/editado
+  const [lastTouchedId, setLastTouchedId] = useState(null);
+
   // Modales
   const [openAdd, setOpenAdd] = useState(false);
   const [openFicha, setOpenFicha] = useState(false);
   const [fichaId, setFichaId] = useState(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
 
   const loadCats = async () => {
     try {
@@ -474,7 +937,7 @@ export default function Docentes() {
       const contratoById = Object.fromEntries((cats?.tiposContrato ?? []).map(t => [String(t.id), t.nombre]));
       const atestadoById = Object.fromEntries((cats?.atestados ?? []).map(a => [String(a.id), a.nombre]));
 
-      const mapped = safe.map(x => {
+      let mapped = safe.map(x => {
         const provinciaId = x.provinciaId ?? x?.provincia?.id ?? null;
         const provinciaNombre = x.provinciaNombre ?? x?.provincia?.nombre ?? x.provincia ?? (provinciaId != null ? provById[String(provinciaId)] ?? "" : "");
         const categoriaId = x.categoriaId ?? x?.categoria?.id ?? null;
@@ -498,6 +961,15 @@ export default function Docentes() {
         };
       });
 
+      if (lastTouchedId != null) {
+        const lid = String(lastTouchedId);
+        mapped.sort((a, b) => {
+          if (String(a.id) === lid) return -1;
+          if (String(b.id) === lid) return 1;
+          return 0;
+        });
+      }
+
       setRows(mapped);
     } catch (e) {
       console.error(e); setError("No se pudieron cargar los docentes.");
@@ -509,7 +981,8 @@ export default function Docentes() {
     Object.keys(provMap).length,
     (cats?.categorias ?? []).length,
     (cats?.tiposContrato ?? []).length,
-    (cats?.atestados ?? []).length
+    (cats?.atestados ?? []).length,
+    lastTouchedId,
   ]);
 
   const filtered = useMemo(() => {
@@ -536,18 +1009,6 @@ export default function Docentes() {
     const start = (page - 1) * rowsPerPage;
     return filtered.slice(start, start + rowsPerPage);
   }, [filtered, page, rowsPerPage]);
-
-  const HEAD = [
-    { key: "atestado", label: "Atestado" },
-    { key: "nombre", label: "Nombre" },
-    { key: "cedula", label: "Cédula" },
-    { key: "correo", label: "Correo" },
-    { key: "telefono", label: "Teléfono" },
-    { key: "provincia", label: "Provincia" },
-    { key: "categoria", label: "Categoría" },
-    { key: "tipoContrato", label: "Contratación" },
-    { key: "estado", label: "Estado" },
-  ];
 
   const clearFilters = () => {
     setQ(""); setFAtestado("Todos"); setFCategoria("Todas"); setFEstado("Todos"); setFTipoContrato("Todos");
@@ -653,17 +1114,27 @@ export default function Docentes() {
           <table className="min-w-[1150px] w-full text-left">
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
-                {HEAD.map(h => <th key={h.key} className="p-3 text-sm font-semibold">{h.label}</th>)}
+                {[
+                  { key: "atestado", label: "Atestado" },
+                  { key: "nombre", label: "Nombre" },
+                  { key: "cedula", label: "Cédula" },
+                  { key: "correo", label: "Correo" },
+                  { key: "telefono", label: "Teléfono" },
+                  { key: "provincia", label: "Provincia" },
+                  { key: "categoria", label: "Categoría" },
+                  { key: "tipoContrato", label: "Contratación" },
+                  { key: "estado", label: "Estado" },
+                ].map(h => <th key={h.key} className="p-3 text-sm font-semibold">{h.label}</th>)}
                 <th className="p-3 text-sm font-semibold">Acción</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={HEAD.length + 1} className="p-6 text-center text-blue-gray-500">Cargando…</td></tr>
+                <tr><td colSpan={10} className="p-6 text-center text-blue-gray-500">Cargando…</td></tr>
               ) : error ? (
-                <tr><td colSpan={HEAD.length + 1} className="p-6 text-center text-red-600">{error}</td></tr>
+                <tr><td colSpan={10} className="p-6 text-center text-red-600">{error}</td></tr>
               ) : pageData.length === 0 ? (
-                <tr><td colSpan={HEAD.length + 1} className="p-6 text-center text-blue-gray-500">Sin registros.</td></tr>
+                <tr><td colSpan={10} className="p-6 text-center text-blue-gray-500">Sin registros.</td></tr>
               ) : pageData.map(d => (
                 <tr key={d.id} className="border-b">
                   <td className="p-3">{d.atestado}</td>
@@ -685,9 +1156,14 @@ export default function Docentes() {
                           </Button>
                         </span>
                       </Tooltip>
-                      <Tooltip content="Disponible en próximos endpoints">
+
+                      <Tooltip content="Editar">
                         <span>
-                          <Button size="sm" className="bg-[#FFDA00] text-[#2B338C] p-2 opacity-60 cursor-not-allowed" disabled>
+                          <Button
+                            size="sm"
+                            className="bg-[#FFDA00] text-[#2B338C] p-2"
+                            onClick={() => { setEditId(d.id); setOpenEdit(true); }}
+                          >
                             <PencilSquareIcon className="h-4 w-4" />
                           </Button>
                         </span>
@@ -718,10 +1194,18 @@ export default function Docentes() {
       </Card>
 
       {/* Modales */}
-      <AgregarDocente open={openAdd} onClose={() => setOpenAdd(false)} onSaved={loadRows} />
+      <AgregarDocente
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        onSaved={(newId) => { setLastTouchedId(newId ?? null); loadRows(); }}
+      />
       <FichaDocente open={openFicha} onClose={() => setOpenFicha(false)} id={fichaId} />
+      <EditarDocente
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        id={editId}
+        onSaved={(savedId) => { setLastTouchedId(savedId ?? null); loadRows(); }}
+      />
     </div>
   );
-  
 }
-
