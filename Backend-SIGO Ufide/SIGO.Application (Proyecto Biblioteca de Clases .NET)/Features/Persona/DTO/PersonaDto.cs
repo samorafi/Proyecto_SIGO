@@ -13,7 +13,6 @@ namespace SIGO.Application.Features.Persona.DTO
         public DateTime? FechaIngreso { get; set; }
         public string? Comentarios { get; set; }
 
-        // Datos de relaciones (nombres en lugar de IDs para el frontend)
         public string? Genero { get; set; }
         public string? Provincia { get; set; }
         public string? Canton { get; set; }
@@ -21,6 +20,12 @@ namespace SIGO.Application.Features.Persona.DTO
         public string? Atestado { get; set; }
         public string? Estado { get; set; }
         public string? TipoContrato { get; set; }
+        public string? RolDocente { get; set; }
+        public int? EstadoPersonaId { get; set; }
+        public int? MotivoDesvinculacionId { get; set; }
+        public int? PeriodoDesvinculacionId { get; set; }
+        public bool EnLinea { get; set; }
+
 
         public static PersonaDto FromEntity(Domain.Entities.Persona persona)
         {
@@ -39,7 +44,12 @@ namespace SIGO.Application.Features.Persona.DTO
                 Categoria = persona.CategoriaDocente?.Nombre,
                 Atestado = persona.Atestado?.Nombre,
                 Estado = persona.EstadoPersona?.Nombre,
-                TipoContrato = persona.TipoContrato?.Nombre
+                TipoContrato = persona.TipoContrato?.Nombre,
+                RolDocente = persona.RolDocente?.Nombre,
+                EstadoPersonaId = persona.EstadoPersonaId,
+                MotivoDesvinculacionId = persona.MotivoDesvinculacionId,
+                PeriodoDesvinculacionId = persona.PeriodoDesvinculacionId,
+                EnLinea = persona.EnLinea
             };
         }
     }

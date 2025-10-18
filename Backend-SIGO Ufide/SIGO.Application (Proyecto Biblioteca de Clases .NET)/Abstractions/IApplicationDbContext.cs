@@ -32,7 +32,7 @@ namespace SIGO.Application.Abstractions
         DbSet<Coordinacion> Coordinaciones { get; }
         DbSet<CoordinacionCurso> CoordinacionesCursos { get; }
 
-
+        DbSet<RolDocente> RolesDocente { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

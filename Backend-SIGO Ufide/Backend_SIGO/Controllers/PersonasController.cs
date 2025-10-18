@@ -1,9 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SIGO.Application.Features.Persona.Commands.Activate;
-using SIGO.Application.Features.Persona.Commands.Deactivate;
-using SIGO.Application.Features.Persona.Commands.Delete;
 using SIGO.Application.Features.Persona.Commands.Update;
 using SIGO.Application.Features.Persona.Queries.GetAll;
 using SIGO.Application.Features.Persona.Queries.GetById;
@@ -42,7 +39,7 @@ namespace SIGO.Api.Controllers
             return Ok(personas);
         }
 
-        // GET: api/personas/5
+        // GET: api/personas/id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -64,34 +61,6 @@ namespace SIGO.Api.Controllers
             return NoContent();
         }
 
-        // DELETE: api/personas/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var result = await _mediator.Send(new DeletePersonaCommand { Id = id });
-            return result ? NoContent() : NotFound();
-        }
-
-        // PUT: api/Personas/5/inactivar
-        [HttpPut("{id}/inactivar")]
-        public async Task<IActionResult> Inactivar(int id, [FromBody] DeactivatePersonaCommand command)
-        {
-            // Asegurarnos de que el ID de la ruta y el del comando coinciden
-            command.Id = id;
-
-            var result = await _mediator.Send(command);
-
-            return result ? NoContent() : NotFound();
-        }
-
-        // PUT: api/Personas/5/activate
-        [HttpPut("{id}/activate")]
-        public async Task<IActionResult> Activate(int id)
-        {
-            var command = new ActivatePersonaCommand { Id = id };
-            var result = await _mediator.Send(command);
-            return result ? NoContent() : NotFound();
-        }
 
         // GET api/personas/coordinadores?soloActivas=true
         [HttpGet("coordinadores")]

@@ -37,8 +37,12 @@ namespace SIGO.Application.Features.Persona.Commands.Update
             persona.AtestadoId = request.AtestadoId;
             persona.EstadoPersonaId = request.EstadoPersonaId;
             persona.TipoContratoId = request.TipoContratoId;
+            persona.RolDocenteId = request.RolDocenteId;
             persona.MotivoDesvinculacionId = request.MotivoDesvinculacionId;
             persona.PeriodoDesvinculacionId = request.PeriodoDesvinculacionId;
+            if (request.EnLinea.HasValue)
+                persona.EnLinea = request.EnLinea.Value;
+
 
             await _context.SaveChangesAsync(cancellationToken);
 

@@ -26,6 +26,7 @@ namespace SIGO.Application.Features.Persona.Queries.GetById
                 .Include(p => p.Atestado)
                 .Include(p => p.EstadoPersona)
                 .Include(p => p.TipoContrato)
+                .Include(p => p.RolDocente)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             return persona == null ? null : PersonaDto.FromEntity(persona);

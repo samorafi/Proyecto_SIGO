@@ -480,14 +480,14 @@ export default function Docentes() {
 
   // columnas (exactamente lo que pediste)
   const HEAD = [
+    { key: "atestado", label: "Atestado" },
     { key: "nombre", label: "Nombre" },
     { key: "cedula", label: "Cédula" },
     { key: "genero", label: "Género" },
     { key: "correo", label: "Correo" },
     { key: "telefono", label: "Teléfono" },
     { key: "categoria", label: "Categoría" },
-    { key: "tipoContrato", label: "Contratación" },
-    { key: "atestado", label: "Atestado" },
+    { key: "tipoContrato", label: "Contratación" },    
     { key: "estado", label: "Estado" },
   ];
 
@@ -562,14 +562,14 @@ export default function Docentes() {
                 <tr><td colSpan={HEAD.length + 1} className="p-6 text-center text-blue-gray-500">Sin registros.</td></tr>
               ) : pageData.map(d => (
                 <tr key={d.id} className="border-b">
+                  <td className="p-3">{d.atestado}</td>
                   <td className="p-3">{d.nombre}</td>
                   <td className="p-3">{d.cedula}</td>
                   <td className="p-3">{d.genero}</td>
                   <td className="p-3">{d.correo}</td>
                   <td className="p-3">{d.telefono}</td>
                   <td className="p-3">{d.categoria}</td>
-                  <td className="p-3">{d.tipoContrato}</td>
-                  <td className="p-3">{d.atestado}</td>
+                  <td className="p-3">{d.tipoContrato}</td>                  
                   <td className="p-3"><EstadoChip value={d.estado} /></td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">

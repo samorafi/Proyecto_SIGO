@@ -16,30 +16,34 @@ namespace SIGO.Application.Features.Personas.Commands.Create
 
         public async Task<int> Handle(CreatePersonaCommand request, CancellationToken cancellationToken)
         {
-            var persona = new PersonaEntity
+            var entity = new Domain.Entities.Persona
             {
-                // Mapeo de todos los campos desde el command
                 Nombre = request.Nombre,
                 Cedula = request.Cedula,
                 Correo = request.Correo,
                 Telefono = request.Telefono,
-                FechaIngreso = request.FechaIngreso ?? DateTime.UtcNow, // Si no viene fecha, pone la actual
+                FechaIngreso = request.FechaIngreso,
                 Comentarios = request.Comentarios,
+
                 GeneroId = request.GeneroId,
                 ProvinciaId = request.ProvinciaId,
                 CantonId = request.CantonId,
                 CategoriaId = request.CategoriaId,
                 AtestadoId = request.AtestadoId,
-                EstadoPersonaId = request.EstadoPersonaId,
                 TipoContratoId = request.TipoContratoId,
-                MotivoDesvinculacionId = request.MotivoDesvinculacionId,
-                PeriodoDesvinculacionId = request.PeriodoDesvinculacionId
+                RolDocenteId = request.RolDocenteId,
+
+                EstadoPersonaId = 1,
+                MotivoDesvinculacionId = null,
+                PeriodoDesvinculacionId = null,
+
+                EnLinea = request.EnLinea ?? false
             };
 
-            _context.Personas.Add(persona);
+            _context.Personas.Add(entity);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return persona.Id;
+            return entity.Id;
         }
     }
 }

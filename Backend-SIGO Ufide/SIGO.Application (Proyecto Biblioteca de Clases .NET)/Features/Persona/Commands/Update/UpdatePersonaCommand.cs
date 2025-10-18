@@ -18,7 +18,10 @@ namespace SIGO.Application.Features.Persona.Commands.Update
         public int? AtestadoId { get; set; }
         public int? EstadoPersonaId { get; set; }
         public int? TipoContratoId { get; set; }
+        public int? RolDocenteId { get; set; }
         public int? MotivoDesvinculacionId { get; set; }
         public int? PeriodoDesvinculacionId { get; set; }
+
+        public bool? EnLinea { get; set; }
     }
 }

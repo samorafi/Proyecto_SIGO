@@ -7,8 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-//manejar la consulta para obtener todas las personas.
-
 namespace SIGO.Application.Features.Persona.Queries.GetAll
 {
     public class GetAllPersonasQueryHandler : IRequestHandler<GetAllPersonasQuery, IEnumerable<PersonaDto>>
@@ -30,7 +28,8 @@ namespace SIGO.Application.Features.Persona.Queries.GetAll
                 .Include(p => p.Atestado)
                 .Include(p => p.EstadoPersona)
                 .Include(p => p.TipoContrato)
-                .ToListAsync(cancellationToken);//Convierte los Resultados en una Lista
+                .Include(p => p.RolDocente)
+                .ToListAsync(cancellationToken);  //Convierte los Resultados en una Lista
 
             return personas.Select(PersonaDto.FromEntity);
         }

@@ -1,366 +1,167 @@
+-- ========================================================================================
+-- Creacion y selección del Schema
+-- ========================================================================================
+
 CREATE SCHEMA IF NOT EXISTS universidad;
 SET search_path TO universidad;
 BEGIN;
--- ======================
--- Catálogos generales
--- ======================
+
+-- ========================================================================================
+-- Catálogos generales (No necesitan CRUD, solo datos inyectados)
+-- ========================================================================================
+
 CREATE TABLE genero (
   genero_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE provincia (
   provincia_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE canton (
   canton_id SERIAL PRIMARY KEY,
   provincia_id INT NOT NULL REFERENCES provincia(provincia_id),
-  nombre TEXT NOT NULL,
-  UNIQUE (provincia_id, nombre)
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE categoria_docente (
   categoria_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE tipo_contrato (
   tipo_contrato_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE estado_persona (
   estado_persona_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE atestado (
   atestado_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE sede (
   sede_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL 
+  nombre TEXT NOT NULL 
 );
+
 CREATE TABLE grado (
   grado_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE horario (
   horario_id SERIAL PRIMARY KEY,
-  dia TEXT UNIQUE NOT NULL,
-  rango TEXT UNIQUE NOT NULL
+  dia TEXT NOT NULL,
+  rango TEXT NOT NULL
 );
+
 CREATE TABLE modalidad (
   modalidad_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE accion_oferta (
   accion_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
+
 CREATE TABLE motivo_desvinculacion (
   motivo_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL
+  nombre TEXT NOT NULL
 );
-CREATE TABLE nomina_estado (
-  nomina_estado_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL 
-);
-CREATE TABLE periodo (
-  periodo_id SERIAL PRIMARY KEY,
-  anio INT NOT NULL,
-  numero INT NOT NULL CHECK (numero BETWEEN 1 AND 4),
-  UNIQUE (anio, numero)
-);
+
 CREATE TABLE rol_docente (
   rol_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL 
-);
--- ======================
--- Personas
--- ======================
-CREATE TABLE persona (
-  persona_id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  cedula TEXT UNIQUE NOT NULL,
-  genero_id INT REFERENCES genero(genero_id),  --
-  correo TEXT UNIQUE NOT NULL,
-  telefono TEXT,
-  provincia_id INT REFERENCES provincia(provincia_id), --
-  canton_id INT REFERENCES canton(canton_id), --
-  categoria_id INT REFERENCES categoria_docente(categoria_id), --
-  estado_persona_id INT REFERENCES estado_persona(estado_persona_id), --
-  fecha_ingreso DATE,
-  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id), --
-  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id), --
-  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id), --
-  comentarios TEXT
-);
-CREATE TABLE persona_atestado (
-  persona_id INT NOT NULL REFERENCES persona(persona_id) ON DELETE CASCADE,
-  atestado_id INT NOT NULL REFERENCES atestado(atestado_id),
-  PRIMARY KEY (persona_id, atestado_id)
-);
--- ======================
--- Académico
--- ======================
-CREATE TABLE carrera (
-  carrera_id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,  
-  UNIQUE (nombre)
-);
-CREATE TABLE curso (
-  curso_id SERIAL PRIMARY KEY,
-  codigo TEXT NOT NULL,
-  nombre TEXT NOT NULL, 
-  carrera_id INT REFERENCES carrera(carrera_id),
-  grado_id INT REFERENCES grado(grado_id),
-  es_netcad BOOLEAN NOT NULL DEFAULT FALSE,
-  UNIQUE (codigo)
-);
-CREATE TABLE oferta (
-  oferta_id SERIAL PRIMARY KEY,
-  curso_id INT NOT NULL REFERENCES curso(curso_id),
-  sede_id INT NOT NULL REFERENCES sede(sede_id), --
-  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id), --
-  horario_id INT NOT NULL REFERENCES horario(horario_id), --
-  periodo_id INT NOT NULL REFERENCES periodo(periodo_id), --
-  accion_id INT REFERENCES accion_oferta(accion_id), --
-  coordinador_id INT REFERENCES persona(persona_id), --
-  comentarios TEXT,
-  UNIQUE (curso_id, sede_id, modalidad_id, periodo_id)
-);
-CREATE TABLE grupo (  -- grupo creado despues de aceptada la oferta
-  grupo_id SERIAL PRIMARY KEY,
-  oferta_id INT NOT NULL REFERENCES oferta(oferta_id) ON DELETE CASCADE,
-  numero INT NOT NULL,        
-  cupo INT,
-  matricula INT,
-  UNIQUE (oferta_id, numero)
+  nombre TEXT NOT NULL 
 );
 
-CREATE TABLE grupo_asignacion (
-  grupo_asignacion_id SERIAL PRIMARY KEY,
-  grupo_id INT NOT NULL REFERENCES grupo(grupo_id) ON DELETE CASCADE,
-  persona_id INT NOT NULL REFERENCES persona(persona_id),
-  rol_id INT NOT NULL REFERENCES rol_docente(rol_id),
-  UNIQUE (grupo_id, persona_id, rol_id)
-);
-CREATE TABLE coordinacion (
-  coordinacion_id SERIAL PRIMARY KEY,
-  persona_id INT NOT NULL REFERENCES persona(persona_id),   -- coordinador
-  carrera_id INT REFERENCES carrera(carrera_id),
-  curso_id INT REFERENCES curso(curso_id),
-  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
-  UNIQUE (persona_id, carrera_id, curso_id, periodo_id)
-);
--- ======================
--- Nómina
--- ======================
-CREATE TABLE nomina (
-  nomina_id SERIAL PRIMARY KEY,
-  persona_id INT NOT NULL REFERENCES persona(persona_id),
-  fecha_ingreso DATE NOT NULL,
-  fecha_salida DATE,
-  nomina_estado_id INT REFERENCES nomina_estado(nomina_estado_id),
-  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
-  categoria_id INT REFERENCES categoria_docente(categoria_id)
-);
--- ======================
--- Usuario
--- ======================
+-- =====INSERTS NECESARIOS=====
 
-CREATE SCHEMA IF NOT EXISTS universidad;
-SET search_path TO universidad;
-BEGIN;
+INSERT INTO universidad.genero (nombre) VALUES 
+	('Masculino'), 
+	('Femenino'), 
+	('Otro');
 
-CREATE TABLE usuario (
-  usuario_id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  correo TEXT UNIQUE NOT NULL,
-  contrasena TEXT NOT NULL,
-  activo BOOLEAN DEFAULT TRUE
-);
+INSERT INTO universidad.provincia (nombre) VALUES 
+	('San José'), 
+	('Alajuela'), 
+	('Cartago'), 
+	('Heredia'), 
+	('Guanacaste'), 
+	('Puntarenas'), 
+	('Limón');
 
--- ============================================================================================================================
--- ROLES
--- ============================================================================================================================
-CREATE TABLE rol (
-  rol_id SERIAL PRIMARY KEY,
-  nombre TEXT UNIQUE NOT NULL,
-  isSystem boolean
-);
-
--- ===============================
--- PERMISOS
--- ===============================
-CREATE TABLE permiso (
-  permiso_id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  clave TEXT UNIQUE NOT NULL,    -- Ej: DOCENTES_VIEW
-  ruta TEXT NOT NULL             -- Ej: /docentes
-);
-
--- ===============================
--- RELACIÓN USUARIO - ROL (N:M)
--- ===============================
-CREATE TABLE usuario_rol (
-  usuario_id INT NOT NULL REFERENCES usuario(usuario_id) ON DELETE CASCADE,
-  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
-  PRIMARY KEY (usuario_id, rol_id)
-);
-
--- ===============================
--- RELACIÓN ROL - PERMISO (N:M)
--- ===============================
-CREATE TABLE rol_permiso (
-  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
-  permiso_id INT NOT NULL REFERENCES permiso(permiso_id) ON DELETE CASCADE,
-  PRIMARY KEY (rol_id, permiso_id)
-);
-
--- ===============================
--- CREAR ROL ADMINISTRADOR
--- ===============================
-
-INSERT INTO rol (nombre,isSystem)
-VALUES ('Administrador',true);
-
--- ===============================
--- CREAR PERMISOS (vistas actuales)
--- ===============================
-INSERT INTO permiso (nombre, clave, ruta) VALUES
-('Gestión de Usuarios', 'USUARIOS_VIEW', '/dashboard/usuarios'),
-('Gestión de Roles', 'ROLES_VIEW', '/dashboard/roles'),
-('Gestión de Docentes', 'DOCENTES_VIEW', '/dashboard/docentes'),
-('Gestión de Ofertas', 'OFERTAS_VIEW', '/dashboard/ofertas'),
-('Reportes', 'REPORTES_VIEW', '/dashboard/reportes'),
-('Dashboard', 'DASHBOARD_VIEW', '/dashboard'),
-('Perfil', 'PERFIL_VIEW', '/dashboard/perfil');
-
--- ===============================
--- CREAR USUARIO ADMINISTRADOR
--- ===============================
-INSERT INTO usuario (nombre, correo, contrasena, activo)
-VALUES ('Admin Principal', 'admin@sigo.com', '$2b$12$vVHfy3HrXK/F3PuxYEK3N.L3WtbinB8bpzXyUaRg.m2bIVHSTI.YK', TRUE);
-
--- CONTRASEÑA: admin123
-
--- ===============================
--- RELACIONAR USUARIO ADMINISTRADOR CON ROL ADMINISTRADOR
--- ===============================
-INSERT INTO usuario_rol (usuario_id, rol_id)
-SELECT u.usuario_id, r.rol_id
-FROM usuario u, rol r
-WHERE u.correo = 'admin@sigo.com'
-  AND r.nombre = 'Administrador';
-
--- ===============================
--- DAR PERMISOS AL ROL ADMINISTRADOR
--- (Asignar todos los permisos creados)
--- ===============================
-INSERT INTO rol_permiso (rol_id, permiso_id)
-SELECT r.rol_id, p.permiso_id
-FROM rol r, permiso p
-WHERE r.nombre = 'Administrador'
-ON CONFLICT DO NOTHING;
-
-============================================================================================================================
-============================================================================================================================
-
-DROP TABLE IF EXISTS persona_atestado;
-
-ALTER TABLE persona
-ADD COLUMN atestado_id INT REFERENCES atestado(atestado_id);
-
-
-----------------------------------------------
---Insertar datos en las tablas genero--------
----------------------------------------------
--- Poblar la tabla de géneros
-INSERT INTO universidad.genero (nombre) VALUES ('Masculino'), ('Femenino'), ('Otro');
-
-
--- Poblar la tabla de provincias
-INSERT INTO universidad.provincia (nombre) VALUES ('San José'), ('Alajuela'), ('Cartago'), ('Heredia'), ('Guanacaste'), ('Puntarenas'), ('Limón');
-
--- Poblar la tabla de cantones (ejemplos)
 INSERT INTO universidad.canton (provincia_id, nombre) VALUES
-(1, 'San José'), (1, 'Desamparados'), (1, 'Pérez Zeledón'),
-(2, 'Alajuela'), (2, 'San Carlos'), (2, 'Grecia'),
-(3, 'Cartago'), (3, 'Paraíso'), (3, 'La Unión'),
-(4, 'Heredia'), (4, 'Barva'), (4, 'Santo Domingo'),
-(5, 'Liberia'), (5, 'Nicoya'), (5, 'Santa Cruz'),
-(6, 'Puntarenas'), (6, 'Esparza'), (6, 'Buenos Aires'),
-(7, 'Limón'), (7, 'Pococí'), (7, 'Siquirres');
+	(1, 'San José'), (1, 'Escazú'), (1, 'Desamparados'), (1, 'Puriscal'), 
+	(1, 'Tarrazú'), (1, 'Aserrí'), (1, 'Mora'), (1, 'Goicoechea'), 
+	(1, 'Santa Ana'), (1, 'Alajuelita'), (1, 'Vázquez de Coronado'), 
+	(1, 'Acosta'), (1, 'Tibás'), (1, 'Moravia'), (1, 'Montes de Oca'), 
+	(1, 'Turrubares'), (1, 'Dota'), (1, 'Curridabat'), 
+	(1, 'Pérez Zeledón'), (1, 'León Cortés Castro'),
 
--- Poblar la tabla de categorías de docente
-INSERT INTO universidad.categoria_docente (nombre) VALUES ('Bachiller'), ('Licenciado'), ('Máster'), ('Doctor');
+	(2, 'Alajuela'), (2, 'San Ramón'), (2, 'Grecia'), (2, 'San Mateo'), 
+	(2, 'Atenas'), (2, 'Naranjo'), (2, 'Palmares'), (2, 'Poás'), 
+	(2, 'Orotina'), (2, 'San Carlos'), (2, 'Zarcero'), (2, 'Sarchí'), 
+	(2, 'Upala'), (2, 'Los Chiles'), (2, 'Guatuso'), (2, 'Río Cuarto'),
 
--- Poblar la tabla de tipos de contrato
-INSERT INTO universidad.tipo_contrato (nombre) VALUES ('Tiempo Completo'), ('Medio Tiempo'), ('Servicios Profesionales');
+	(3, 'Cartago'), (3, 'Paraíso'), (3, 'La Unión'), (3, 'Jiménez'), 
+	(3, 'Turrialba'), (3, 'Alvarado'), (3, 'Oreamuno'), (3, 'El Guarco'),
 
+	(4, 'Heredia'), (4, 'Barva'), (4, 'Santo Domingo'), (4, 'Santa Bárbara'), 
+	(4, 'San Rafael'), (4, 'San Isidro'), (4, 'Belén'), (4, 'Flores'), 
+	(4, 'San Pablo'), (4, 'Sarapiquí'),
 
--- Poblar la tabla de estados de persona
-INSERT INTO universidad.estado_persona (nombre) VALUES ('Activo'), ('Inactivo'), ('Pendiente');
+	(5, 'Liberia'), (5, 'Nicoya'), (5, 'Santa Cruz'), (5, 'Bagaces'), 
+	(5, 'Carrillo'), (5, 'Cañas'), (5, 'Abangares'), (5, 'Tilarán'), 
+	(5, 'Nandayure'), (5, 'La Cruz'), (5, 'Hojancha'),
 
--- Poblar la tabla de motivos de desvinculación
-INSERT INTO universidad.motivo_desvinculacion (nombre) VALUES ('Renuncia'), ('Pensión'), ('Finalización de Contrato'), ('Despido');
+	(6, 'Puntarenas'), (6, 'Esparza'), (6, 'Buenos Aires'), (6, 'Montes de Oro'), 
+	(6, 'Osa'), (6, 'Quepos'), (6, 'Golfito'), (6, 'Coto Brus'), 
+	(6, 'Parrita'), (6, 'Corredores'), (6, 'Garabito'),
 
--- Poblar la tabla de periodos (ejemplos)
-INSERT INTO universidad.periodo (anio, numero) VALUES (2025, 1), (2025, 2), (2025, 3);
+	(7, 'Limón'), (7, 'Pococí'), (7, 'Siquirres'), (7, 'Talamanca'), 
+	(7, 'Matina'), (7, 'Guácimo');
 
-SELECT * FROM universidad.genero;
-SELECT * FROM universidad.provincia;
-SELECT * FROM universidad.persona;
+INSERT INTO universidad.categoria_docente (nombre) VALUES 
+	('Dirección'), 
+	('Académico con Permanencia'), 
+	('Docente Regular'), ('Productor'),
+	('Facilitador'), 
+	('Docente Regular Educación Continua'), 
+	('Docente Regular Postgrados');
 
--- CAMBIOS PARA EL REGISTRO DE BLOQUEO DE USUARIOS
+INSERT INTO universidad.tipo_contrato (nombre) VALUES 
+	('Planilla'), 
+	('Honorarios');
 
--- 1. Contador de intentos fallidos (CRÍTICO: Para contar hasta 3)
+INSERT INTO universidad.estado_persona (nombre) VALUES 
+	('Activo'), 
+	('Inactivo');
 
-ALTER TABLE "usuario"
-ADD COLUMN "AccessFailedCount" INTEGER NOT NULL DEFAULT 0;
+INSERT INTO universidad.atestado (nombre) VALUES 
+	('Bachiller'), 
+	('Licenciado(a)'), 
+	('Máster'), 
+	('Doctor(a)');
 
--- 2. Fecha de fin de bloqueo (CRÍTICO: Para saber cuándo desbloquear)
-ALTER TABLE "usuario"
-ADD COLUMN "LockoutEnd" TIMESTAMPTZ NULL;
-
--- 3. Habilitación de bloqueo (OPCIONAL: Para que el administrador lo gestione)
-ALTER TABLE "usuario"
-ADD COLUMN "LockoutEnabled" BOOLEAN NOT NULL DEFAULT TRUE;
-
-
--- =============================
--- CAMBIOS E INSERTS PARA PROBAR OFERTAS
--- =============================
---Importante aplicar estos ALTER
-ALTER TABLE universidad.curso ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE universidad.horario DROP CONSTRAINT IF EXISTS horario_dia_key;
-ALTER TABLE universidad.horario DROP CONSTRAINT IF EXISTS horario_rango_key;
-ALTER TABLE universidad.oferta DROP CONSTRAINT IF EXISTS oferta_curso_id_sede_id_modalidad_id_periodo_id_key;
-ALTER TABLE universidad.oferta ADD CONSTRAINT ux_oferta_curso UNIQUE (oferta_id);
-ALTER TABLE universidad.carrera ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
-  
--- MODALIDAD
-INSERT INTO universidad.modalidad (modalidad_id, nombre) VALUES
-  (1,'Presencial'),
-  (2,'Virtual')
-ON CONFLICT DO NOTHING;
-
--- ACCIÓN DE OFERTA (workflow)
-INSERT INTO universidad.accion_oferta (accion_id, nombre) VALUES
-  (1,'Enviada'),
-  (2,'Pendiente'),
-  (3,'Aceptada'),
-  (4,'Rechazada'),
-  (5,'Cancelada')
-ON CONFLICT DO NOTHING;
-
--- SEDES
 INSERT INTO universidad.sede (sede_id, nombre) VALUES
   (1,'Sede Heredia'),
   (2,'Sede San Pedro'),
-  (3,'Campus Virtual')
-ON CONFLICT DO NOTHING;
+  (3,'Campus Virtual');
 
--- HORARIOS
+INSERT INTO universidad.grado (grado_id, nombre) VALUES
+  (1,'Diplomado'),
+  (2,'Bachillerato'),
+  (3,'Licenciatura'),
+  (4,'Maestría');
+
 INSERT INTO universidad.horario (dia, rango) VALUES
   ('Lunes','09:00-12:00'),
   ('Lunes','14:00-17:00'),
@@ -377,73 +178,99 @@ INSERT INTO universidad.horario (dia, rango) VALUES
   ('Viernes','09:00-12:00'),
   ('Viernes','14:00-17:00'),
   ('Viernes','18:00-21:00'),
-  ('Sabado','8:00-11:00')
-ON CONFLICT DO NOTHING;
+  ('Sabado','8:00-11:00');
 
-INSERT INTO universidad.grado (grado_id, nombre) VALUES
-  (1,'Diplomado'),
-  (2,'Bachillerato'),
-  (3,'Licenciatura'),
-  (4,'Maestría')
-ON CONFLICT DO NOTHING;
+INSERT INTO universidad.modalidad (modalidad_id, nombre) VALUES
+  (1,'Presencial'),
+  (2,'Virtual'),
+  (3,'En Línea');
 
-INSERT INTO universidad.carrera (carrera_id, nombre) VALUES
-  (1,'Ingeniería en Sistemas de Computación'),
-  (2,'Administración de Empresas'),
-  (3,'Ingeniería Electrónica')
-ON CONFLICT DO NOTHING;
+INSERT INTO universidad.accion_oferta (accion_id, nombre) VALUES
+  (1,'Enviada'),
+  (2,'Pendiente'),
+  (3,'Aceptada'),
+  (4,'Rechazada'),
+  (5,'Cancelada');
 
--- PERIODOS
-INSERT INTO universidad.periodo (periodo_id, anio, numero) VALUES
-  (4, 2026, 1),
-  (5, 2026, 2),
-  (6, 2026, 3)
-ON CONFLICT DO NOTHING;
+INSERT INTO universidad.motivo_desvinculacion (nombre) VALUES 
+	('Renuncia'),
+	('Despido'), 
+	('Otro');
 
--- CURSOS
-INSERT INTO universidad.curso (curso_id, codigo, nombre, carrera_id, grado_id, es_netcad) VALUES
-  (1, 'CS101',  'Introducción a Programación', NULL, NULL, FALSE),
-  (2, 'BD201',  'Bases de Datos I',            NULL, NULL, FALSE),
-  (3, 'NETC01', 'Fundamentos De Redes',         NULL, NULL, TRUE)
-ON CONFLICT DO NOTHING;
+INSERT INTO universidad.rol_docente (rol_id, nombre) VALUES 
+	(1,'Profesor'), 
+	(2,'Asistente'), 
+	(3,'Profesor/Asistente');
 
-INSERT INTO universidad.oferta
-  (oferta_id, curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
-VALUES
-  (1, 1, 1, 1, 1, 1, 1, NULL, 'CS101 Presencial 2025-3')
-ON CONFLICT DO NOTHING;
+-- ========================================================================================
+-- Tablas con necesidad de CRUD
+-- ========================================================================================
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
+CREATE TABLE periodo (
+  periodo_id SERIAL PRIMARY KEY,
+  anio INT NOT NULL,
+  numero INT NOT NULL CHECK (numero BETWEEN 1 AND 3),
+  estado BOOLEAN NOT NULL DEFAULT TRUE
+);
 
-ALTER TABLE universidad.periodo ADD COLUMN IF NOT EXISTS estado BOOLEAN NOT NULL DEFAULT TRUE;
+-- ============================================
+-- Sección docentes
+-- ============================================
 
+CREATE TABLE persona (
+  persona_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  cedula TEXT UNIQUE NOT NULL,
+  genero_id INT REFERENCES genero(genero_id),
+  correo TEXT UNIQUE NOT NULL,
+  telefono TEXT,
+  atestado_id INT REFERENCES atestado(atestado_id),
+  provincia_id INT REFERENCES provincia(provincia_id),
+  canton_id INT REFERENCES canton(canton_id),
+  categoria_id INT REFERENCES categoria_docente(categoria_id),
+  rol_docente_id INT REFERENCES rol_docente(rol_id),
+  estado_persona_id INT REFERENCES estado_persona(estado_persona_id),
+  fecha_ingreso DATE,
+  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
+  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id),
+  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id),
+  comentarios TEXT
+);
 
-DO $$
-DECLARE
-  chkname text;
-BEGIN
-  SELECT conname INTO chkname
-  FROM pg_constraint c
-  JOIN pg_class t ON t.oid = c.conrelid
-  JOIN pg_namespace n ON n.oid = t.relnamespace
-  WHERE c.contype = 'c'
-    AND n.nspname = 'universidad'
-    AND t.relname = 'periodo'
-    AND pg_get_constraintdef(c.oid) ILIKE '%numero%between%1%and%4%';
+ALTER TABLE universidad.persona
+  ALTER COLUMN estado_persona_id SET DEFAULT 1;
+  
+ALTER TABLE universidad.persona
+  ADD COLUMN IF NOT EXISTS en_linea BOOLEAN NOT NULL DEFAULT FALSE;
+  
+  
+-- ============================================
+-- Sección Académica
+-- ============================================
 
-  IF chkname IS NOT NULL THEN
-    EXECUTE format('ALTER TABLE universidad.periodo DROP CONSTRAINT %I', chkname);
-  END IF;
+CREATE TABLE carrera (
+  carrera_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,  
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE (nombre)
+);
 
-  EXECUTE 'ALTER TABLE universidad.periodo
-           ADD CONSTRAINT ck_periodo_numero_1_3
-           CHECK (numero BETWEEN 1 AND 3)';
-END$$;
+CREATE TABLE curso (
+  curso_id SERIAL PRIMARY KEY,
+  codigo TEXT NOT NULL,
+  nombre TEXT NOT NULL, 
+  carrera_id INT REFERENCES carrera(carrera_id),
+  grado_id INT REFERENCES grado(grado_id),
+  es_netcad BOOLEAN NOT NULL DEFAULT FALSE,
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE (codigo)
+);
 
-drop table coordinacion;
+-- ============================================
+-- Sección de Coordinación
+-- ============================================
 
-CREATE TABLE IF NOT EXISTS coordinacion (
+CREATE TABLE coordinacion (
   coordinacion_id SERIAL PRIMARY KEY,
   persona_id INT NOT NULL REFERENCES persona(persona_id),
   carrera_id INT REFERENCES carrera(carrera_id),
@@ -452,10 +279,124 @@ CREATE TABLE IF NOT EXISTS coordinacion (
   comentarios TEXT
 );
 
-CREATE TABLE IF NOT EXISTS coordinacion_curso (
+CREATE TABLE coordinacion_curso (
   coordinacion_curso_id SERIAL PRIMARY KEY,
   coordinacion_id INT NOT NULL REFERENCES universidad.coordinacion(coordinacion_id) ON DELETE CASCADE,
   curso_id INT NOT NULL REFERENCES universidad.curso(curso_id),
   estado BOOLEAN NOT NULL DEFAULT TRUE,
   comentarios TEXT
 );
+
+-- ============================================
+-- Sección de Oferta Académica
+-- ============================================
+
+CREATE TABLE oferta (
+  oferta_id SERIAL UNIQUE PRIMARY KEY,
+  curso_id INT NOT NULL REFERENCES curso(curso_id),
+  sede_id INT NOT NULL REFERENCES sede(sede_id), --
+  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id), --
+  horario_id INT NOT NULL REFERENCES horario(horario_id), --
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id), --
+  accion_id INT REFERENCES accion_oferta(accion_id), --
+  coordinador_id INT REFERENCES persona(persona_id), --
+  comentarios TEXT
+);
+
+CREATE TABLE grupo (
+  grupo_id SERIAL PRIMARY KEY,
+  oferta_id INT NOT NULL REFERENCES oferta(oferta_id) ON DELETE CASCADE,
+  numero INT NOT NULL,        
+  cupo INT,
+  matricula INT,
+  UNIQUE (oferta_id, numero)
+);
+
+CREATE TABLE grupo_asignacion (
+  grupo_asignacion_id SERIAL PRIMARY KEY,
+  grupo_id INT NOT NULL REFERENCES grupo(grupo_id) ON DELETE CASCADE,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  rol_id INT NOT NULL REFERENCES rol_docente(rol_id),
+  UNIQUE (grupo_id, persona_id, rol_id)
+);
+
+-- ============================================
+-- Sección de Usuario, Roles de Usuario y Permisos
+-- ============================================
+
+CREATE TABLE usuario (
+  usuario_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  correo TEXT UNIQUE NOT NULL,
+  contrasena TEXT NOT NULL,
+  activo BOOLEAN DEFAULT TRUE
+);
+
+-- 1. Contador de intentos fallidos (CRÍTICO: Para contar hasta 3)
+ALTER TABLE universidad.usuario ADD COLUMN "AccessFailedCount" INTEGER NOT NULL DEFAULT 0;
+
+-- 2. Fecha de fin de bloqueo (CRÍTICO: Para saber cuándo desbloquear)
+ALTER TABLE universidad.usuario ADD COLUMN "LockoutEnd" TIMESTAMPTZ NULL;
+
+-- 3. Habilitación de bloqueo (OPCIONAL: Para que el administrador lo gestione)
+ALTER TABLE universidad.usuario ADD COLUMN "LockoutEnabled" BOOLEAN NOT NULL DEFAULT TRUE;
+
+CREATE TABLE rol (
+  rol_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL,
+  isSystem boolean
+);
+
+CREATE TABLE permiso (
+  permiso_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  clave TEXT UNIQUE NOT NULL,
+  ruta TEXT NOT NULL
+);
+
+CREATE TABLE usuario_rol ( -- RELACIÓN USUARIO - ROL (N:M)
+  usuario_id INT NOT NULL REFERENCES usuario(usuario_id) ON DELETE CASCADE,
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, rol_id)
+);
+
+CREATE TABLE rol_permiso ( -- RELACIÓN ROL - PERMISO (N:M)
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  permiso_id INT NOT NULL REFERENCES permiso(permiso_id) ON DELETE CASCADE,
+  PRIMARY KEY (rol_id, permiso_id)
+);
+
+-- =====INSERTS NECESARIOS=====
+
+INSERT INTO rol (nombre,isSystem)VALUES 
+	('Administrador',true);
+
+INSERT INTO permiso (nombre, clave, ruta) VALUES
+	('Gestión de Usuarios', 'USUARIOS_VIEW', '/dashboard/usuarios'),
+	('Gestión de Roles', 'ROLES_VIEW', '/dashboard/roles'),
+	('Gestión de Docentes', 'DOCENTES_VIEW', '/dashboard/docentes'),
+	('Gestión de Ofertas', 'OFERTAS_VIEW', '/dashboard/ofertas'),
+	('Reportes', 'REPORTES_VIEW', '/dashboard/reportes'),
+	('Dashboard', 'DASHBOARD_VIEW', '/dashboard'),
+	('Perfil', 'PERFIL_VIEW', '/dashboard/perfil');
+
+INSERT INTO usuario (nombre, correo, contrasena, activo)VALUES 
+	('Admin Principal', 'admin@sigo.com', '$2b$12$vVHfy3HrXK/F3PuxYEK3N.L3WtbinB8bpzXyUaRg.m2bIVHSTI.YK', TRUE);
+	-- CONTRASEÑA: admin123
+
+INSERT INTO usuario_rol (usuario_id, rol_id)
+SELECT u.usuario_id, r.rol_id
+FROM usuario u, rol r
+WHERE u.correo = 'admin@sigo.com'
+  AND r.nombre = 'Administrador';
+
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.rol_id, p.permiso_id
+FROM rol r, permiso p
+WHERE r.nombre = 'Administrador';
+
+
+-- ========================================================================================
+-- A partir de este punto agregar los nuevos cambios y documentarlos con Fecha y hora del cambio
+-- ========================================================================================
+

@@ -1,0 +1,334 @@
+-- ========================================================================================
+-- DML SIGO: Periodos, Personas, Carreras, Cursos, Coordinaciones, Ofertas
+-- Requiere que exista el esquema y catálogos del archivo Script SIGODB.txt
+-- ========================================================================================
+
+BEGIN;
+
+SET search_path TO universidad;
+
+-- =========================================
+-- 1) PERIODOS (cuatrimestres: 1..3) 2022-2028
+-- =========================================
+-- Evita duplicados insertando solo los que no existan
+WITH y AS (
+  SELECT generate_series(2022, 2028) AS anio
+),
+q AS (
+  SELECT 1 AS numero UNION ALL SELECT 2 UNION ALL SELECT 3
+)
+INSERT INTO periodo (anio, numero, estado)
+SELECT y.anio, q.numero, TRUE
+FROM y CROSS JOIN q
+WHERE NOT EXISTS (
+  SELECT 1 FROM periodo p WHERE p.anio = y.anio AND p.numero = q.numero
+);
+
+-- =========================================
+-- 2) PERSONAS (5 docentes)
+--    Usa subconsultas por nombre para FKs (robusto ante IDs)
+-- =========================================
+-- Helper: función inline para obtener canton_id por provincia + canton
+-- (Se usa directamente en cada INSERT mediante subselects)
+
+-- Persona 1
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'José Ramírez', '101110001', g.genero_id, 'jose.ramirez@sigo.com', '8888-0001',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2023-02-15', tc.tipo_contrato_id,
+  NULL, NULL, 'Coordinador potencial de Sistemas'
+FROM genero g
+JOIN atestado a ON a.nombre='Licenciado(a)'
+JOIN provincia pr ON pr.nombre='San José'
+JOIN canton c ON c.nombre='Montes de Oca' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='101110001' OR p.correo='jose.ramirez@sigo.com');
+
+-- Persona 2
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Laura Fernández', '202220002', g.genero_id, 'laura.fernandez@sigo.com', '8888-0002',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2022-08-10', tc.tipo_contrato_id,
+  NULL, NULL, 'Experta en Bases de Datos'
+FROM genero g
+JOIN atestado a ON a.nombre='Máster'
+JOIN provincia pr ON pr.nombre='Alajuela'
+JOIN canton c ON c.nombre='San Ramón' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Académico con Permanencia'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Femenino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='202220002' OR p.correo='laura.fernandez@sigo.com');
+
+-- Persona 3
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Carlos Méndez', '303330003', g.genero_id, 'carlos.mendez@sigo.com', '8888-0003',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2024-01-05', tc.tipo_contrato_id,
+  NULL, NULL, 'Instructor de Redes (NetAcad)'
+FROM genero g
+JOIN atestado a ON a.nombre='Bachiller'
+JOIN provincia pr ON pr.nombre='Heredia'
+JOIN canton c ON c.nombre='Belén' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Facilitador'
+JOIN rol_docente rd ON rd.nombre='Profesor/Asistente'
+JOIN tipo_contrato tc ON tc.nombre='Honorarios'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='303330003' OR p.correo='carlos.mendez@sigo.com');
+
+-- Persona 4
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'María Rodríguez', '404440004', g.genero_id, 'maria.rodriguez@sigo.com', '8888-0004',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2023-05-22', tc.tipo_contrato_id,
+  NULL, NULL, 'Docente de Seguridad'
+FROM genero g
+JOIN atestado a ON a.nombre='Máster'
+JOIN provincia pr ON pr.nombre='Cartago'
+JOIN canton c ON c.nombre='Paraíso' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular Postgrados'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Femenino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='404440004' OR p.correo='maria.rodriguez@sigo.com');
+
+-- Persona 5
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Andrés Salazar', '505550005', g.genero_id, 'andres.salazar@sigo.com', '8888-0005',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2024-03-11', tc.tipo_contrato_id,
+  NULL, NULL, 'Full-stack y DevOps'
+FROM genero g
+JOIN atestado a ON a.nombre='Licenciado(a)'
+JOIN provincia pr ON pr.nombre='Limón'
+JOIN canton c ON c.nombre='Pococí' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular Educación Continua'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Honorarios'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='505550005' OR p.correo='andres.salazar@sigo.com');
+
+-- =========================================
+-- 3) CARRERAS (tecnologías)
+-- =========================================
+INSERT INTO carrera (nombre, estado)
+SELECT v.nombre, TRUE
+FROM (VALUES
+  ('Ingeniería en Sistemas'),
+  ('Ciberseguridad'),
+  ('Desarrollo de Software'),
+  ('Redes y Telecomunicaciones')
+) AS v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM carrera c WHERE c.nombre = v.nombre);
+
+-- =========================================
+-- 4) CURSOS (alineados a carreras)
+--    codigo UNIQUE; grado: 1=Diplomado, 2=Bachillerato, 3=Licenciatura, 4=Maestría
+-- =========================================
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'SIS-101', 'Fundamentos de Sistemas', c.carrera_id, 1, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ingeniería en Sistemas'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='SIS-101');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'DEV-201', 'Programación Web I', c.carrera_id, 2, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Desarrollo de Software'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='DEV-201');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'DB-210', 'Bases de Datos', c.carrera_id, 2, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ingeniería en Sistemas'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='DB-210');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'SEC-220', 'Seguridad Informática', c.carrera_id, 3, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ciberseguridad'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='SEC-220');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'NET-110', 'CCNA: Introducción a Redes', c.carrera_id, 2, TRUE, TRUE
+FROM carrera c WHERE c.nombre='Redes y Telecomunicaciones'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='NET-110');
+
+-- =========================================
+-- 5) COORDINACION (persona + carrera + periodo actual)
+--    Usamos el periodo 2025-3 (sept-dic) por contexto de fecha actual
+-- =========================================
+-- Coord 1: José → Ingeniería en Sistemas
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación principal'
+FROM persona p
+JOIN carrera c ON c.nombre='Ingeniería en Sistemas'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='jose.ramirez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- Coord 2: Laura → Desarrollo de Software
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación desarrollo'
+FROM persona p
+JOIN carrera c ON c.nombre='Desarrollo de Software'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='laura.fernandez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- Coord 3: María → Ciberseguridad
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación ciber'
+FROM persona p
+JOIN carrera c ON c.nombre='Ciberseguridad'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='maria.rodriguez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- =========================================
+-- 6) COORDINACION_CURSO (asignar cursos)
+-- =========================================
+-- José coordina SIS-101 y DB-210
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Plan base'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='jose.ramirez@sigo.com'
+JOIN curso cu ON cu.codigo IN ('SIS-101','DB-210')
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- Laura coordina DEV-201
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Front-end track'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='laura.fernandez@sigo.com'
+JOIN curso cu ON cu.codigo = 'DEV-201'
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- María coordina SEC-220
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Seguridad base'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='maria.rodriguez@sigo.com'
+JOIN curso cu ON cu.codigo = 'SEC-220'
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- Carlos (Redes) no es coordinador, pero su curso NET-110 ya quedó en carrera de Redes (lo ofertaremos abajo)
+
+-- =========================================
+-- 7) OFERTAS (todas con accion_id = 1 'Enviada')
+--    Campos: curso_id, sede_id (1..3), modalidad_id (1..3), horario_id, periodo_id, accion_id=1, coordinador_id
+-- =========================================
+-- Oferta 1: SIS-101 (coordinador José) - Presencial - Lunes 18:00-21:00 - Sede Heredia - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 1, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Grupo 1 nocturno'
+FROM curso cu
+JOIN persona p ON p.correo='jose.ramirez@sigo.com'
+JOIN horario h ON h.dia='Lunes' AND h.rango='18:00-21:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='SIS-101'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 2: DB-210 (coordinador José) - Virtual - Martes 14:00-17:00 - Campus Virtual - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 3, 2, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Virtual tarde'
+FROM curso cu
+JOIN persona p ON p.correo='jose.ramirez@sigo.com'
+JOIN horario h ON h.dia='Martes' AND h.rango='14:00-17:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='DB-210'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 3: DEV-201 (coordinador Laura) - Presencial - Miércoles 18:00-21:00 - Sede San Pedro - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 2, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Nocturno lab'
+FROM curso cu
+JOIN persona p ON p.correo='laura.fernandez@sigo.com'
+JOIN horario h ON h.dia='Miercoles' AND h.rango='18:00-21:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='DEV-201'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 4: SEC-220 (coordinador María) - En Línea - Jueves 14:00-17:00 - Campus Virtual - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 3, 3, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Clase sincrónica'
+FROM curso cu
+JOIN persona p ON p.correo='maria.rodriguez@sigo.com'
+JOIN horario h ON h.dia='Jueves' AND h.rango='14:00-17:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='SEC-220'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 5: NET-110 (asignar a Carlos como coordinador para la oferta, aunque no sea de 'coordinacion' formal)
+--           Presencial - Sábado 8:00-11:00 - Sede Heredia - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 1, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'NetAcad sábado'
+FROM curso cu
+JOIN persona p ON p.correo='carlos.mendez@sigo.com'
+JOIN horario h ON h.dia='Sabado' AND h.rango='8:00-11:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='NET-110'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+COMMIT;
