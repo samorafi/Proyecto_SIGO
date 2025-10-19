@@ -2,27 +2,30 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Typography, Avatar, Button, Card, IconButton } from "@material-tailwind/react";
 import { ArrowLeftOnRectangleIcon, UserCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 
 
-export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => {} }) {
+export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => { } }) {
   const navigate = useNavigate();
 
   // Traer el hook de autenticación
   const { user, logout, loading } = useAuth();
 
   // Mostrar un indicador de carga mientras se verifica el estado de autenticación
-  if (loading) 
+  if (loading)
     return <div className="flex items-center justify-center h-full">Cargando...</div>;
 
   const group = routes.find((r) => r.layout === "dashboard");
 
   const handleLogout = () => {
-    logout(); 
-    onClose(); 
+    logout();
+    onClose();
     navigate("/auth/sign-in", { replace: true });
   };
+
+  const [openMenu, setOpenMenu] = useState(null);
 
   const Content = ({ showClose = false }) => (
     <Card className="h-full w-full bg-[#2B338C] text-white rounded-2xl shadow-xl flex flex-col">
@@ -53,10 +56,55 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
         <ul className="flex flex-col gap-1">
           {(group?.pages ?? [])
             .filter((p) => !p.hidden)
-            .map(({ icon, name, path }) => {
-              const fullPath = `/${group.layout}${path}`;
+            .map((item) => {
+              if (item.collapsible) {
+                // Menú desplegable
+                return (
+                  <li key={item.name} className="text-sm">
+                    <button
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-white/10"
+                      onClick={() => setOpenMenu(openMenu === item.name ? null : item.name)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="grid place-items-center">{item.icon}</span>
+                        <span>{item.name}</span>
+                      </div>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+
+                    {openMenu === item.name && (
+                      <ul className="ml-8 mt-1 flex flex-col gap-1">
+                        {item.pages.map((sub) => (
+                          <li key={sub.name}>
+                            <NavLink
+                              to={`/dashboard${sub.path}`}
+                              onClick={onClose}
+                              className={({ isActive }) =>
+                                [
+                                  "flex items-center gap-3 px-3 py-2 rounded-lg transition",
+                                  isActive
+                                    ? "bg-[#FFDA00] text-[#2B338C] font-semibold shadow"
+                                    : "hover:bg-white/10",
+                                ].join(" ")
+                              }
+                            >
+                              <span className="text-sm">{sub.name}</span>
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              }
+
+              // Menú normal
+              const fullPath = `/dashboard${item.path}`;
               return (
-                <li key={name}>
+                <li key={item.name}>
                   <NavLink
                     to={fullPath}
                     onClick={onClose}
@@ -69,8 +117,8 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
                       ].join(" ")
                     }
                   >
-                    <span className="grid place-items-center">{icon}</span>
-                    <span className="text-sm">{name}</span>
+                    <span className="grid place-items-center">{item.icon}</span>
+                    <span className="text-sm">{item.name}</span>
                   </NavLink>
                 </li>
               );
@@ -84,18 +132,18 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
       <div className="p-4">
         <p className="text-sm font-semibold truncate">Bienvenido</p>
         <div className="flex items-center gap-3">
-        {/*<Avatar src="/img/Profile-Holder.png" alt="Usuario Demo" className="ring-2 ring-white/40" /> */}
+          {/*<Avatar src="/img/Profile-Holder.png" alt="Usuario Demo" className="ring-2 ring-white/40" /> */}
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">
-               {user ? user.nombre : 'Invitado'}
+              {user ? user.nombre : 'Invitado'}
             </p>
             <p className="text-xs text-white/80 truncate">
-               {user ? user.correo : 'invitado@ufide.ac.cr'}
+              {user ? user.correo : 'invitado@ufide.ac.cr'}
             </p>
           </div>
         </div>
-        
-        
+
+
         <div className="mt-3 grid grid-cols-2 gap-2">
           {/* Perfil 
           <Link to="/dashboard/perfil" className="col-span-1">
@@ -111,18 +159,18 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
           </Link>
           */}
         </div>
-        
-        
-         <div className="col-span-1" title="Cerrar sesión">
-            <Button
-              size="sm"
-              onClick={handleLogout}
-              className="w-full bg-[#FFDA00] text-[#2B338C] hover:brightness-95 flex items-center justify-center gap-1"
-            >
-              <ArrowLeftOnRectangleIcon className="h-5 w-5" />
-              <span>Cerrar sesión</span>
-            </Button>
-          </div>
+
+
+        <div className="col-span-1" title="Cerrar sesión">
+          <Button
+            size="sm"
+            onClick={handleLogout}
+            className="w-full bg-[#FFDA00] text-[#2B338C] hover:brightness-95 flex items-center justify-center gap-1"
+          >
+            <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+            <span>Cerrar sesión</span>
+          </Button>
+        </div>
       </div>
     </Card>
   );

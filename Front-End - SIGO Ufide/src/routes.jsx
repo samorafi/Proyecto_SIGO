@@ -23,12 +23,24 @@ import OfertasVirtual from "@/pages/ofertas/virtual";
 import Perfil from "@/pages/perfil";
 import SignIn from "@/pages/auth/sign-in";
 
+// Módulo de Ofertas En Línea
+import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
+import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
+
 export const routes = [
   {
     layout: "dashboard",
     pages: [
       // Vistas principales: Ordenadas según su aparición en el menú lateral.
-      { icon: <HomeIcon className="h-5 w-5" />, name: "Ofertas", path: "/ofertas", element: <OfertasIndex /> },
+      {
+        icon: <HomeIcon className="h-5 w-5" />,
+        name: "Ofertas",
+        collapsible: true, 
+        pages: [
+          { name: "En línea", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea /> },
+          { name: "Presenciales - Virtuales", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
+        ],
+      },
       { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes", element: <Docentes /> },
       { icon: <ClipboardDocumentListIcon className="h-5 w-5" />, name: "Reportes", path: "/reportes", element: <Reportes /> },
       { icon: <BookOpenIcon className="h-5 w-5" />, name: "Bitácoras", path: "/bitacoras", element: <Bitacoras /> },
