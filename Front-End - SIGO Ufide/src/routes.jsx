@@ -23,6 +23,14 @@ import OfertasVirtual from "@/pages/ofertas/virtual";
 import Perfil from "@/pages/perfil";
 import SignIn from "@/pages/auth/sign-in";
 
+// Administración del sistema.
+
+// Submódulo de parametros del sistema
+import ParametrosSistema from "@/pages/parametros/ParametrosSistema";
+import CatalogoCarreras from "@/pages/parametros/CatalogoCarreras";
+import CatalogoCursos from "@/pages/parametros/CatalogoCursos";
+import CatalogoPeriodos from "@/pages/parametros/CatalogoPeriodos";
+
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
@@ -54,6 +62,10 @@ export const routes = [
       { name: "Administrar Usuarios", path: "/admin/admUsuarios", element: <AdmUsuarios />, hidden: true },
       { name: "Administrar Roles", path: "/admin/admRolesPermisos", element: <AdmRolesPermisos />, hidden: true },
       { name: "Mi perfil", path: "/perfil", element: <Perfil />, hidden: true },
+      { name: "Parámetros del sistema", path: "parametros", element: <ParametrosSistema />, hidden: true },
+      { name: "Carreras", path: "catalogos/carreras", element: <CatalogoCarreras />, hidden: true },
+      { name: "Cursos", path: "catalogos/cursos", element: <CatalogoCursos />, hidden: true },
+      { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true },
     ],
   },
 

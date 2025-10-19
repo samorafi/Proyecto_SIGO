@@ -11,19 +11,19 @@ import {
 } from "@heroicons/react/24/outline";
 
 const tiles = [
-    {
+  {
     to: "/dashboard/admin/admUsuarios",
     title: "Gestión de Usuarios de sistema",
     desc: "Alta/baja, asignación de roles y estados.",
     Icon: UsersIcon,
-  },{
+  }, {
     to: "/dashboard/admin/admRolesPermisos",
     title: "Administración de Roles",
     desc: "Crea roles y define permisos por módulo.",
     Icon: ShieldCheckIcon,
   },
   {
-    to: "/dashboard/admin/parametros",
+    to: "/dashboard/parametros",
     title: "Parámetros del sistema",
     desc: "Catálogos, sedes, periodos y configuraciones.",
     Icon: Cog6ToothIcon,
