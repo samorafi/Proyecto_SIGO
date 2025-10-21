@@ -1115,14 +1115,13 @@ export default function Docentes() {
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
                 {[
-                  { key: "atestado", label: "Atestado" },
-                  { key: "nombre", label: "Nombre" },
                   { key: "cedula", label: "Cédula" },
+                  { key: "nombre", label: "Nombre" },
+                  { key: "apellido", label: "Apellido" },
                   { key: "correo", label: "Correo" },
+                  { key: "atestado", label: "Atestado" }, 
                   { key: "telefono", label: "Teléfono" },
                   { key: "provincia", label: "Provincia" },
-                  { key: "categoria", label: "Categoría" },
-                  { key: "tipoContrato", label: "Contratación" },
                   { key: "estado", label: "Estado" },
                 ].map(h => <th key={h.key} className="p-3 text-sm font-semibold">{h.label}</th>)}
                 <th className="p-3 text-sm font-semibold">Acción</th>
@@ -1137,14 +1136,13 @@ export default function Docentes() {
                 <tr><td colSpan={10} className="p-6 text-center text-blue-gray-500">Sin registros.</td></tr>
               ) : pageData.map(d => (
                 <tr key={d.id} className="border-b">
-                  <td className="p-3">{d.atestado}</td>
-                  <td className="p-3">{d.nombre}</td>
                   <td className="p-3">{d.cedula}</td>
+                  <td className="p-3">{d.nombre}</td>
+                  <td className="p-3">-</td>
                   <td className="p-3">{d.correo}</td>
+                  <td className="p-3">{d.atestado}</td> 
                   <td className="p-3">{d.telefono}</td>
                   <td className="p-3">{d.provincia}</td>
-                  <td className="p-3">{d.categoria}</td>
-                  <td className="p-3">{d.tipoContrato}</td>
                   <td className="p-3"><EstadoChip value={d.estado} /></td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">

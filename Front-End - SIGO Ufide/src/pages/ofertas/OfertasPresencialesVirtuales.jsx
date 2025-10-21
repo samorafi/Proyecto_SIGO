@@ -85,6 +85,11 @@ export default function OfertasPresencialesVirtuales() {
         [cursos]
     );
 
+    const getCursoId = useCallback(
+        (id) => cursos.find((c) => c.cursoId === id)?.codigo ?? id,
+        [cursos]
+    );
+
     const getSedeNombre = useCallback(
         (id) => sedes.find((s) => s.sedeId === id)?.nombre ?? id,
         [sedes]
@@ -372,7 +377,7 @@ export default function OfertasPresencialesVirtuales() {
 
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas presenciales - virtuales</Typography>
+                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas presenciales Y En Línea</Typography>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -611,7 +616,7 @@ export default function OfertasPresencialesVirtuales() {
                         <tbody>
                             {currentData.map((o) => (
                                 <tr key={o.ofertaId} className="border-b">
-                                    <td className="p-3">{o.ofertaId}</td>
+                                    <td className="p-3">{getCursoId(o.cursoId)}</td>
                                     <td className="p-3">{getCursoNombre(o.cursoId)}</td>
                                     <td className="p-3">{getSedeNombre(o.sedeId)}</td>
                                     <td className="p-3">{getModalidadNombre(o.modalidadId)}</td>

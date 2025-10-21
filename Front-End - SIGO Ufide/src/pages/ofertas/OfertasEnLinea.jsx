@@ -86,6 +86,11 @@ export default function OfertasEnLinea() {
         [cursos]
     );
 
+    const getCursoId = useCallback(
+        (id) => cursos.find((c) => c.cursoId === id)?.codigo ?? id,
+        [cursos]
+    );
+
     const getSedeNombre = useCallback(
         (id) => sedes.find((s) => s.sedeId === id)?.nombre ?? id,
         [sedes]
@@ -364,7 +369,7 @@ export default function OfertasEnLinea() {
 
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas en línea</Typography>
+                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas 100% Virtual</Typography>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -589,7 +594,7 @@ export default function OfertasEnLinea() {
                     <table className="min-w-[800px] w-full text-left">
                         <thead className="bg-blue-gray-50 text-blue-gray-700">
                             <tr>
-                                <th className="p-3">ID</th>
+                                <th className="p-3">ID Curso</th>
                                 <th className="p-3">Curso</th>
                                 <th className="p-3">Sede</th>
                                 <th className="p-3">Modalidad</th>
@@ -603,7 +608,7 @@ export default function OfertasEnLinea() {
                         <tbody>
                             {currentData.map((o) => (
                                 <tr key={o.ofertaId} className="border-b">
-                                    <td className="p-3">{o.ofertaId}</td>
+                                    <td className="p-3">{getCursoId(o.cursoId)}</td>
                                     <td className="p-3">{getCursoNombre(o.cursoId)}</td>
                                     <td className="p-3">{getSedeNombre(o.sedeId)}</td>
                                     <td className="p-3">{getModalidadNombre(o.modalidadId)}</td>

@@ -45,14 +45,12 @@ export const routes = [
         name: "Ofertas",
         collapsible: true, 
         pages: [
-          { name: "En línea", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea /> },
-          { name: "Presenciales - Virtuales", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
+          { name: "100% Virtual", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea /> },
+          { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
         ],
       },
       { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes", element: <Docentes /> },
       { icon: <ClipboardDocumentListIcon className="h-5 w-5" />, name: "Reportes", path: "/reportes", element: <Reportes /> },
-      { icon: <BookOpenIcon className="h-5 w-5" />, name: "Bitácoras", path: "/bitacoras", element: <Bitacoras /> },
-      { icon: <ClipboardDocumentListIcon className="h-5 w-5" />, name: "Nómina", path: "/nomina", element: <Nomina /> },
       { icon: <BellAlertIcon className="h-5 w-5" />, name: "Notificaciones", path: "/notificaciones", element: <Notificaciones /> },
       { icon: <Cog6ToothIcon className="h-5 w-5" />, name: "Administración del sistema", path: "/admin", element: <Admin /> },
 
