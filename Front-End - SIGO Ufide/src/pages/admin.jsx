@@ -35,7 +35,7 @@ const tiles = [
     Icon: DocumentMagnifyingGlassIcon,
   },
   {
-    to: "/dashboard/admin/notificaciones",
+    to: "/dashboard/admin/admSMTP",
     title: "Parámetros de Notificaciones",
     desc: "Plantillas y reglas de correo/alertas.",
     Icon: BellAlertIcon,

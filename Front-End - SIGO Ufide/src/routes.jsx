@@ -31,6 +31,9 @@ import CatalogoCarreras from "@/pages/parametros/CatalogoCarreras";
 import CatalogoCursos from "@/pages/parametros/CatalogoCursos";
 import CatalogoPeriodos from "@/pages/parametros/CatalogoPeriodos";
 
+// Módulo de Configuración SMTP
+import ConfiguracionCorreo from "@/pages/admin/admSMTP";
+
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
@@ -64,6 +67,7 @@ export const routes = [
       { name: "Carreras", path: "catalogos/carreras", element: <CatalogoCarreras />, hidden: true },
       { name: "Cursos", path: "catalogos/cursos", element: <CatalogoCursos />, hidden: true },
       { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true },
+      { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true },
     ],
   },
 

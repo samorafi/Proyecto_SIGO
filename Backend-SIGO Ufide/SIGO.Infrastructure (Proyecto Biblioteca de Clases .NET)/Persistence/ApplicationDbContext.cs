@@ -37,7 +37,7 @@ namespace SIGO.Infrastructure.Persistence
 
         public DbSet<RolDocente> RolesDocente => Set<RolDocente>();
 
-
+        public DbSet<ConfSmtp> ConfSmtps { get; set; }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
