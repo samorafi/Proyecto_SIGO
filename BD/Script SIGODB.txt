@@ -400,3 +400,20 @@ WHERE r.nombre = 'Administrador';
 -- A partir de este punto agregar los nuevos cambios y documentarlos con Fecha y hora del cambio
 -- ========================================================================================
 
+-- Configuración del Sistema - SMTP para el envío de correo electrónico
+-- Harlyn Luna Brenes - 25-10-2025
+CREATE TABLE universidad.conf_smtp (
+    id SERIAL PRIMARY KEY,
+    host VARCHAR(150) NOT NULL,
+    username VARCHAR(150) NOT NULL,
+    port INT NOT NULL,
+    enable_ssl BOOLEAN NOT NULL DEFAULT TRUE,
+    sender_name VARCHAR(150),
+    sender_email VARCHAR(150) NOT NULL,
+    password VARCHAR(300) NOT NULL,
+    use_default_credentials BOOLEAN NOT NULL DEFAULT FALSE,
+    last_updated TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
+

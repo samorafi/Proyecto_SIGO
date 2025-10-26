@@ -331,4 +331,20 @@ WHERE cu.codigo='NET-110'
     SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
   );
 
+
+-- Configuración del Sistema - SMTP para el envío de correo electrónico.
+-- Harlyn Luna Brenes - 25-10-2025
+INSERT INTO universidad.conf_smtp (host,username,port,enable_ssl,sender_name,sender_email,password,use_default_credentials,last_updated
+) VALUES (
+    'smtp.gmail.com',
+    'monitoring.hlb.notif@gmail.com',
+    587,
+    TRUE,
+    'Sistema SIGO Fidélitas',
+    'monitoring.hlb.notif@gmail.com',
+    'culv gqfv itgc sqbz',
+    TRUE,
+    '2025-10-25 10:40:34.981831'
+);
+
 COMMIT;
