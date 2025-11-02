@@ -16,10 +16,13 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
 
         // Columns
         builder.Property(p => p.Nombre).HasColumnName("nombre").IsRequired();
+        builder.Property(p => p.PrimerApellido).HasColumnName("primer_apellido");
+        builder.Property(p => p.SegundoApellido).HasColumnName("segundo_apellido");
         builder.Property(p => p.Cedula).HasColumnName("cedula").IsRequired();
         builder.Property(p => p.Correo).HasColumnName("correo").IsRequired();
         builder.Property(p => p.Telefono).HasColumnName("telefono");
-        builder.Property(p => p.FechaIngreso).HasColumnName("fecha_ingreso");
+        builder.Property(p => p.PeriodoIngresoId).HasColumnName("periodo_ingreso_id");
+
         builder.Property(p => p.Comentarios).HasColumnName("comentarios");
 
         // FK columns
@@ -35,7 +38,6 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
         builder.Property(p => p.PeriodoDesvinculacionId).HasColumnName("periodo_desvinculacion_id");
         builder.Property(p => p.EnLinea).HasColumnName("en_linea").HasDefaultValue(false).IsRequired();
 
-        // Unique Indexes según tu DDL
         builder.HasIndex(p => p.Cedula).IsUnique().HasDatabaseName("ux_persona_cedula");
         builder.HasIndex(p => p.Correo).IsUnique().HasDatabaseName("ux_persona_correo");
 
@@ -50,5 +52,6 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
         builder.HasOne(p => p.TipoContrato).WithMany().HasForeignKey(p => p.TipoContratoId);
         builder.HasOne(p => p.MotivoDesvinculacion).WithMany().HasForeignKey(p => p.MotivoDesvinculacionId);
         builder.HasOne(p => p.PeriodoDesvinculacion).WithMany().HasForeignKey(p => p.PeriodoDesvinculacionId);
+        builder.HasOne(p => p.PeriodoIngreso).WithMany().HasForeignKey(p => p.PeriodoIngresoId).OnDelete(DeleteBehavior.Restrict).HasConstraintName("fk_persona_periodo_ingreso");
     }
 }

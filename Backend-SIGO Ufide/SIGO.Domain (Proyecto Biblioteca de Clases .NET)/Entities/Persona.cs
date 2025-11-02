@@ -7,11 +7,13 @@ public class Persona
 {
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
+    public string? PrimerApellido { get; set; }
+    public string? SegundoApellido { get; set; }
     public string Cedula { get; set; } = string.Empty;
     public string Correo { get; set; } = string.Empty;
 
     public string? Telefono { get; set; }
-    public DateTime? FechaIngreso { get; set; }
+    public int? PeriodoIngresoId { get; set; }
     public string? Comentarios { get; set; }
 
     // Foreign Keys
@@ -38,4 +40,5 @@ public class Persona
     public virtual TipoContrato? TipoContrato { get; set; }
     public virtual MotivoDesvinculacion? MotivoDesvinculacion { get; set; }
     public virtual Periodo? PeriodoDesvinculacion { get; set; }
+    public virtual Periodo? PeriodoIngreso { get; set; }
 }

@@ -1,19 +1,18 @@
 ﻿using MediatR;
 
-namespace SIGO.Application.Features.Personas.Commands.Create
+namespace SIGO.Application.Features.Persona.Commands.Create
 {
-    // Este DTO ahora refleja todos los campos que el usuario final seleccionará en el formulario.
     public class CreatePersonaCommand : IRequest<int>
     {
-        // Campos Directos
         public string Nombre { get; set; } = string.Empty;
+        public string PrimerApellido { get; set; } = string.Empty;
+        public string SegundoApellido { get; set; } = string.Empty;
         public string Cedula { get; set; } = string.Empty;
         public string Correo { get; set; } = string.Empty;
         public string? Telefono { get; set; }
-        public DateTime? FechaIngreso { get; set; }
+        public int? PeriodoIngresoId { get; set; }
         public string? Comentarios { get; set; }
 
-        // Campos de Relación (Claves Foráneas)
         public int GeneroId { get; set; }
         public int AtestadoId { get; set; }
         public int ProvinciaId { get; set; }
@@ -22,6 +21,5 @@ namespace SIGO.Application.Features.Personas.Commands.Create
         public int TipoContratoId { get; set; }
         public int? RolDocenteId { get; set; }
         public bool? EnLinea { get; set; }
-
     }
 }

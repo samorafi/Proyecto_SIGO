@@ -1,29 +1,27 @@
 ﻿using MediatR;
 using SIGO.Application.Abstractions;
-using SIGO.Domain.Entities;
-using PersonaEntity = SIGO.Domain.Entities.Persona;
+using DomainPersona = SIGO.Domain.Entities.Persona;
 
-namespace SIGO.Application.Features.Personas.Commands.Create
+namespace SIGO.Application.Features.Persona.Commands.Create
 {
     public class CreatePersonaCommandHandler : IRequestHandler<CreatePersonaCommand, int>
     {
         private readonly IApplicationDbContext _context;
-
-        public CreatePersonaCommandHandler(IApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public CreatePersonaCommandHandler(IApplicationDbContext context) => _context = context;
 
         public async Task<int> Handle(CreatePersonaCommand request, CancellationToken cancellationToken)
         {
-            var entity = new Domain.Entities.Persona
+            var entity = new DomainPersona
             {
                 Nombre = request.Nombre,
+                PrimerApellido = request.PrimerApellido,
+                SegundoApellido = request.SegundoApellido,
                 Cedula = request.Cedula,
                 Correo = request.Correo,
                 Telefono = request.Telefono,
-                FechaIngreso = request.FechaIngreso,
                 Comentarios = request.Comentarios,
+
+                PeriodoIngresoId = request.PeriodoIngresoId,
 
                 GeneroId = request.GeneroId,
                 ProvinciaId = request.ProvinciaId,
@@ -42,7 +40,6 @@ namespace SIGO.Application.Features.Personas.Commands.Create
 
             _context.Personas.Add(entity);
             await _context.SaveChangesAsync(cancellationToken);
-
             return entity.Id;
         }
     }

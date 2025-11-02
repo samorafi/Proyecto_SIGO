@@ -1,21 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace SIGO.Domain.Entities;
 
-
-namespace SIGO.Domain.Entities
+public enum PeriodoTipo
 {
-    public class Periodo
-    {
-        public int PeriodoId { get; set; }
-        public int Anio { get; set; }
-        public int Numero { get; set; }
-        public bool Estado { get; set; } = true;
+    Cuatrimestre = 1,   // C
+    Trimestre = 2,      // T
+    Mensual = 3         // P
+}
 
-    }
+public class Periodo
+{
+    public int PeriodoId { get; set; }    
+    public int Anio { get; set; }          
+    public int Numero { get; set; }        
+    public bool Estado { get; set; }        
+    public PeriodoTipo Tipo { get; set; }  
+    public string Etiqueta { get; private set; } = null!;
+
+    public string EtiquetaRuntime =>
+        Tipo switch
+        {
+            PeriodoTipo.Cuatrimestre => $"{Numero}C, {Anio}",
+            PeriodoTipo.Trimestre => $"{Numero}T, {Anio}",
+            PeriodoTipo.Mensual => $"{Numero}P, {Anio}",
+            _ => $"{Numero}, {Anio}"
+        };
 
 }

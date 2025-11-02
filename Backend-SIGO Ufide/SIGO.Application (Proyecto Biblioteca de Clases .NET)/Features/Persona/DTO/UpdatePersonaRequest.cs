@@ -5,11 +5,13 @@ public class UpdatePersonaRequest
     public int Id { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
+    public string PrimerApellido { get; set; }
+    public string SegundoApellido { get; set; }
     public string Cedula { get; set; } = string.Empty;
     public string Correo { get; set; } = string.Empty;
 
     public string? Telefono { get; set; }
-    public DateTime? FechaIngreso { get; set; }
+    public int? PeriodoIngresoId { get; set; }
     public string? Comentarios { get; set; }
 
     public int? GeneroId { get; set; }
@@ -20,7 +22,6 @@ public class UpdatePersonaRequest
     public int? TipoContratoId { get; set; }
     public int? RolDocenteId { get; set; }
 
- 
     public int? EstadoPersonaId { get; set; }
     public int? MotivoDesvinculacionId { get; set; }
     public int? PeriodoDesvinculacionId { get; set; }

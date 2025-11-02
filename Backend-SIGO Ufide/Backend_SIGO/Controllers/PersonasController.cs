@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Persona.Commands.Update;
 using SIGO.Application.Features.Persona.Queries.GetAll;
 using SIGO.Application.Features.Persona.Queries.GetById;
-using SIGO.Application.Features.Personas.Commands.Create;
+using SIGO.Application.Features.Persona.Commands.Create;
 using SIGO.Application.Features.Personas.Dto;
 using SIGO.Application.Features.Personas.Queries;
 using System.Threading.Tasks;

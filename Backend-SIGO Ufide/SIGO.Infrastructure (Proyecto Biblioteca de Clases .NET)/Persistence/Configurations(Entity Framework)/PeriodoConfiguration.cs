@@ -1,21 +1,50 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SIGO.Domain.Entities;
 
 public class PeriodoConfiguration : IEntityTypeConfiguration<Periodo>
 {
-    public void Configure(EntityTypeBuilder<Periodo> b)
+    public void Configure(EntityTypeBuilder<Periodo> builder)
     {
-        b.ToTable("periodo", "universidad");
-        b.HasKey(x => x.PeriodoId);
+        builder.ToTable("periodo", "universidad");
 
-        b.Property(x => x.PeriodoId).HasColumnName("periodo_id");
-        b.Property(x => x.Anio).HasColumnName("anio").IsRequired();
-        b.Property(x => x.Numero).HasColumnName("numero").IsRequired();
-        b.Property(x => x.Estado).HasColumnName("estado").HasDefaultValue(true).IsRequired();
+        builder.HasKey(p => p.PeriodoId).HasName("pk_periodo");
 
-        b.HasIndex(x => new { x.Anio, x.Numero })
-         .IsUnique()
-         .HasDatabaseName("ux_periodo_anio_numero");
+        builder.Property(p => p.PeriodoId).HasColumnName("periodo_id");
+        builder.Property(p => p.Anio).HasColumnName("anio").IsRequired();
+        builder.Property(p => p.Numero).HasColumnName("numero").IsRequired();
+        builder.Property(p => p.Estado).HasColumnName("estado").IsRequired();
+
+        var tipoConv = new ValueConverter<PeriodoTipo, string>(
+            v => v == PeriodoTipo.Cuatrimestre ? "C"
+               : v == PeriodoTipo.Trimestre ? "T"
+               : "P",
+            v => v == "C" ? PeriodoTipo.Cuatrimestre
+               : v == "T" ? PeriodoTipo.Trimestre
+               : PeriodoTipo.Mensual
+        );
+
+        builder.Property(p => p.Tipo)
+            .HasColumnName("tipo")
+            .HasMaxLength(1)
+            .HasConversion(tipoConv)
+            .IsRequired();
+
+        builder.Property(p => p.Etiqueta)
+            .HasColumnName("etiqueta")
+            .ValueGeneratedOnAddOrUpdate()
+            .Metadata.SetAfterSaveBehavior(
+                Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore
+            );
+
+        builder.HasIndex(p => new { p.Anio, p.Tipo, p.Numero })
+               .IsUnique()
+               .HasDatabaseName("ux_periodo_anio_tipo_numero");
+
+        builder.HasCheckConstraint("ck_periodo_rangos_por_tipo",
+            "(tipo = 'C' AND numero BETWEEN 1 AND 3) OR " +
+            "(tipo = 'T' AND numero BETWEEN 1 AND 4) OR " +
+            "(tipo = 'P' AND numero BETWEEN 1 AND 12)");
     }
 }

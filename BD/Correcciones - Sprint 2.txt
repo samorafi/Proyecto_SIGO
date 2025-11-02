@@ -1,0 +1,188 @@
+SET search_path TO universidad;
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA ACCION_OFERTA ---------------------
+-- -------------------------------------------------------------
+
+UPDATE accion_oferta SET nombre = 'Abrir Curso'        WHERE accion_id = 1;
+UPDATE accion_oferta SET nombre = 'Asignar Profesor'   WHERE accion_id = 2;
+UPDATE accion_oferta SET nombre = 'Nombrado'           WHERE accion_id = 3;
+UPDATE accion_oferta SET nombre = 'Cambiar Profesor'   WHERE accion_id = 4;
+UPDATE accion_oferta SET nombre = 'Cerrar Curso'       WHERE accion_id = 5;
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (6, 'Reserva');
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (7, 'Suficiencia');
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (8, 'Cerrado');
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA PERSONA ---------------------
+-- -------------------------------------------------------------
+
+ALTER TABLE persona
+  ADD COLUMN IF NOT EXISTS primer_apellido varchar(100),
+  ADD COLUMN IF NOT EXISTS segundo_apellido varchar(100);
+
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA PERIODO ---------------------
+-- -------------------------------------------------------------
+
+
+-- 1) Agregamos columna tipo (C/T/P), por defecto 'C' para no romper lo existente
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='periodo' AND column_name='tipo'
+  ) THEN
+    ALTER TABLE periodo ADD COLUMN tipo char(1) NOT NULL DEFAULT 'C';
+  END IF;
+END $$;
+
+-- 2) Generamos columna etiqueta para extraer la concatenacion de los datos
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='periodo' AND column_name='etiqueta'
+  ) THEN
+    ALTER TABLE periodo
+    ADD COLUMN etiqueta text GENERATED ALWAYS AS (
+      CASE tipo
+        WHEN 'C' THEN (numero::text || 'C, ' || anio::text)
+        WHEN 'T' THEN (numero::text || 'T, ' || anio::text)
+        WHEN 'P' THEN (numero::text || 'P, ' || anio::text)
+        ELSE (numero::text || ', ' || anio::text)
+      END
+    ) STORED;
+  END IF;
+END $$;
+
+-- 3) Checks de rango por tipo
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ck_periodo_rangos_por_tipo'
+  ) THEN
+    ALTER TABLE periodo ADD CONSTRAINT ck_periodo_rangos_por_tipo
+    CHECK (
+      (tipo = 'C' AND numero BETWEEN 1 AND 3) OR
+      (tipo = 'T' AND numero BETWEEN 1 AND 4) OR
+      (tipo = 'P' AND numero BETWEEN 1 AND 12)
+    );
+  END IF;
+END $$;
+
+-- 4) Índice único por (año, tipo, número)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE indexname = 'ux_periodo_anio_tipo_numero'
+  ) THEN
+    CREATE UNIQUE INDEX ux_periodo_anio_tipo_numero
+      ON periodo(anio, tipo, numero);
+  END IF;
+END $$;
+
+-- 5) Migrar periodos existentes a tipo 'C' explícitamente (si todavía hay NULLs residuales)
+UPDATE periodo SET tipo = 'C' WHERE tipo IS DISTINCT FROM 'C' AND tipo IS DISTINCT FROM 'T' AND tipo IS DISTINCT FROM 'P';
+
+-- -------------------------------------------------------------
+-- ----- CAMBIOS A TABLA PERSONA (Actualizacion Periodos) ------
+-- -------------------------------------------------------------
+
+-- 1) Nueva columna FK (transicional: NULL al inicio)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='persona' AND column_name='periodo_ingreso_id'
+  ) THEN
+    ALTER TABLE persona
+      ADD COLUMN periodo_ingreso_id integer NULL;
+  END IF;
+END $$;
+
+-- 2) FK a periodo(periodo_id)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_persona_periodo_ingreso'
+  ) THEN
+    ALTER TABLE persona
+      ADD CONSTRAINT fk_persona_periodo_ingreso
+      FOREIGN KEY (periodo_ingreso_id)
+      REFERENCES periodo(periodo_id)
+      ON DELETE RESTRICT;
+  END IF;
+END $$;
+
+CREATE FUNCTION universidad.migrate_persona_periodo_ingreso_cuatrimestre(
+  p_estado_default boolean DEFAULT true,               
+  p_overwrite_existing boolean DEFAULT true           
+)
+RETURNS integer
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  r                RECORD;
+  v_anio           int;
+  v_mes            int;
+  v_numero         int;    
+  v_periodo_id     int;
+  v_processed      int := 0;
+BEGIN
+  -- Itera por todas las personas con fecha_ingreso (y opcionalmente sin periodo asignado)
+  FOR r IN
+    SELECT
+      p.persona_id,                 
+      p.fecha_ingreso,
+      p.periodo_ingreso_id
+    FROM universidad.persona p
+    WHERE p.fecha_ingreso IS NOT NULL
+      AND (p_overwrite_existing OR p.periodo_ingreso_id IS NULL)
+  LOOP
+    v_anio := EXTRACT(YEAR FROM r.fecha_ingreso)::int;
+    v_mes  := EXTRACT(MONTH FROM r.fecha_ingreso)::int;
+
+    -- Mapear mes -> cuatrimestre
+    IF v_mes BETWEEN 1 AND 4 THEN
+      v_numero := 1;       
+    ELSIF v_mes BETWEEN 5 AND 8 THEN
+      v_numero := 2;        
+    ELSE
+      v_numero := 3;      
+    END IF;
+
+    -- Upsert del periodo (tipo 'C')
+    INSERT INTO universidad.periodo (anio, numero, tipo, estado)
+    VALUES (v_anio, v_numero, 'C', p_estado_default)
+    ON CONFLICT (anio, tipo, numero) DO UPDATE
+      SET estado = universidad.periodo.estado
+    RETURNING periodo_id INTO v_periodo_id;
+
+    -- Asignar al registro de persona
+    UPDATE universidad.persona
+       SET periodo_ingreso_id = v_periodo_id
+     WHERE persona_id = r.persona_id;
+
+    v_processed := v_processed + 1;
+  END LOOP;
+
+  RETURN v_processed;
+END;
+$$;
+
+-- EJECUTAR EL SIGUIENTE SELECT PARA APLICAR LOS CAMBIOS DE LA FUNCION --
+
+SELECT universidad.migrate_persona_periodo_ingreso_cuatrimestre(
+  p_estado_default := true,        
+  p_overwrite_existing := false     
+);
+

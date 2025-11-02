@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using SIGO.Application.Features.Persona.DTO;
+using SIGO.Application.Features.Personas.Dto;
 using System.Collections.Generic;
 
 namespace SIGO.Application.Features.Persona.Queries.GetAll

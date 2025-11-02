@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
-using SIGO.Application.Features.Persona.DTO;
+using SIGO.Application.Features.Personas.Dto;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,6 +21,7 @@ namespace SIGO.Application.Features.Persona.Queries.GetAll
         public async Task<IEnumerable<PersonaDto>> Handle(GetAllPersonasQuery request, CancellationToken cancellationToken)
         {
             var personas = await _context.Personas
+                .AsNoTracking()
                 .Include(p => p.Genero)
                 .Include(p => p.Provincia)
                 .Include(p => p.Canton)
@@ -29,7 +30,8 @@ namespace SIGO.Application.Features.Persona.Queries.GetAll
                 .Include(p => p.EstadoPersona)
                 .Include(p => p.TipoContrato)
                 .Include(p => p.RolDocente)
-                .ToListAsync(cancellationToken);  //Convierte los Resultados en una Lista
+                .Include(p => p.PeriodoIngreso)   
+                .ToListAsync(cancellationToken);
 
             return personas.Select(PersonaDto.FromEntity);
         }
