@@ -26,6 +26,7 @@
     public int? MotivoDesvinculacionId { get; set; }
     public int? PeriodoDesvinculacionId { get; set; }
     public bool EnLinea { get; set; }
+    public string? Sede { get; set; }
 
     public static PersonaDto FromEntity(SIGO.Domain.Entities.Persona p) => new()
     {
@@ -55,6 +56,7 @@
         EstadoPersonaId = p.EstadoPersonaId ?? 0,
         MotivoDesvinculacionId = p.MotivoDesvinculacionId,
         PeriodoDesvinculacionId = p.PeriodoDesvinculacionId,
-        EnLinea = p.EnLinea
+        EnLinea = p.EnLinea,
+        Sede = p.Sede?.Nombre
     };
 }

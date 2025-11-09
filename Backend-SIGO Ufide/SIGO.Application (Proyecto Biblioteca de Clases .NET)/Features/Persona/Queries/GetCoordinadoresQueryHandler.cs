@@ -32,6 +32,8 @@ public sealed class GetCoordinadoresQueryHandler
             {
                 Id = p.Id,
                 Nombre = p.Nombre,
+                PrimerApellido = p.PrimerApellido,
+                SegundoApellido = p.SegundoApellido,
                 Correo = p.Correo
             })
             .ToListAsync(ct);

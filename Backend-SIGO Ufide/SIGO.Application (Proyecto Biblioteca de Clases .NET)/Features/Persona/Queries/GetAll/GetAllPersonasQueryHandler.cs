@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Features.Personas.Dto;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SIGO.Application.Features.Persona.Queries.GetAll
 {
@@ -30,7 +27,8 @@ namespace SIGO.Application.Features.Persona.Queries.GetAll
                 .Include(p => p.EstadoPersona)
                 .Include(p => p.TipoContrato)
                 .Include(p => p.RolDocente)
-                .Include(p => p.PeriodoIngreso)   
+                .Include(p => p.PeriodoIngreso)  
+                .Include(p => p.Sede)
                 .ToListAsync(cancellationToken);
 
             return personas.Select(PersonaDto.FromEntity);

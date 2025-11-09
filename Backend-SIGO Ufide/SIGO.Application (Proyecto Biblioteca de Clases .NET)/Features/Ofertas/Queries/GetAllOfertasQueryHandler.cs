@@ -2,32 +2,31 @@
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Features.Ofertas.Dto;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace SIGO.Application.Features.Ofertas.Queries;
 
-public sealed class GetAllOfertasQueryHandler
-    : IRequestHandler<GetAllOfertasQuery, List<OfertaResponseDto>>
+public class GetAllOfertasQueryHandler : IRequestHandler<GetAllOfertasQuery, IReadOnlyList<OfertaResponseDto>>
 {
     private readonly IApplicationDbContext _db;
     public GetAllOfertasQueryHandler(IApplicationDbContext db) => _db = db;
 
-    public async Task<List<OfertaResponseDto>> Handle(GetAllOfertasQuery request, CancellationToken ct)
+    public async Task<IReadOnlyList<OfertaResponseDto>> Handle(GetAllOfertasQuery request, CancellationToken ct)
     {
         return await _db.Ofertas
             .AsNoTracking()
-            .OrderByDescending(o => o.PeriodoId).ThenBy(o => o.CursoId)
             .Select(o => new OfertaResponseDto
             {
                 OfertaId = o.OfertaId,
-                CursoId = o.CursoId,
-                SedeId = o.SedeId,
-                ModalidadId = o.ModalidadId,
+                Curso = o.Curso != null ? o.Curso.Codigo : null,
+                Sede = o.Sede != null ? o.Sede.Nombre : null,
+                Modalidad = o.Modalidad != null ? o.Modalidad.Nombre : null,
                 HorarioId = o.HorarioId,
-                PeriodoId = o.PeriodoId,
-                AccionId = o.AccionId,
+                Periodo = o.Periodo != null ? o.Periodo.Etiqueta : null,
+                Accion = o.Accion != null ? o.Accion.Nombre : null,
                 CoordinadorId = o.CoordinadorId,
-                Comentarios = o.Comentarios
+                Comentarios = o.Comentarios,
+                Estado = o.EstadoOferta != null ? o.EstadoOferta.Nombre : null
             })
             .ToListAsync(ct);
     }

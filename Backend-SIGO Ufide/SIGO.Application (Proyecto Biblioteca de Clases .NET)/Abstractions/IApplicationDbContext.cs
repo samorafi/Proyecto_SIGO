@@ -33,6 +33,7 @@ namespace SIGO.Application.Abstractions
         DbSet<CoordinacionCurso> CoordinacionesCursos { get; }
         DbSet<ConfSmtp> ConfSmtps { get; set; }
         DbSet<RolDocente> RolesDocente { get; }
+        DbSet<EstadoOferta> EstadoOfertas { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

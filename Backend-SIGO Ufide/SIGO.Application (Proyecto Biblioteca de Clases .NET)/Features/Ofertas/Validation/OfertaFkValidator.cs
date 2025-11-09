@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
+using SIGO.Domain.Entities;
 
 namespace SIGO.Application.Features.Ofertas.Validation;
 
@@ -8,7 +9,7 @@ public static class OfertaFkValidator
     public static async Task<List<string>> ValidateCreateAsync(
         IApplicationDbContext db,
         int cursoId, int sedeId, int modalidadId, int horarioId, int periodoId,
-        int accionId, int? coordinadorId,
+        int accionId, int? coordinadorId, int estadoOferta,
         CancellationToken ct)
     {
         var errors = new List<string>();
@@ -20,6 +21,7 @@ public static class OfertaFkValidator
         if (!await db.Periodos.AnyAsync(x => x.PeriodoId == periodoId, ct)) errors.Add("El período especificado no existe.");
         if (!await db.AccionesOferta.AnyAsync(x => x.AccionId == accionId, ct)) errors.Add("La acción especificada no existe.");
         if (coordinadorId.HasValue && !await db.Personas.AnyAsync(x => x.Id == coordinadorId, ct)) errors.Add("El coordinador especificado no existe.");
+        if (!await db.EstadoOfertas.AnyAsync(x => x.EstadoOfertaId == estadoOferta, ct)) errors.Add("El estado especificado para la oferta no existe.");
 
         return errors;
     }
@@ -27,7 +29,7 @@ public static class OfertaFkValidator
     public static async Task<List<string>> ValidateUpdateAsync(
         IApplicationDbContext db,
         int cursoId, int sedeId, int modalidadId, int horarioId, int periodoId,
-        int? accionId, int? coordinadorId,
+        int accionId, int? coordinadorId, int estadoOferta,
         CancellationToken ct)
     {
         var errors = new List<string>();
@@ -37,7 +39,8 @@ public static class OfertaFkValidator
         if (!await db.Modalidades.AnyAsync(x => x.ModalidadId == modalidadId, ct)) errors.Add("La modalidad especificada no existe.");
         if (!await db.Horarios.AnyAsync(x => x.HorarioId == horarioId, ct)) errors.Add("El horario especificado no existe.");
         if (!await db.Periodos.AnyAsync(x => x.PeriodoId == periodoId, ct)) errors.Add("El período especificado no existe.");
-        if (accionId.HasValue && !await db.AccionesOferta.AnyAsync(x => x.AccionId == accionId, ct)) errors.Add("La acción especificada no existe.");
+        if (!await db.AccionesOferta.AnyAsync(x => x.AccionId == accionId, ct)) errors.Add("La acción especificada no existe.");
+        if (!await db.EstadoOfertas.AnyAsync(x => x.EstadoOfertaId == estadoOferta, ct)) errors.Add("La estado especificado para la oferta no existe.");
         if (coordinadorId.HasValue && !await db.Personas.AnyAsync(x => x.Id == coordinadorId, ct)) errors.Add("El coordinador especificado no existe.");
 
         return errors;

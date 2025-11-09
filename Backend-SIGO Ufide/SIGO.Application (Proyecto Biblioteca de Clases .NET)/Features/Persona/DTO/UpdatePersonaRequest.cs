@@ -26,4 +26,5 @@ public class UpdatePersonaRequest
     public int? MotivoDesvinculacionId { get; set; }
     public int? PeriodoDesvinculacionId { get; set; }
     public bool? EnLinea { get; set; }
+    public int? SedeId { get; set; }
 }

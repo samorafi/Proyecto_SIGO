@@ -2,51 +2,35 @@
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Common.Exceptions;
-using SIGO.Application.Features.Ofertas.Commands.Update;
-using SIGO.Application.Features.Ofertas.Dto;
-using SIGO.Application.Features.Ofertas.Validation;
 
-public sealed class UpdateOfertaCommandHandler : IRequestHandler<UpdateOfertaCommand, OfertaResponseDto?>
+namespace SIGO.Application.Features.Ofertas.Commands.Update;
+
+public class UpdateOfertaCommandHandler : IRequestHandler<UpdateOfertaCommand, Unit>
 {
     private readonly IApplicationDbContext _db;
     public UpdateOfertaCommandHandler(IApplicationDbContext db) => _db = db;
 
-    public async Task<OfertaResponseDto?> Handle(UpdateOfertaCommand request, CancellationToken ct)
+    public async Task<Unit> Handle(UpdateOfertaCommand request, CancellationToken ct)
     {
-        var id = request.Id;
         var r = request.Data;
 
-        var entity = await _db.Ofertas.FirstOrDefaultAsync(o => o.OfertaId == id, ct);
-        if (entity is null) return null; // controller devolverá 404
+        var entity = await _db.Ofertas
+            .FirstOrDefaultAsync(x => x.OfertaId == request.OfertaId, ct) 
+            ?? throw new NotFoundException("Oferta", request.OfertaId);
 
-        var fkErrors = await OfertaFkValidator.ValidateUpdateAsync(
-            _db, r.CursoId, r.SedeId, r.ModalidadId, r.HorarioId, r.PeriodoId, r.AccionId, r.CoordinadorId, ct);
-
-        if (fkErrors.Count > 0)
-            throw new AppValidationException(fkErrors);
-
-        entity.CursoId = r.CursoId;
-        entity.SedeId = r.SedeId;
-        entity.ModalidadId = r.ModalidadId;
+        entity.CursoId = ToNullIfZero(r.CursoId);
+        entity.SedeId = ToNullIfZero(r.SedeId);
+        entity.ModalidadId = ToNullIfZero(r.ModalidadId);
         entity.HorarioId = r.HorarioId;
-        entity.PeriodoId = r.PeriodoId;
-        entity.AccionId = r.AccionId;
-        entity.CoordinadorId = r.CoordinadorId;
+        entity.PeriodoId = ToNullIfZero(r.PeriodoId);
+        entity.AccionId = ToNullIfZero(r.AccionId);
+        entity.CoordinadorId = ToNullIfZero(r.CoordinadorId);
         entity.Comentarios = r.Comentarios;
+        entity.EstadoOfertaId = ToNullIfZero(r.EstadoOfertaId);
 
         await _db.SaveChangesAsync(ct);
-
-        return new OfertaResponseDto
-        {
-            OfertaId = entity.OfertaId,
-            CursoId = entity.CursoId,
-            SedeId = entity.SedeId,
-            ModalidadId = entity.ModalidadId,
-            HorarioId = entity.HorarioId,
-            PeriodoId = entity.PeriodoId,
-            AccionId = entity.AccionId,
-            CoordinadorId = entity.CoordinadorId,
-            Comentarios = entity.Comentarios
-        };
+        return Unit.Value;
     }
+
+    private static int? ToNullIfZero(int? v) => (v.HasValue && v.Value > 0) ? v : null;
 }

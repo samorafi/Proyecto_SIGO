@@ -37,6 +37,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
         builder.Property(p => p.MotivoDesvinculacionId).HasColumnName("motivo_desvinculacion_id");
         builder.Property(p => p.PeriodoDesvinculacionId).HasColumnName("periodo_desvinculacion_id");
         builder.Property(p => p.EnLinea).HasColumnName("en_linea").HasDefaultValue(false).IsRequired();
+        builder.Property(p => p.SedeId).HasColumnName("sede_id");
 
         builder.HasIndex(p => p.Cedula).IsUnique().HasDatabaseName("ux_persona_cedula");
         builder.HasIndex(p => p.Correo).IsUnique().HasDatabaseName("ux_persona_correo");
@@ -53,5 +54,6 @@ public class PersonaConfiguration : IEntityTypeConfiguration<Persona>
         builder.HasOne(p => p.MotivoDesvinculacion).WithMany().HasForeignKey(p => p.MotivoDesvinculacionId);
         builder.HasOne(p => p.PeriodoDesvinculacion).WithMany().HasForeignKey(p => p.PeriodoDesvinculacionId);
         builder.HasOne(p => p.PeriodoIngreso).WithMany().HasForeignKey(p => p.PeriodoIngresoId).OnDelete(DeleteBehavior.Restrict).HasConstraintName("fk_persona_periodo_ingreso");
+        builder.HasOne(p => p.Sede).WithMany().HasForeignKey(p => p.SedeId);
     }
 }

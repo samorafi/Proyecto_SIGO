@@ -33,6 +33,7 @@ namespace SIGO.Application.Features.Persona.Commands.Create
             RuleFor(p => p.CategoriaId).GreaterThan(0);
             RuleFor(p => p.AtestadoId).GreaterThan(0);
             RuleFor(p => p.TipoContratoId).GreaterThan(0);
+            RuleFor(p => p.SedeId).GreaterThan(0);
 
             When(p => p.RolDocenteId.HasValue, () =>
                 RuleFor(p => p.RolDocenteId!.Value).GreaterThan(0));

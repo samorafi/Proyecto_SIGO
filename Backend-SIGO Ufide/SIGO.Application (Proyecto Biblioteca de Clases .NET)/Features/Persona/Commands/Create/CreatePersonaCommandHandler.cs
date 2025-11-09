@@ -35,7 +35,8 @@ namespace SIGO.Application.Features.Persona.Commands.Create
                 MotivoDesvinculacionId = null,
                 PeriodoDesvinculacionId = null,
 
-                EnLinea = request.EnLinea ?? false
+                EnLinea = request.EnLinea ?? false,
+                SedeId = request.SedeId
             };
 
             _context.Personas.Add(entity);

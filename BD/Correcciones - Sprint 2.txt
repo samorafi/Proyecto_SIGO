@@ -186,3 +186,37 @@ SELECT universidad.migrate_persona_periodo_ingreso_cuatrimestre(
   p_overwrite_existing := false     
 );
 
+-- -------------------------------------------------------------
+-- ----- CAMBIOS A TABLA PERSONA (Actualizacion Sedes) ------
+-- -------------------------------------------------------------
+
+ALTER TABLE universidad.persona
+  ADD COLUMN IF NOT EXISTS sede_id INT NULL;
+
+ALTER TABLE universidad.persona
+  ADD CONSTRAINT fk_persona_sede
+  FOREIGN KEY (sede_id) REFERENCES universidad.sede (sede_id);
+
+-- -------------------------------------------------------------
+-- --------------- CAMBIOS A TABLA OFERTA  ---------------------
+-- -------------------------------------------------------------
+
+CREATE TABLE universidad.estado_ofertas (
+  estado_oferta_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+
+INSERT INTO universidad.estado_ofertas (estado_oferta_id, nombre) VALUES
+  (1,'Enviada'),
+  (2,'Pendiente'),
+  (3,'Aceptada'),
+  (4,'Rechazada'),
+  (5,'Cancelada');
+
+ALTER TABLE universidad.oferta ADD COLUMN IF NOT EXISTS estado_oferta_id INT NULL;
+
+ALTER TABLE universidad.oferta ADD CONSTRAINT fk_oferta_estado_oferta
+FOREIGN KEY (estado_oferta_id) REFERENCES universidad.estado_ofertas (estado_oferta_id);
+
+
+  

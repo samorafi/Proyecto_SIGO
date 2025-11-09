@@ -20,4 +20,5 @@ public class CreatePersonaRequest
     public int? TipoContratoId { get; set; }
     public int? RolDocenteId { get; set; }
     public bool EnLinea { get; set; }
+    public int? SedeId { get; set; }
 }

@@ -28,6 +28,7 @@ public class Persona
     public int? MotivoDesvinculacionId { get; set; }
     public int? PeriodoDesvinculacionId { get; set; }
     public bool EnLinea { get; set; } = false;
+    public int? SedeId { get; set; }
 
     // Navigations
     public virtual Genero? Genero { get; set; }
@@ -41,4 +42,5 @@ public class Persona
     public virtual MotivoDesvinculacion? MotivoDesvinculacion { get; set; }
     public virtual Periodo? PeriodoDesvinculacion { get; set; }
     public virtual Periodo? PeriodoIngreso { get; set; }
+    public virtual Sede? Sede { get; set; }
 }

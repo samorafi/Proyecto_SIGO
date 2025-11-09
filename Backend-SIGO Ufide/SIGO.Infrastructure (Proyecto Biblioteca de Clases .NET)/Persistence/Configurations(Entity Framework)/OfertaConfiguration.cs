@@ -18,6 +18,7 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
         b.Property(x => x.AccionId).HasColumnName("accion_id");
         b.Property(x => x.CoordinadorId).HasColumnName("coordinador_id");
         b.Property(x => x.Comentarios).HasColumnName("comentarios");
+        b.Property(x => x.EstadoOfertaId).HasColumnName("estado_oferta_id");
 
         b.HasOne(o => o.Curso).WithMany().HasForeignKey(o => o.CursoId);
         b.HasOne(o => o.Sede).WithMany().HasForeignKey(o => o.SedeId);
@@ -27,5 +28,6 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
 
         b.HasOne(o => o.Accion).WithMany().HasForeignKey(o => o.AccionId).HasConstraintName("fk_oferta_accion");
         b.HasOne(o => o.Coordinador).WithMany().HasForeignKey(o => o.CoordinadorId).HasConstraintName("fk_oferta_coordinador");
+        b.HasOne(o => o.EstadoOferta).WithMany().HasForeignKey(o => o.EstadoOfertaId).HasConstraintName("fk_oferta_estado_oferta");
     }
 }

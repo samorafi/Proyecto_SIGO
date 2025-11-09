@@ -1,6 +1,4 @@
 ﻿using MediatR;
-using SIGO.Application.Features.Ofertas.Dto;
+using SIGO.Application.Features.Ofertas.Commands.Update;
 
-namespace SIGO.Application.Features.Ofertas.Commands.Update;
-
-public sealed record UpdateOfertaCommand(int Id, UpdateOfertaRequest Data): IRequest<OfertaResponseDto?>; 
+public record UpdateOfertaCommand(int OfertaId, UpdateOfertaRequest Data) : IRequest<Unit>;

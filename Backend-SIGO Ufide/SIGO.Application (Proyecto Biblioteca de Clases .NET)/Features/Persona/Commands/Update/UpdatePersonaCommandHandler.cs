@@ -42,6 +42,8 @@ namespace SIGO.Application.Features.Persona.Commands.Update
             if (request.EnLinea.HasValue)
                 persona.EnLinea = request.EnLinea.Value;
 
+            persona.SedeId = request.SedeId;
+
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

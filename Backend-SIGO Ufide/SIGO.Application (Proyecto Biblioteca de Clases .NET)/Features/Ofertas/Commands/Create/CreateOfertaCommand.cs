@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using SIGO.Application.Features.Ofertas.Dto;
+using SIGO.Application.Features.Ofertas.Commands.Create;
 
 namespace SIGO.Application.Features.Ofertas.Commands.Create;
 
-public sealed record CreateOfertaCommand(CreateOfertaRequest Data) : IRequest<OfertaResponseDto>;
+public record CreateOfertaCommand(CreateOfertaRequest Data) : IRequest<int>;

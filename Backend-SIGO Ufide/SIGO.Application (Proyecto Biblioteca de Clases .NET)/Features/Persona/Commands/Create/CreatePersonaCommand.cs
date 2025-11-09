@@ -21,5 +21,6 @@ namespace SIGO.Application.Features.Persona.Commands.Create
         public int TipoContratoId { get; set; }
         public int? RolDocenteId { get; set; }
         public bool? EnLinea { get; set; }
+        public int? SedeId { get; set; }
     }
 }
