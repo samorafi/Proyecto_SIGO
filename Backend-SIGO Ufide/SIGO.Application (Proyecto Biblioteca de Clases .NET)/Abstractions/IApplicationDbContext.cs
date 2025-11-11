@@ -34,6 +34,7 @@ namespace SIGO.Application.Abstractions
         DbSet<ConfSmtp> ConfSmtps { get; set; }
         DbSet<RolDocente> RolesDocente { get; }
         DbSet<EstadoOferta> EstadoOfertas { get; }
+        DbSet<BitacoraAuditoria> BitacoraAuditorias { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

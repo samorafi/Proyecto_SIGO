@@ -40,6 +40,8 @@ namespace SIGO.Infrastructure.Persistence
 
         public DbSet<ConfSmtp> ConfSmtps { get; set; }
 
+        public DbSet<BitacoraAuditoria> BitacoraAuditorias { get; set; }
+
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return base.SaveChangesAsync(cancellationToken);
@@ -50,5 +52,6 @@ namespace SIGO.Infrastructure.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
         }
+
     }
 }

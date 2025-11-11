@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using SIGO.Api.Filters;
 using SIGO.Application.Abstractions;
+using SIGO.Application.Services;
 using SIGO.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,6 +59,21 @@ builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequir
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// --------------------------------------------------------------------
+// AUDITORIA: REGISTRO DE CAMBIOS DEL SISTEMA
+
+builder.Services.AddScoped<IAuditService, AuditService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AuditActionFilter>();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddService<AuditActionFilter>();
+});
+
+// --------------------------------------------------------------------
+
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
