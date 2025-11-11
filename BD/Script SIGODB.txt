@@ -415,5 +415,20 @@ CREATE TABLE universidad.conf_smtp (
     last_updated TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Configuración del Sistema - Auditoria
+-- Harlyn Luna Brenes - 10-11-2025
+CREATE TABLE universidad.bitacora_auditoria (
+    id SERIAL PRIMARY KEY,
+    usuario VARCHAR(150),
+    tabla_afectada VARCHAR(100),
+    accion VARCHAR(20),
+    registro_id INTEGER,
+    valores_anteriores JSONB,
+    valores_nuevos JSONB,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_origen VARCHAR(50),
+    descripcion TEXT
+);
+
 
 
