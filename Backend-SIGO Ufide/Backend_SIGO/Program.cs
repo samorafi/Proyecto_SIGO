@@ -71,9 +71,7 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<AuditActionFilter>();
 });
-
 // --------------------------------------------------------------------
-
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {

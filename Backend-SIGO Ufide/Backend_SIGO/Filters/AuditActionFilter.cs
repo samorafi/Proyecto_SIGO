@@ -2,6 +2,9 @@
 using SIGO.Api.Attributes;
 using SIGO.Application.Services;
 
+/// <summary>
+/// Filtros para la auditoría automática/manual de acciones/procesos en controladores.
+
 namespace SIGO.Api.Filters
 {
     public class AuditActionFilter : IAsyncActionFilter

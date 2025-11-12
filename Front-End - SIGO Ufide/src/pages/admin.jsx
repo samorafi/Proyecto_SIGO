@@ -29,7 +29,7 @@ const tiles = [
     Icon: Cog6ToothIcon,
   },
   {
-    to: "/dashboard/admin/auditoria",
+    to: "/dashboard/bitacoras",
     title: "Auditoría",
     desc: "Bitácora de accesos y acciones del sistema.",
     Icon: DocumentMagnifyingGlassIcon,

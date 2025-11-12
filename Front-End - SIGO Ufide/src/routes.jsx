@@ -11,7 +11,7 @@ import {
 // Importación de las vistas
 import Docentes from "@/pages/docentes";
 import Reportes from "@/pages/reportes";
-import Bitacoras from "@/pages/bitacoras";
+import BitacoraAuditoria from "@/pages/bitacoras";  
 import Admin from "@/pages/admin";
 import AdmUsuarios from "@/pages/admin/admUsuarios";
 import AdmRolesPermisos from "@/pages/admin/admRolesPermisos";
@@ -68,6 +68,7 @@ export const routes = [
       { name: "Cursos", path: "catalogos/cursos", element: <CatalogoCursos />, hidden: true },
       { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true },
       { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true },
+      { name: "Bitácoras", path: "/bitacoras", element: <BitacoraAuditoria />, hidden: true },
     ],
   },
 
