@@ -9,6 +9,7 @@ export function useCatalogosOfertas() {
     periodos: [],
     coordinadores: [],
     estados: [],
+    estadoOferta: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,6 +25,7 @@ export function useCatalogosOfertas() {
           periodosRes,
           coordinadoresRes,
           estadosRes,
+          estadoOfertaRes,
         ] = await Promise.all([
           fetch("/api/cursos"),
           fetch("/api/sedes"),
@@ -32,6 +34,7 @@ export function useCatalogosOfertas() {
           fetch("/api/periodos"),
           fetch("/api/personas/coordinadores"),
           fetch("/api/acciones-oferta"),
+          fetch("/api/estadoOfertas"),
         ]);
 
         const [
@@ -42,6 +45,7 @@ export function useCatalogosOfertas() {
           periodos,
           coordinadores,
           estados,
+          estadoOferta,
         ] = await Promise.all([
           cursosRes.json(),
           sedesRes.json(),
@@ -50,6 +54,7 @@ export function useCatalogosOfertas() {
           periodosRes.json(),
           coordinadoresRes.json(),
           estadosRes.json(),
+          estadoOfertaRes.json(),
         ]);
 
         setCatalogos({
@@ -60,6 +65,7 @@ export function useCatalogosOfertas() {
           periodos,
           coordinadores,
           estados,
+          estadoOferta,
         });
       } catch (err) {
         console.error("Error al cargar catálogos:", err);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Input, Select, Option, Chip } from "@material-tailwind/react";
 import { EyeIcon, PencilSquareIcon, PaperAirplaneIcon, XCircleIcon, ArrowUpTrayIcon, PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { useCatalogosOfertas } from "@/hooks/useCatalogosOfertas";
@@ -7,6 +7,10 @@ export default function OfertasPresencialesVirtuales() {
 
     // Estados de datos de ofertas
     const [ofertas, setOfertas] = useState([]);
+
+    //----------------------------------------------------------------------------
+    // Cargar catálogos desde el hook.
+    //----------------------------------------------------------------------------
     const {
         cursos,
         sedes,
@@ -15,91 +19,52 @@ export default function OfertasPresencialesVirtuales() {
         periodos,
         coordinadores,
         estados,
-        loading: loadingCatalogos,
-        error: errorCatalogos,
+        estadoOferta,
+        loading: loadingCatalogos
     } = useCatalogosOfertas();
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    //----------------------------------------------------------------------------
+    // Funciones de Normalización de los catalogos.
+    //----------------------------------------------------------------------------
 
-    // Estados del modal
-    const [openFicha, setOpenFicha] = useState(false);
-    const [openNueva, setOpenNueva] = useState(false);
+    // Funciones de normalización (De texto a ID)
 
-    // Estados de formulario ---
-    const [fichaId, setFichaId] = useState(null);
-    const [fichaData, setFichaData] = useState(null);
-    const [editMode, setEditMode] = useState(false);
-    const [fichaLoading, setFichaLoading] = useState(false);
-    const [fichaError, setFichaError] = useState("");
-    const [nuevaOferta, setNuevaOferta] = useState({
-        cursoId: "",
-        sedeId: "",
-        modalidadId: "",
-        horarioId: "",
-        periodoId: "",
-        coordinadorId: "",
-        comentarios: "",
-        accionId: 2 // El estado se coloca Pendiente por defecto
-    });
+    // Normalización: Cursos String a Id
+    const matchCursoId = (valor) => {
+        if (!valor) return "";
+        const hit = cursos.find(c => c.codigo === valor || c.nombre === valor);
+        return hit?.cursoId ?? "";
+    };
 
-    // Paginación y filtros
-    const [term, setTerm] = useState("");
-    const [filterCurso, setFilterCurso] = useState("");
-    const [filterSede, setFilterSede] = useState("");
-    const [filterEstado, setFilterEstado] = useState("");
-    const [filterCoordinador, setFilterCoordinador] = useState("");
-    const [page, setPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    // Normalización: Sedes String a Id
+    const matchSedeId = (valor) => {
+        if (!valor) return "";
+        const hit = sedes.find(s => s.nombre === valor);
+        return hit?.sedeId ?? "";
+    };
 
-    // Funcion futura de importación
-    const [importName, setImportName] = useState("");
+    // Normalización: Modalidad String a Id
+    const matchModalidadId = (valor) => {
+        if (!valor) return "";
+        const hit = modalidades.find(m => m.nombre === valor);
 
-    // Obtener datos de ofertas
-    useEffect(() => {
-        const fetchOfertas = async () => {
-            try {
-                const res = await fetch("/api/ofertas");
-                const data = await res.json();
+        // Evitar Las Ofertas En Línea
+        if (hit?.modalidadId === 3 || valor.toLowerCase().includes("línea")) return "";
 
-                // Filtro para modalidades Presencial (1) y Virtual (2)
-                const modalidadesFiltrar = [1, 2];
-                const ofertasFiltradas = (data || []).filter((o) =>
-                    modalidadesFiltrar.includes(o.modalidadId)
-                );
+        return hit?.modalidadId ?? "";
+    };
 
-                setOfertas(ofertasFiltradas);
-            } catch (err) {
-                console.error(err);
-                setError("No se pudieron cargar las ofertas.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOfertas();
-    }, []);
 
-    // Funciones auxiliares para obtener nombres relacionados
-    const getCursoNombre = useCallback(
-        (id) => cursos.find((c) => c.cursoId === id)?.nombre ?? id,
-        [cursos]
-    );
 
-    const getCursoId = useCallback(
-        (id) => cursos.find((c) => c.cursoId === id)?.codigo ?? id,
-        [cursos]
-    );
+    // Normalización: Horario String a Id
+    const matchHorarioId = (valorTexto, valorId) => {
+        if (valorId) return valorId;
+        if (!valorTexto) return "";
+        const hit = horario.find(h => `${h.dia} - ${h.rango}` === valorTexto || h.descripcion === valorTexto);
+        return hit?.horarioId ?? "";
+    };
 
-    const getSedeNombre = useCallback(
-        (id) => sedes.find((s) => s.sedeId === id)?.nombre ?? id,
-        [sedes]
-    );
-
-    const getModalidadNombre = useCallback(
-        (id) => modalidades.find((m) => m.modalidadId === id)?.nombre ?? id,
-        [modalidades]
-    );
-
+    // Normalización: Horario Id a String
     const getHorarioNombre = useCallback(
         (id) => {
             const hora = horario.find((h) => h.horarioId === id);
@@ -108,68 +73,95 @@ export default function OfertasPresencialesVirtuales() {
         [horario]
     );
 
-    const getPeriodoNombre = useCallback(
-        (id) => {
-            const per = periodos.find((p) => p.periodoId === id);
-            return per ? `${per.numero}Q - ${per.anio}` : id;
-        },
-        [periodos]
-    );
+    // Normalización: Periodos String a Id
+    const matchPeriodoId = (valor) => {
+        if (!valor) return "";
+        // Soporta "2C, 2025" y "2Q - 2025"
+        const byLabel = periodos.find(p =>
+            [`${p.numero}C, ${p.anio}`, `${p.numero}Q - ${p.anio}`].includes(valor)
+        );
+        if (byLabel) return byLabel.periodoId;
 
+        // fallback por partes (Separar fechas)
+        const year = valor.match(/\d{4}/)?.[0];
+        const num = valor.match(/\d+/)?.[0];
+        const byParts = periodos.find(p => String(p.anio) === year && String(p.numero) === num);
+        return byParts?.periodoId ?? "";
+    };
+
+    // Normalización: Coordinador String a Id
+    const matchCoordinadorId = (valor) => {
+        if (!valor) return "";
+        const hit = coordinadores.find(c => c.nombre === valor);
+        return hit?.id ?? "";
+    };
+
+    // Normalización: Coordinador Id a String
     const getCoordinadorNombre = useCallback(
         (id) => coordinadores.find((c) => c.id === id)?.nombre ?? id,
         [coordinadores]
     );
 
-    // Colores para estados
-    const colorMap = useMemo(
-        () => ({
-            Pendiente: { label: "PENDIENTE", color: "amber" },
-            Enviada: { label: "ENVIADA", color: "blue" },
-            Aceptada: { label: "ACEPTADA", color: "green" },
-            Rechazada: { label: "RECHAZADA", color: "red" },
-            Cancelada: { label: "CANCELADA", color: "gray" },
-        }),
-        []
-    );
+    // Normalización: Acción / Estado String a Id
+    const matchAccionIdDesdeEstadoOAccion = (estado, accion) => {
+        const nombre = estado || accion;
+        if (!nombre) return 2; // Pendiente por defecto
+        const hit = estados.find(e => e.nombre === nombre);
+        return hit?.accionId ?? 2;
+    };
 
-    const getEstadoNombre = useCallback(
-        (id) => {
-            const estado = estados.find((e) => e.accionId === id)?.nombre ?? "Desconocido";
-            const { label, color } = colorMap[estado] || {
-                label: estado.toUpperCase(),
-                color: "blue-gray",
-            };
-            return (
-                <Chip
-                    value={label}
-                    color={color}
-                    className="font-bold text-white rounded-full px-4 py-1 w-fit min-w-[90px] text-center"
-                />
-            );
-        },
-        [estados, colorMap]
-    );
+    const [loading, setLoading] = useState(true);
+    const [setError] = useState(null);
 
+    // Estados de formulario ---
+    const [fichaId, setFichaId] = useState(null);
+    const [fichaData, setFichaData] = useState(null);
+    const [fichaForm, setFichaForm] = useState(null);
+    const [fichaLoading, setFichaLoading] = useState(false);
+    const [fichaError, setFichaError] = useState("");
+    const [editMode, setEditMode] = useState(false);
+    const [isNuevo, setIsNuevo] = useState(false);
+    //----------------------------------------------------------------------------
+    // Filtrado y busqueda
+    //----------------------------------------------------------------------------
 
+    // Filtros de campos
+    const [term, setTerm] = useState("");
+    const [filterCurso, setFilterCurso] = useState("");
+    const [filterSede, setFilterSede] = useState("");
+    const [filterEstado, setFilterEstado] = useState("");
+    const [filterCoordinador, setFilterCoordinador] = useState("");
 
-    // Ordenar, filtrar y paginar
+    // Filtrado por lo campos
+    // Cuenta con el ordenamiento por Id (Registros mas nuevos de primero)
     const filtered = useMemo(() => {
         try {
             return [...ofertas]
                 .sort((a, b) => b.ofertaId - a.ofertaId)
                 .filter((o) => {
-                    const matchCurso = filterCurso ? o.cursoId === Number(filterCurso) : true;
-                    const matchSede = filterSede ? o.sedeId === Number(filterSede) : true;
-                    const matchEstado = filterEstado ? o.accionId === Number(filterEstado) : true;
-                    const matchCoordinador = filterCoordinador ? o.coordinadorId === Number(filterCoordinador) : true;
+                    // Comparaciones directas por string
+                    const matchCurso = filterCurso ? o.curso === filterCurso : true;
+                    const matchSede = filterSede ? o.sede === filterSede : true;
+                    const matchEstado = filterEstado ? o.estado === filterEstado : true;
+                    const matchCoordinador = filterCoordinador
+                        ? o.coordinadorId === Number(filterCoordinador)
+                        : true;
 
-                    const texto = `${getCursoNombre(o.cursoId)} ${getSedeNombre(o.sedeId)} ${getModalidadNombre(o.modalidadId)} ${getHorarioNombre(o.horarioId)} ${getPeriodoNombre(o.periodoId)} ${getCoordinadorNombre(o.coordinadorId)} ${estados.find(e => e.accionId === o.accionId)?.nombre ?? ""}`.toLowerCase();
+                    // Búsqueda libre
+                    const texto = `
+          ${o.curso} ${o.sede} ${o.modalidad}
+          ${getHorarioNombre(o.horarioId)}
+          ${o.periodo} ${o.accion}
+          ${getCoordinadorNombre(o.coordinadorId)}
+          ${o.estado}
+        `.toLowerCase();
+
                     const termMatch = term ? texto.includes(term.toLowerCase()) : true;
 
                     return matchCurso && matchSede && matchEstado && matchCoordinador && termMatch;
                 });
-        } catch {
+        } catch (err) {
+            console.error("Error al aplicar filtros:", err);
             return ofertas;
         }
     }, [
@@ -179,138 +171,365 @@ export default function OfertasPresencialesVirtuales() {
         filterEstado,
         filterCoordinador,
         term,
-        estados,
-        getCursoNombre,
-        getSedeNombre,
-        getModalidadNombre,
         getHorarioNombre,
-        getPeriodoNombre,
         getCoordinadorNombre,
     ]);
-
-    const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
-
-    const currentData = useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        return filtered.slice(start, start + rowsPerPage);
-    }, [filtered, page, rowsPerPage]);
 
     // Limpieza de filtros
     const limpiarFiltros = () => {
         setFilterCurso("");
         setFilterSede("");
         setFilterEstado("");
+        setFilterCoordinador("");
         if (onFilter) onFilter({ curso: "", sede: "", estado: "" });
     };
 
+    //----------------------------------------------------------------------------
+    // Paginación
+    //----------------------------------------------------------------------------
 
-    // Registro de una nueva ofertas
+    // Configuración de paginación
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    // Cálculo de totales y páginas disponibles
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+
+    //  Segmentación de datos a mostrar
+    const currentData = useMemo(() => {
+        const start = (page - 1) * rowsPerPage;
+        return filtered.slice(start, start + rowsPerPage);
+    }, [filtered, page, rowsPerPage]);
+
+
+    const [openFicha, setOpenFicha] = useState(false);
+
+    const [modo, setModo] = useState("ver");
+
+    //----------------------------------------------------------------------------
+    // : Obtener listado de ofertas (Filtrado por modalidad en línea).
+    //----------------------------------------------------------------------------
+
+    const fetchOfertas = async () => {
+        try {
+            // Llamada al endpoint para obtener las ofertas.
+            setLoading(true);
+            const res = await fetch("/api/ofertas");
+            const data = await res.json();
+
+            // Filtrar todo excepto las ofertas En Linea
+            const modalidadExcluir = 'En Línea';
+            const ofertasFiltradas = (data || []).filter((o) => o.modalidad !== modalidadExcluir);
+
+            // Almancenar ofertas.
+            setOfertas(ofertasFiltradas);
+
+        } catch (Error) {
+
+            // Manejo de error: Temporal: Cambiar a SweetAlert.
+            console.error(Error);
+            setError("No se pudieron cargar las ofertas.");
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Cargar las ofertas al montar el componente.
+    useEffect(() => {
+        fetchOfertas();
+    }, []);
+
+    //----------------------------------------------------------------------------
+    //  Registro de nueva oferta.
+    //----------------------------------------------------------------------------
+
     const handleNuevaOferta = async () => {
         try {
-            if (!nuevaOferta.cursoId || !nuevaOferta.sedeId || !nuevaOferta.modalidadId || !nuevaOferta.horarioId || !nuevaOferta.periodoId || !nuevaOferta.coordinadorId) {
+            // Validar campos obligatorios
+            const { cursoId, sedeId, horarioId, periodoId, coordinadorId } = fichaForm;
+
+            if (!cursoId || !sedeId || !horarioId || !periodoId || !coordinadorId) {
                 alert("Todos los campos son obligatorios.");
                 return;
             }
 
+            // Estructura del nuevo registro
+            const nuevaOfertaPayload = {
+                ...fichaForm,
+                estadoOfertaId: 2 // Estado "Pendiente" por defecto
+            };
+
+            // Llamada al endpoint
             const response = await fetch("/api/ofertas", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(nuevaOferta),
+                body: JSON.stringify(nuevaOfertaPayload),
             });
 
+            // Manejo de errores. Temporal: Cambiar a SweetAlert.
             if (!response.ok) throw new Error("Error al registrar la oferta");
 
-            const nueva = await response.json();
-            setOfertas((prev) => [nueva, ...prev]);
-            alert("Oferta registrada con éxito.");
-            setOpenNueva(false);
-        } catch (err) {
-            console.error(err);
+            // Mensaje de éxito. Temporal: Cambiar a SweetAlert.
+            alert("Oferta registrada correctamente.");
+
+            // Cerrar modal y limpiar formulario
+            handleCloseFicha();
+            setFichaForm({
+                cursoId: "",
+                sedeId: "",
+                modalidadId: 3, // Modalidad en línea por defecto
+                horarioId: "",
+                periodoId: "",
+                coordinadorId: "",
+                comentarios: "",
+                accionId: 2,    // Estado Pendiente por defecto
+            });
+
+            // Refrescar lista
+            await fetchOfertas();
+
+        } catch (error) {
+
+            // Habilitar solamente para pruebas
+            // console.error(error);
+
+            // Manejo de error: Temporal: Cambiar a SweetAlert.
             alert("No fue posible registrar la oferta.");
         }
     };
 
-    // Abrir ficha de oferta
+    const handleOpenNueva = () => {
+
+        // Inicializar estados
+        setIsNuevo(true);
+        setEditMode(true);
+        setOpenFicha(true);
+
+        // Limpiar formulario 
+        setFichaForm({
+            cursoId: "",
+            sedeId: "",
+            horarioId: "",
+            periodoId: "",
+            coordinadorId: "",
+            comentarios: "",
+            accionId: 1, // Por defecto: Abrir Curso
+            modalidadId: "",
+            estadoOfertaId: 2 // Por defecto: Pendiente
+        });
+    };
+
+    // ----------------------------------------------------------------------------
+    //  Funcionalidad Completa (Abrir, Cerrar, Guardar cambios).
+    //            Ficha de Oferta compartida (ver y editar).
+    // ----------------------------------------------------------------------------
+
+    // Deshabilitar campos en caso que el estado de la oferta se encuentre en cancelada.
+    const OfertaCancelada =
+        fichaForm?.estadoOfertaId === 5 || // ID es 5 (cancelado)
+        fichaData?.estadoOfertaId === 5 || // Respaldo en fichaData
+        (typeof fichaData?.estado === "string" &&
+            fichaData.estado.toLowerCase().trim() === "cancelada");  // Respaldo en texto
+
+
+    // Funcionalidad Abrir Ficha.
     const handleOpenFicha = async (id, edit = false) => {
+
+        // Inicializar estados
+        setIsNuevo(false);
         setFichaId(id);
         setOpenFicha(true);
         setEditMode(edit);
         setFichaLoading(true);
         setFichaError("");
         setFichaData(null);
+        setFichaForm(null);
+
         try {
+
+            // Llamada al endpoint para obtener la oferta
             const res = await fetch(`/api/ofertas/${id}`);
+
+            // Manejo de errores. Temporal: Cambiar a SweetAlert.
             if (!res.ok) throw new Error("Error al cargar la oferta");
             const data = await res.json();
+
+            // Guardamos los datos (Los datos estan sin normalizar, se manejan mediante ID)
             setFichaData(data);
-        } catch (err) {
+
+            // Construimos un meotodo de normalización para la funcionalidad editable (Convertimos de ID a String)
+            const normalized = {
+                cursoId: matchCursoId(data.curso) || data.cursoId || "",
+                sedeId: matchSedeId(data.sede) || data.sedeId || "",
+                modalidadId: matchModalidadId(data.modalidad) || data.modalidadId,
+                horarioId: matchHorarioId(data.horario, data.horarioId),
+                periodoId: matchPeriodoId(data.periodo) || data.periodoId || "",
+                coordinadorId: matchCoordinadorId(data.coordinador) || data.coordinadorId || "",
+                comentarios: data.comentarios ?? "",
+                accionId:
+                    typeof data.accionId === "number"
+                        ? data.accionId
+                        : estados.find((e) => e.nombre === data.accion)?.accionId ?? 2,
+
+                accionId:
+                    typeof data.accionId === "number"
+                        ? data.accionId
+                        : estados.find((e) => e.nombre === data.accion)?.accionId ?? 2,
+
+                estadoId:
+                    typeof data.estadoId === "number"
+                        ? data.estadoId
+                        : estados.find((e) => e.nombre === data.estado)?.accionId ?? 2,
+
+            };
+
+            // Guardamos los datos normalizados
+            setFichaForm(normalized);
+
+        } catch (error) {
+            // Habilitar solamente para pruebas
+            // console.error("Error al abrir ficha:", error);
+
+            // Manejo de errores. Temporal: Cambiar a SweetAlert.
             setFichaError("No se pudo cargar la información de la oferta.");
+
         } finally {
+            // Finalizamos la carga de la ficha
             setFichaLoading(false);
         }
     };
 
+    // Cerrar ficha.
     const handleCloseFicha = () => {
         setOpenFicha(false);
         setEditMode(false);
+        setIsNuevo(false);
         setFichaData(null);
+        setFichaForm(null);
     };
 
-    // Editar, guardar cambios en la ficha
+    // Guardar cambios en la ficha.
     const handleSaveChanges = async () => {
-        if (!fichaData) return;
+        if (!fichaForm) return;
+
         try {
+
+            // Llamada al endpoint para guardar los cambios
             const response = await fetch(`/api/ofertas/${fichaId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(fichaData),
+                body: JSON.stringify(fichaForm),
             });
+
+            // Manejo de errores. Temporal: Cambiar a SweetAlert.
             if (!response.ok) throw new Error("Error al guardar cambios");
-            alert("Oferta actualizada con éxito");
-            setOfertas((prev) => prev.map((o) => (o.ofertaId === fichaId ? { ...o, ...fichaData } : o)));
+
+            // Actualizar los datos localmente
+            await fetchOfertas();
+
+            // Cerrar el modal
             handleCloseFicha();
-        } catch (err) {
-            alert("No fue posible guardar los cambios");
+
+            // Notificación de éxito. Temporal: Cambiar a SweetAlert.
+            alert("Oferta actualizada correctamente");
+
+        } catch (error) {
+
+            // console.error(error); Habilitar solamente para pruebas
+            console.error("Error al guardar cambios:", error);
+
+            // Manejo de errores. Temporal: Cambiar a SweetAlert.
+            alert("No fue posible guardar los cambios.");
         }
     };
 
-    // Cancelar oferta
+    //----------------------------------------------------------------------------
+    // Cancelar oferta.
+    //----------------------------------------------------------------------------
+
     const handleCancelar = async (ofertaId) => {
         try {
+
+            // Confirmación de usuario para cancelar la oferta: Temporal: Cambiar a SweetAlert.
             const confirmacion = confirm("¿Seguro que deseas cancelar esta oferta?");
             if (!confirmacion) return;
 
+            // Buscar la oferta en el estado actual
             const oferta = ofertas.find((o) => o.ofertaId === ofertaId);
             if (!oferta) {
+
+                // Manejo de error: Temporal: Cambiar a SweetAlert.
                 alert("No se encontró la oferta en el estado actual.");
                 return;
             }
 
-            if (oferta.accionId === 5) {
+            // Verificar si ya está cancelada
+            if (oferta.estadoOfertaId === 5 || oferta.estado === "Cancelada") {
                 alert("Esta oferta ya se encuentra cancelada.");
                 return;
             }
 
+            // Construir payload (Fomato JSON ) con validaciones
+            const payload = {
+                cursoId: matchCursoId(oferta.curso) || oferta.cursoId,
+                sedeId: matchSedeId(oferta.sede) || oferta.sedeId,
+                modalidadId: matchModalidadId(oferta.modalidad) || oferta.modalidadId,
+                horarioId: matchHorarioId(oferta.horario, oferta.horarioId),
+                periodoId: matchPeriodoId(oferta.periodo) || oferta.periodoId,
+                accionId: matchAccionIdDesdeEstadoOAccion(oferta.estado, oferta.accion) || oferta.accionId,
+                coordinadorId:
+                    typeof oferta.coordinador === "object"
+                        ? oferta.coordinador?.id ?? oferta.coordinadorId
+                        : matchCoordinadorId(oferta.coordinador) || oferta.coordinadorId,
+                comentarios: oferta.comentarios ?? "",
+                estadoOfertaId: 5,
+            };
+
+            /*
+            Para pruebas: Muestra en consola el payload que se enviará al backend
+
+            console.group("Payload enviado al backend");
+            console.table(payload);
+            console.groupEnd();
+            */
+
+            // Llamada al endpoint para cancelar la oferta
             const response = await fetch(`/api/ofertas/${ofertaId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...oferta, accionId: 5 }),
+                body: JSON.stringify(payload),
             });
 
-            if (!response.ok) throw new Error("Error al cancelar la oferta");
+            // Manejo de errores
+            if (!response.ok) {
+                const msg = await response.text();
+                console.error("Backend respondió error:", msg);
+                throw new Error("Error al cancelar la oferta");
+            }
 
             // Actualizar estado localmente
             setOfertas((prev) =>
-                prev.map((o) => (o.ofertaId === ofertaId ? { ...o, accionId: 5 } : o))
+                prev.map((o) =>
+                    o.ofertaId === ofertaId
+                        ? { ...o, estado: "Cancelada", estadoOfertaId: 5 }
+                        : o
+                )
             );
 
-            alert("Oferta cancelada con éxito.");
-        } catch (err) {
-            console.error(err);
+            // Notificación de éxito. Temporal: Cambiar a SweetAlert.
+            alert("Oferta cancelada correctamente.");
+
+        } catch (error) {
+            // console.error("Error general:",error); Habilitar solamente para pruebas
             alert("No fue posible cancelar la oferta.");
         }
     };
+
+    //----------------------------------------------------------------------------
+    // Renderizado de datos
+    //----------------------------------------------------------------------------
 
     if (loading || loadingCatalogos) {
         return (
@@ -319,65 +538,71 @@ export default function OfertasPresencialesVirtuales() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
-                <Typography>Cargando catálogos y ofertas...</Typography>
+                <Typography>Cargando datos de Ofertas ...</Typography>
             </div>
         );
     }
+
+    // ---------------------------------------------------------------------------
+    // Personalización:
+    // ---------------------------------------------------------------------------
+
+    // Chips de colores:
+
+    // Colores para Acciones
+    const setAccionesColors = {
+        "Abrir Curso": { color: "green", label: "ABRIR CURSO" },
+        "Asignar Profesor": { color: "blue", label: "ASIGNAR PROFESOR" },
+        "Nombrado": { color: "teal", label: "NOMBRADO" },
+        "Cambiar Profesor": { color: "amber", label: "CAMBIAR PROFESOR" },
+        "Cerrar Curso": { color: "red", label: "CERRAR CURSO" },
+        "Reserva": { color: "purple", label: "RESERVA" },
+        "Suficiencia": { color: "cyan", label: "SUFICIENCIA" },
+        "Cerrado": { color: "gray", label: "CERRADO" },
+    };
+
+    // Función para renderizar
+    const getAccionesColors = (accion) => {
+        const conf = setAccionesColors[accion] || { color: "blue-gray", label: accion || "DESCONOCIDA" };
+        return (
+            <Chip
+                value={conf.label}
+                color={conf.color}
+                className="font-bold text-white rounded-full px-3 py-1 text-xs w-fit"
+            />
+        );
+    };
+
+    // Colores y etiquetas para Estados
+    const setEstadosColors = {
+        "Pendiente": { color: "amber", label: "PENDIENTE" },
+        "Enviada": { color: "blue", label: "ENVIADA" },
+        "Aceptada": { color: "green", label: "ACEPTADA" },
+        "Rechazada": { color: "red", label: "RECHAZADA" },
+        "Cancelada": { color: "gray", label: "CANCELADA" },
+    };
+
+    // Función para renderizar 
+    const getEstadoChip = (estado) => {
+        const conf = setEstadosColors[estado] || { color: "blue-gray", label: estado || "DESCONOCIDO" };
+        return (
+            <Chip
+                value={conf.label}
+                color={conf.color}
+                className="font-bold text-white rounded-full px-4 py-1 text-xs w-fit min-w-[90px] text-center"
+            />
+        );
+    };
 
     return (
 
         <div className="p-4 space-y-4">
 
-            {/* Formulario para registrar una nueva oferta */}
-
-            <Dialog open={openNueva} handler={() => setOpenNueva(false)} size="lg">
-                <DialogHeader className="text-[#2B338C] font-bold">Registrar Nueva Oferta</DialogHeader>
-                <DialogBody className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Select label="Curso" value={nuevaOferta.cursoId} onChange={(v) => setNuevaOferta({ ...nuevaOferta, cursoId: Number(v) })}>
-                            {cursos.map((c) => <Option key={c.cursoId} value={c.cursoId}>{c.nombre}</Option>)}
-                        </Select>
-                        <Select label="Sede" value={nuevaOferta.sedeId} onChange={(v) => setNuevaOferta({ ...nuevaOferta, sedeId: Number(v) })}>
-                            {sedes.map((s) => <Option key={s.sedeId} value={s.sedeId}>{s.nombre}</Option>)}
-                        </Select>
-                        <Select
-                            label="Modalidad"
-                            value={nuevaOferta.modalidadId}
-                            onChange={(v) => setNuevaOferta({ ...nuevaOferta, modalidadId: Number(v) })}
-                        >
-                            {modalidades
-                                .filter((m) => [1, 2].includes(m.modalidadId)) // 🔹 solo presencial y virtual
-                                .map((m) => (
-                                    <Option key={m.modalidadId} value={m.modalidadId}>
-                                        {m.nombre}
-                                    </Option>
-                                ))}
-                        </Select>
-                        <Select label="Horario" value={nuevaOferta.horarioId} onChange={(v) => setNuevaOferta({ ...nuevaOferta, horarioId: Number(v) })}>
-                            {horario.map((h) => <Option key={h.horarioId} value={h.horarioId}>{`${h.dia} - ${h.rango}`}</Option>)}
-                        </Select>
-                        <Select label="Periodo" value={nuevaOferta.periodoId} onChange={(v) => setNuevaOferta({ ...nuevaOferta, periodoId: Number(v) })}>
-                            {periodos.map((p) => <Option key={p.periodoId} value={p.periodoId}>{`${p.numero}Q - ${p.anio}`}</Option>)}
-                        </Select>
-                        <Select label="Coordinador" value={nuevaOferta.coordinadorId} onChange={(v) => setNuevaOferta({ ...nuevaOferta, coordinadorId: Number(v) })}>
-                            {coordinadores.map((c) => <Option key={c.id} value={c.id}>{c.nombre}</Option>)}
-                        </Select>
-                        <div className="md:col-span-2">
-                            <Input label="Comentarios" value={nuevaOferta.comentarios} onChange={(e) => setNuevaOferta({ ...nuevaOferta, comentarios: e.target.value })} />
-                        </div>
-                    </div>
-                </DialogBody>
-                <DialogFooter>
-                    <Button variant="outlined" color="gray" onClick={() => setOpenNueva(false)} className="mr-2">Cancelar</Button>
-                    <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={handleNuevaOferta}>Registrar</Button>
-                </DialogFooter>
-            </Dialog>
-
-            {/* Encabezado y Acciones */}
+            {/* Tabla de registros e importar */}
 
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas presenciales Y En Línea</Typography>
+                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas 100% Virtual</Typography>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -386,10 +611,6 @@ export default function OfertasPresencialesVirtuales() {
                         type="file"
                         accept=".csv,.xls,.xlsx"
                         className="hidden"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            setImportName(file ? file.name : "");
-                        }}
                     />
                     <label htmlFor="import-presencial">
                         <Tooltip content="Importar desde CSV o Excel">
@@ -399,97 +620,124 @@ export default function OfertasPresencialesVirtuales() {
                             </Button>
                         </Tooltip>
                     </label>
-                    {importName && (
-                        <span className="text-xs text-blue-gray-600 truncate max-w-[180px]">{importName}</span>
-                    )}
 
-                    <Button className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2" onClick={() => setOpenNueva(true)}>
+                    <Button
+                        className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
+                        onClick={handleOpenNueva}
+                    >
                         <PlusIcon className="h-5 w-5" /> Nueva oferta
                     </Button>
+
+
+
                 </div>
             </div>
 
             {/* Filtros de busqueda */}
+            <Card className="p-4 border border-gray-200 shadow-sm bg-white relative z-[50]">
+                <div className="flex flex-wrap gap-3 items-end">
 
-            <Card className="p-2 overflow-visible relative z-50">
-                <div className="relative flex flex-wrap md:flex-nowrap items-center gap-2 overflow-visible py-1 px-1">
-                    {/* Buscar */}
-                    <div className="min-w-[280px] flex-shrink-0">
+                    {/*Búsqueda general */}
+                    <div className="flex-1 min-w-[250px]">
                         <Input
                             size="sm"
-                            crossOrigin=""
-                            label="Buscar (curso, sede, estado)"
-                            icon={<MagnifyingGlassIcon className="h-4 w-4 text-blue-gray-500" />}
+                            label="Buscar palabra clave"
+                            icon={<MagnifyingGlassIcon className="h-5 w-5 text-[#2B338C]" />}
                             value={term}
                             onChange={(e) => setTerm(e.target.value)}
                         />
                     </div>
 
-                    {/* Curso */}
-                    <div className="min-w-[260px] flex-shrink-0">
+                    {/*Curso */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
                             size="sm"
                             label="Curso"
                             value={filterCurso}
                             onChange={(v) => setFilterCurso(v || "")}
-                            selected={() => (filterCurso ? getCursoNombre(Number(filterCurso)) : "Todos")}
+                            selected={() => (filterCurso ? filterCurso : "Todos")}
                             menuProps={{
                                 className:
-                                    "z-[2147483647] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[260px]",
-                                keepMounted: true,
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
                                 placement: "bottom-start",
                             }}
-                            containerProps={{ className: "relative z-0" }}
+                            containerProps={{ className: "relative z-[70]" }}
                         >
                             <Option value="">Todos</Option>
-                            {cursos.map((c) => (
-                                <Option key={c.cursoId} value={String(c.cursoId)} className="bg-white">
-                                    {c.nombre}
+                            {Array.from(new Set(ofertas.map(o => o.curso))).map((curso) => (
+                                <Option key={curso} value={curso} className="bg-white">
+                                    {curso}
                                 </Option>
                             ))}
                         </Select>
                     </div>
 
                     {/* Sede */}
-                    <div className="min-w-[180px] flex-shrink-0">
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
                             size="sm"
                             label="Sede"
                             value={filterSede}
                             onChange={(v) => setFilterSede(v || "")}
-                            selected={() => (filterSede ? getSedeNombre(Number(filterSede)) : "Todas")}
+                            selected={() => (filterSede ? filterSede : "Todas")}
                             menuProps={{
                                 className:
-                                    "z-[2147483647] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto",
-                                keepMounted: true,
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
                                 placement: "bottom-start",
                             }}
-                            containerProps={{ className: "relative z-0" }}
+                            containerProps={{ className: "relative z-[70]" }}
                         >
                             <Option value="">Todas</Option>
-                            {sedes.map((s) => (
-                                <Option key={s.sedeId} value={String(s.sedeId)} className="bg-white">
-                                    {s.nombre}
+                            {Array.from(new Set(ofertas.map(o => o.sede))).map((sede) => (
+                                <Option key={sede} value={sede} className="bg-white">
+                                    {sede}
                                 </Option>
                             ))}
                         </Select>
                     </div>
 
-                    {/* Coordinador */}
-                    <div className="min-w-[220px] flex-shrink-0">
+                    {/*Estado */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            size="sm"
+                            label="Estado"
+                            value={filterEstado}
+                            onChange={(v) => setFilterEstado(v || "")}
+                            selected={() => (filterEstado ? filterEstado : "Todos")}
+                            menuProps={{
+                                className:
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
+                                placement: "bottom-start",
+                            }}
+                            containerProps={{ className: "relative z-[70]" }}
+                        >
+                            <Option value="">Todos</Option>
+                            {Array.from(new Set(ofertas.map(o => o.estado))).map((estado) => (
+                                <Option key={estado} value={estado} className="bg-white">
+                                    {estado}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/*Coordinador */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
                             size="sm"
                             label="Coordinador"
                             value={filterCoordinador}
                             onChange={(v) => setFilterCoordinador(v || "")}
-                            selected={() => (filterCoordinador ? getCoordinadorNombre(Number(filterCoordinador)) : "Todos")}
+                            selected={() =>
+                                filterCoordinador
+                                    ? getCoordinadorNombre(Number(filterCoordinador))
+                                    : "Todos"
+                            }
                             menuProps={{
                                 className:
-                                    "z-[2147483647] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
-                                keepMounted: true,
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
                                 placement: "bottom-start",
                             }}
-                            containerProps={{ className: "relative z-0" }}
+                            containerProps={{ className: "relative z-[70]" }}
                         >
                             <Option value="">Todos</Option>
                             {coordinadores.map((c) => (
@@ -500,36 +748,7 @@ export default function OfertasPresencialesVirtuales() {
                         </Select>
                     </div>
 
-                    {/* Estado */}
-                    <div className="min-w-[180px] flex-shrink-0">
-                        <Select
-                            size="sm"
-                            label="Estado"
-                            value={filterEstado}
-                            onChange={(v) => setFilterEstado(v || "")}
-                            selected={() =>
-                                filterEstado
-                                    ? estados.find((e) => String(e.accionId) === String(filterEstado))?.nombre ?? "Todos"
-                                    : "Todos"
-                            }
-                            menuProps={{
-                                className:
-                                    "z-[2147483647] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto",
-                                keepMounted: true,
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-0" }}
-                        >
-                            <Option value="">Todos</Option>
-                            {estados.map((e) => (
-                                <Option key={e.accionId} value={String(e.accionId)} className="bg-white">
-                                    {e.nombre}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
-
-                    {/* Filas por página */}
+                    {/*Paginación selector */}
                     <div className="min-w-[120px] flex-shrink-0">
                         <Select
                             size="sm"
@@ -554,55 +773,53 @@ export default function OfertasPresencialesVirtuales() {
                         </Select>
                     </div>
 
-                    {/* Botón limpiar */}
-                    <div className="ml-auto flex-shrink-0">
+                    {/*Limpiar */}
+                    <div className="flex-shrink-0 relative z-[50]">
                         <Button
-                            size="sm"
                             variant="outlined"
-                            className="border-[#2B338C] text-[#2B338C] font-semibold"
                             onClick={limpiarFiltros}
+                            className="border-[#2B338C] text-[#2B338C] text-sm flex items-center gap-2 hover:bg-[#2B338C]/10 transition-all"
                         >
+                            <XCircleIcon className="h-4 w-4" />
                             Limpiar
                         </Button>
                     </div>
                 </div>
             </Card>
 
-            {/* Resumen de ofertas */}
+            {/* Resumen de ofertas: Chips de Estados */}
             <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-[#2B338C]">
                     TOTAL: {filtered.length}
                 </span>
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-amber-600">
-                    PENDIENTES: {filtered.filter(o => o.accionId === 2).length}
+                    PENDIENTES: {filtered.filter(o => o.estado === "Pendiente").length}
                 </span>
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-blue-600">
-                    ENVIADAS: {filtered.filter(o => o.accionId === 1).length}
+                    ENVIADAS: {filtered.filter(o => o.estado === "Enviada").length}
                 </span>
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-green-600">
-                    ACEPTADAS: {filtered.filter(o => o.accionId === 3).length}
+                    ACEPTADAS: {filtered.filter(o => o.estado === "Aceptada").length}
                 </span>
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-red-600">
-                    RECHAZADAS: {filtered.filter(o => o.accionId === 4).length}
+                    RECHAZADAS: {filtered.filter(o => o.estado === "Rechazada").length}
                 </span>
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
-                    CANCELADAS: {filtered.filter(o => o.accionId === 5).length}
+                    CANCELADAS: {filtered.filter(o => o.estado === "Cancelada").length}
                 </span>
             </div>
 
             {/* Tabla de Ofertas */}
-
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-[800px] w-full text-left">
                         <thead className="bg-blue-gray-50 text-blue-gray-700">
                             <tr>
-                                <th className="p-3">ID</th>
                                 <th className="p-3">Curso</th>
                                 <th className="p-3">Sede</th>
                                 <th className="p-3">Modalidad</th>
@@ -611,19 +828,20 @@ export default function OfertasPresencialesVirtuales() {
                                 <th className="p-3">Estado</th>
                                 <th className="p-3">Coordinador</th>
                                 <th className="p-3">Acciones</th>
+                                <th className="p-3">Opciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentData.map((o) => (
                                 <tr key={o.ofertaId} className="border-b">
-                                    <td className="p-3">{getCursoId(o.cursoId)}</td>
-                                    <td className="p-3">{getCursoNombre(o.cursoId)}</td>
-                                    <td className="p-3">{getSedeNombre(o.sedeId)}</td>
-                                    <td className="p-3">{getModalidadNombre(o.modalidadId)}</td>
-                                    <td className="p-3">{getHorarioNombre(o.horarioId)}</td>
-                                    <td className="p-3">{getPeriodoNombre(o.periodoId)}</td>
-                                    <td className="p-3">{getEstadoNombre(o.accionId)}</td>
+                                    <td className="p-3">{o.curso}</td>
+                                    <td className="p-3">{o.sede}</td>
+                                    <td className="p-3">{o.modalidad}</td>
+                                    <td className="p-3">{getHorarioNombre(o.horarioId)}</td> {/* este sí sigue siendo ID */}
+                                    <td className="p-3">{o.periodo}</td>
+                                    <td className="p-3">{getEstadoChip(o.estado)}</td>
                                     <td className="p-3">{getCoordinadorNombre(o.coordinadorId)}</td>
+                                    <td className="p-3">{getAccionesColors(o.accion)}</td>
                                     <td className="p-3">
                                         <div className="flex items-center gap-2">
                                             <Tooltip content="Ver detalle">
@@ -664,61 +882,253 @@ export default function OfertasPresencialesVirtuales() {
                 </div>
             </Card >
 
-            {/* Modal reutilizable */}
-            < Dialog open={openFicha} handler={handleCloseFicha} size="lg" >
-                <DialogHeader className="text-[#2B338C]">{editMode ? `Editar Oferta - ${fichaId}` : `Oferta - ${fichaId}`}</DialogHeader>
-                <DialogBody className="space-y-4">
-                    {fichaLoading && <Typography className="text-blue-gray-600">Cargando...</Typography>}
-                    {fichaError && <Typography className="text-red-600">{fichaError}</Typography>}
-                    {!fichaLoading && fichaData && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {editMode ? (
-                                <>
-                                    <Select label="Curso" value={fichaData.cursoId} onChange={(v) => setFichaData({ ...fichaData, cursoId: Number(v) })}>
-                                        {cursos.map((c) => <Option key={c.cursoId} value={c.cursoId}>{c.nombre}</Option>)}
+            {/* Modal compartido: Funciones de Ver/Editar/Registar */}
+            <Dialog
+                open={openFicha}
+                handler={handleCloseFicha}
+                size="md"
+                className="rounded-xl shadow-xl bg-white"
+            >
+                {/* Header */}
+                <DialogHeader className="bg-[#2B338C] text-white font-semibold text-base px-6 py-3 rounded-t-xl flex items-center gap-2 shadow-md">
+                    <span className="w-2.5 h-2.5 bg-[#FFDA00] rounded-full"></span>
+                    {modo === "nuevo"
+                        ? "Registrar Nueva Oferta"
+                        : modo === "editar"
+                            ? "Editar Ficha de Oferta"
+                            : `Ficha de Oferta ${fichaData?.curso
+                                ? `- ${fichaData.curso} - ${fichaData.sede} - ${fichaData.periodo}`
+                                : ""
+                            }`}
+                </DialogHeader>
+
+                {/* Cuerpo */}
+                <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200">
+                    {fichaLoading && (
+                        <Typography className="text-blue-gray-600 text-center py-4">
+                            Cargando información...
+                        </Typography>
+                    )}
+
+                    {fichaError && (
+                        <Typography className="text-red-600 text-center py-4">
+                            {fichaError}
+                        </Typography>
+                    )}
+
+                    {!fichaLoading && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-[15px] leading-tight">
+                            {/* Sección: Datos de la Ficha */}
+                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
+                                Datos de la Ficha
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+
+                                {/* Curso */}
+                                <Select
+                                    label="Curso"
+                                    value={fichaForm?.cursoId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, cursoId: Number(v) }))}
+                                >
+                                    {cursos.map((c) => (
+                                        <Option key={c.cursoId} value={c.cursoId}>
+                                            {c.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                {/* Modalidad */}
+                                <Select
+                                    label="Modalidad"
+                                    value={fichaForm?.modalidadId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) =>
+                                        setFichaForm((prev) => ({ ...prev, modalidadId: Number(v) }))
+                                    }
+                                >
+                                    {modalidades
+                                        .filter((m) => m.modalidadId !== 3 && m.nombre !== "En Línea") // Excluye las ofertas En Línea
+                                        .map((m) => (
+                                            <Option key={m.modalidadId} value={m.modalidadId}>
+                                                {m.nombre}
+                                            </Option>
+                                        ))}
+                                </Select>
+
+                                {/* Sede */}
+                                <Select
+                                    label="Sede"
+                                    value={fichaForm?.sedeId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, sedeId: Number(v) }))}
+                                >
+                                    {sedes.map((s) => (
+                                        <Option key={s.sedeId} value={s.sedeId}>
+                                            {s.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                {/* Horario */}
+                                <Select
+                                    label="Horario"
+                                    value={fichaForm?.horarioId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, horarioId: Number(v) }))}
+                                >
+                                    {horario.map((h) => (
+                                        <Option key={h.horarioId} value={h.horarioId}>
+                                            {`${h.dia} - ${h.rango}`}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                {/* Periodo */}
+                                <Select
+                                    label="Periodo"
+                                    value={fichaForm?.periodoId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, periodoId: Number(v) }))}
+                                >
+                                    {periodos.map((p) => (
+                                        <Option key={p.periodoId} value={p.periodoId}>
+                                            {`${p.numero}Q - ${p.anio}`}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                {/* Coordinador */}
+                                <Select
+                                    label="Coordinador"
+                                    value={fichaForm?.coordinadorId || ""}
+                                    disabled={!editMode || OfertaCancelada}
+                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, coordinadorId: Number(v) }))}
+                                >
+                                    {coordinadores.map((c) => (
+                                        <Option key={c.id} value={c.id}>
+                                            {c.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+
+                            {/* Línea divisoria */}
+                            <hr className="my-4 border-gray-300" />
+
+                            {/* Sección: Estado de Oferta */}
+                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
+                                Estado de Oferta
+                            </h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+                                {!editMode ? (
+                                    <>
+                                        <div>
+                                            <p className="text-[#2B338C] font-bold">Acción:</p>
+                                            {getAccionesColors(fichaData?.accion)}
+                                        </div>
+
+                                        <div>
+                                            <p className="text-[#2B338C] font-bold">Estado:</p>
+                                            {getEstadoChip(fichaData?.estado)}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Select
+                                        label="Acción"
+                                        value={fichaForm?.accionId || ""}
+                                        disabled={OfertaCancelada}
+                                        onChange={(v) =>
+                                            setFichaForm((prev) => ({ ...prev, accionId: Number(v) }))
+                                        }
+                                    >
+                                        {estados.map((e) => (
+                                            <Option key={e.accionId} value={e.accionId}>
+                                                {e.nombre}
+                                            </Option>
+                                        ))}
                                     </Select>
-                                    <Select label="Sede" value={fichaData.sedeId} onChange={(v) => setFichaData({ ...fichaData, sedeId: Number(v) })}>
-                                        {sedes.map((s) => <Option key={s.sedeId} value={s.sedeId}>{s.nombre}</Option>)}
-                                    </Select>
-                                    <Select label="Modalidad" value={fichaData.modalidadId} onChange={(v) => setFichaData({ ...fichaData, modalidadId: Number(v) })}>
-                                        {modalidades.map((m) => <Option key={m.modalidadId} value={m.modalidadId}>{m.nombre}</Option>)}
-                                    </Select>
-                                    <Select label="Horario" value={fichaData.horarioId} onChange={(v) => setFichaData({ ...fichaData, horarioId: Number(v) })}>
-                                        {horario.map((h) => <Option key={h.horarioId} value={h.horarioId}>{h.rango}</Option>)}
-                                    </Select>
-                                    <Select label="Periodo" value={fichaData.periodoId} onChange={(v) => setFichaData({ ...fichaData, periodoId: Number(v) })}>
-                                        {periodos.map((p) => <Option key={p.periodoId} value={p.periodoId}>{`${p.numero} - ${p.anio}`}</Option>)}
-                                    </Select>
-                                    <Select label="Coordinador" value={fichaData.coordinadorId} onChange={(v) => setFichaData({ ...fichaData, coordinadorId: Number(v) })}>
-                                        {coordinadores.map((c) => <Option key={c.id} value={c.id}>{c.nombre}</Option>)}
-                                    </Select>
-                                    <Input label="Comentarios" value={fichaData.comentarios ?? ""} onChange={(e) => setFichaData({ ...fichaData, comentarios: e.target.value })} />
-                                </>
+                                )}
+                            </div>
+
+                            {/* Línea divisoria */}
+                            <hr className="my-4 border-gray-300" />
+
+                            {/* Sección: Comentarios */}
+                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
+                                Comentarios
+                            </h2>
+
+                            {!editMode ? (
+                                <p className="text-gray-700 text-sm leading-relaxed border border-gray-100 rounded-md p-3 bg-gray-50">
+                                    {fichaData?.comentarios || "No cuenta con comentarios."}
+                                </p>
                             ) : (
-                                <>
-                                    <div><p className="text-blue-gray-500 text-sm">Curso</p><p className="font-semibold">{fichaData.curso?.nombre ?? getCursoNombre(fichaData.cursoId)}</p></div>
-                                    <div><p className="text-blue-gray-500 text-sm">Sede</p><p className="font-semibold">{fichaData.sede?.nombre ?? getSedeNombre(fichaData.sedeId)}</p></div>
-                                    <div><p className="text-blue-gray-500 text-sm">Modalidad</p><p className="font-semibold">{fichaData.modalidad?.nombre ?? getModalidadNombre(fichaData.modalidadId)}</p></div>
-                                    <div><p className="text-blue-gray-500 text-sm">Horario</p><p className="font-semibold">{fichaData.horario?.descripcion ?? getHorarioNombre(fichaData.horarioId)}</p></div>
-                                    <div><p className="text-blue-gray-500 text-sm">Periodo</p><p className="font-semibold">{fichaData.periodo?.nombre ?? getPeriodoNombre(fichaData.periodoId)}</p></div>
-                                    <div><p className="text-blue-gray-500 text-sm">Coordinador</p><p className="font-semibold">{fichaData.coordinador?.nombre ?? getCoordinadorNombre(fichaData.coordinadorId)}</p></div>
-                                    <div className="md:col-span-2"><p className="text-blue-gray-500 text-sm">Comentarios</p><p className="font-semibold">{fichaData.comentarios ?? "—"}</p></div>
-                                </>
+                                <Input
+                                    label="Comentarios"
+                                    value={fichaForm?.comentarios ?? ""}
+                                    disabled={OfertaCancelada}
+                                    onChange={(e) =>
+                                        setFichaForm((prev) => ({
+                                            ...prev,
+                                            comentarios: e.target.value,
+                                        }))
+                                    }
+                                />
                             )}
                         </div>
                     )}
+
                 </DialogBody>
-                <DialogFooter>
-                    {editMode ? (
+
+                {/* Footer */}
+                <DialogFooter className="bg-gray-50 border-t border-gray-200 px-5 py-3 rounded-b-xl flex justify-end">
+                    {isNuevo ? (
                         <>
-                            <Button variant="outlined" onClick={handleCloseFicha} className="border-[#2B338C] text-[#2B338C] mr-2">Cancelar</Button>
-                            <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={handleSaveChanges}>Guardar</Button>
+                            <Button
+                                variant="outlined"
+                                className="border-[#2B338C] text-[#2B338C] mr-2"
+                                onClick={handleCloseFicha}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                className="bg-[#FFDA00] text-[#2B338C] font-semibold"
+                                onClick={handleNuevaOferta}
+                            >
+                                Registrar
+                            </Button>
+                        </>
+                    ) : editMode ? (
+                        <>
+                            <Button
+                                variant="outlined"
+                                className="border-[#2B338C] text-[#2B338C] mr-2"
+                                onClick={handleCloseFicha}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                className="bg-[#FFDA00] text-[#2B338C] font-semibold"
+                                onClick={handleSaveChanges}
+                            >
+                                Guardar
+                            </Button>
                         </>
                     ) : (
-                        <Button variant="text" className="bg-[#FFDA00] text-[#2B338C]" onClick={handleCloseFicha}>Cerrar</Button>
+                        <Button
+                            className="bg-[#FFDA00] text-[#2B338C] text-sm font-semibold px-6 py-2 rounded-md shadow-sm hover:shadow-md hover:bg-[#FFD700] transition-all"
+                            onClick={handleCloseFicha}
+                        >
+                            Cerrar
+                        </Button>
                     )}
                 </DialogFooter>
-            </Dialog >
+
+            </Dialog>
+
         </div >
     );
 }
