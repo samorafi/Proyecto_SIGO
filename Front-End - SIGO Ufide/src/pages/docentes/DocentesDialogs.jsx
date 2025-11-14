@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+// src/pages/docentes/DocentesDialogs.jsx
+import { useEffect, useState } from "react";
 import {
-  Card, Button, Input, Select, Option, Typography, Tooltip,
-  Dialog, DialogHeader, DialogBody, DialogFooter, Switch
+  Button, Input, Select, Option, Typography,
+  Dialog, DialogHeader, DialogBody, DialogFooter, Switch,
 } from "@material-tailwind/react";
-import {
-  MagnifyingGlassIcon, EyeIcon, PencilSquareIcon,
-  ChevronLeftIcon, ChevronRightIcon, PlusIcon
-} from "@heroicons/react/24/outline";
 
 /* ===================== API CONFIG ===================== */
 const API = import.meta.env.VITE_API_BASE ?? "";
@@ -22,7 +19,9 @@ const URL = {
   atestados: `${API}/api/atestados`,
   roles: `${API}/api/rol-docentes`,
   motivos: `${API}/api/motivosdesvinculacion`,
-  periodos: `${API}/api/periodos`,
+  periodos: `${API}/api/periodos/`,
+  periodoById: (id) => `${API}/api/periodos/${id}`,
+  sedes: `${API}/api/sedes`,
 };
 
 /* ===================== HELPERS ===================== */
@@ -39,20 +38,22 @@ async function fetchArray(url) {
       x.id ?? x.Id ?? x.ID ?? x.valor ?? x.value ??
       x.generoId ?? x.provinciaId ?? x.cantonId ?? x.categoriaId ??
       x.estadoPersonaId ?? x.tipoContratoId ?? x.atestadoId ?? x.rolDocenteId ??
-      x.rolId ??                         
-      x.motivoDesvinculacionId ?? x.periodoDesvinculacionId
+      x.rolId ??
+      x.motivoDesvinculacionId ?? x.periodoDesvinculacionId ?? x.sedeId ??
+      x.periodoIngresoId
     ),
     nombre: String(
       x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ??
       x.genero ?? x.provincia ?? x.canton ?? x.categoria ??
       x.estado ?? x.tipoContrato ?? x.atestado ?? x.rol ?? x.rolDocente ??
-      x.motivo ?? x.periodo
+      x.motivo ?? x.periodo ?? x.sede
     ),
     __raw: x
   }));
 }
-const matches = (t, q) => !q || String(t ?? "").toLowerCase().includes(String(q ?? "").toLowerCase());
-const findLabel = (list, id) => (list || []).find(x => String(x.id) === String(id))?.nombre ?? "";
+
+const findLabel = (list, id) =>
+  (list || []).find(x => String(x.id) === String(id))?.nombre ?? "";
 
 /* Z-index/menu fixes */
 const MENU_CLS =
@@ -82,17 +83,23 @@ function RowInfo({ label, value }) {
   );
 }
 
-/* ===================== ENDPOINT 2: FICHA DEL DOCENTE ===================== */
+/* ===================== FICHA DEL DOCENTE ===================== */
 function FichaDocente({ open, onClose, id }) {
   const [loading, setLoading] = useState(false);
   const [p, setP] = useState(null);
   const [error, setError] = useState("");
 
+  const [periodoIngresoNombre, setPeriodoIngresoNombre] = useState("—");
+  const [periodoDesvNombre, setPeriodoDesvNombre] = useState("—");
+
+  // 1) Cargar persona
   useEffect(() => {
     let live = true;
     const load = async () => {
       if (!open || !id) return;
-      setLoading(true); setError(""); setP(null);
+      setLoading(true);
+      setError("");
+      setP(null);
       try {
         const r = await fetch(URL.personaById(id));
         if (!r.ok) throw new Error("GET persona");
@@ -101,11 +108,70 @@ function FichaDocente({ open, onClose, id }) {
         setP(x);
       } catch (e) {
         if (live) setError("No fue posible cargar la ficha.");
-      } finally { if (live) setLoading(false); }
+      } finally {
+        if (live) setLoading(false);
+      }
     };
     load();
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [open, id]);
+
+  // 2) Cuando ya tenemos la persona, buscar nombres de periodos por id
+  useEffect(() => {
+    let live = true;
+
+    const loadPeriodos = async () => {
+      if (!p) return;
+
+      const getNombrePeriodo = async (id, fallback) => {
+        if (!id) return fallback || "—";
+        try {
+          const r = await fetch(URL.periodoById(id));
+          if (!r.ok) throw new Error("GET periodo");
+          const j = await r.json();
+          return j?.nombre ?? j?.descripcion ?? fallback ?? "—";
+        } catch {
+          return fallback || "—";
+        }
+      };
+
+      const ingresoId =
+        p.periodoIngresoId ??
+        p.periodoIngreso?.id ??
+        null;
+
+      const desvId =
+        p.periodoDesvinculacionId ??
+        p.periodoDesvinculacion?.id ??
+        null;
+
+      const ingresoFallback =
+        p.periodoIngreso?.nombre ??
+        p.periodoIngreso ??
+        "";
+
+      const desvFallback =
+        p.periodoDesvinculacion?.nombre ??
+        p.periodoDesvinculacion ??
+        "";
+
+      const [ingresoNombre, desvNombre] = await Promise.all([
+        getNombrePeriodo(ingresoId, ingresoFallback),
+        getNombrePeriodo(desvId, desvFallback),
+      ]);
+
+      if (!live) return;
+      setPeriodoIngresoNombre(ingresoNombre || "—");
+      setPeriodoDesvNombre(desvNombre || "—");
+    };
+
+    loadPeriodos();
+    return () => {
+      live = false;
+    };
+  }, [p]);
 
   const provincia = p?.provincia?.nombre ?? p?.provincia;
   const canton = p?.canton?.nombre ?? p?.canton;
@@ -113,10 +179,15 @@ function FichaDocente({ open, onClose, id }) {
   const atestadoTxt = p?.atestado?.nombre ?? p?.atestado;
   const categoriaTxt = p?.categoria?.nombre ?? p?.categoria;
   const contratoTxt = p?.tipoContrato?.nombre ?? p?.tipoContrato;
-  const estadoTxt = typeof p?.estado === "boolean" ? (p.estado ? "Activo" : "Inactivo") : (p?.estadoPersona?.nombre ?? p?.estado);
+  const estadoTxt =
+    typeof p?.estado === "boolean"
+      ? p.estado
+        ? "Activo"
+        : "Inactivo"
+      : p?.estadoPersona?.nombre ?? p?.estado;
   const rolTxt = p?.rolDocente?.nombre ?? p?.rol ?? p?.rolDocente ?? "—";
   const motivoTxt = p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
-  const periodoTxt = p?.periodoDesvinculacion?.nombre ?? p?.periodoDesvinculacion ?? "—";
+  const sedeTxt = p?.sede?.nombre ?? p?.sede ?? "—";
   const enLineaTxt = p?.enLinea ? "Sí" : "No";
 
   return (
@@ -125,54 +196,95 @@ function FichaDocente({ open, onClose, id }) {
       <DialogBody className="space-y-4">
         {loading && <p className="text-blue-gray-600">Cargando…</p>}
         {error && !loading && <p className="text-red-600">{error}</p>}
-        {!loading && !error && !p && <p className="text-blue-gray-600">No hay datos.</p>}
+        {!loading && !error && !p && (
+          <p className="text-blue-gray-600">No hay datos.</p>
+        )}
         {!loading && !!p && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <RowInfo label="Nombre" value={p.nombre} />
-            <RowInfo label="Género" value={generoTxt} />
+            <RowInfo label="Primer apellido" value={p.primerApellido} />
+            <RowInfo label="Segundo apellido" value={p.segundoApellido} />
             <RowInfo label="Cédula" value={p.cedula} />
+            <RowInfo label="Género" value={generoTxt} />
             <RowInfo label="Correo" value={p.correo} />
             <RowInfo label="Teléfono" value={p.telefono} />
             <RowInfo label="Provincia" value={provincia} />
             <RowInfo label="Cantón" value={canton} />
-            <RowInfo label="Fecha de ingreso" value={p.fechaIngreso?.slice(0, 10)} />
+            <RowInfo label="Sede" value={sedeTxt} />
+            <RowInfo label="Periodo de ingreso" value={periodoIngresoNombre} />
             <RowInfo label="Atestado" value={atestadoTxt} />
             <RowInfo label="Categoría" value={categoriaTxt} />
-            <RowInfo label="Tipo de contrato" value={contratoTxt} />
-            <RowInfo label="Estado" value={<EstadoChip value={estadoTxt} />} />
             <RowInfo label="Rol docente" value={rolTxt} />
-            <RowInfo label="¿Imparte 100% en línea?" value={enLineaTxt} />
+            <RowInfo
+              label="Estado persona"
+              value={<EstadoChip value={estadoTxt} />}
+            />
+            <RowInfo label="Tipo de contrato" value={contratoTxt} />
             <RowInfo label="Motivo de desvinculación" value={motivoTxt} />
-            <RowInfo label="Periodo de desvinculación" value={periodoTxt} />
+            <RowInfo
+              label="Periodo de desvinculación"
+              value={periodoDesvNombre}
+            />
             <div className="md:col-span-2">
-              <RowInfo label="Comentarios" value={p.comentarios} />
+              <RowInfo label="Comentario" value={p.comentarios} />
             </div>
+            <RowInfo label="En línea" value={enLineaTxt} />
           </div>
         )}
       </DialogBody>
       <DialogFooter>
-        <Button variant="text" className="bg-[#FFDA00] text-[#2B338C]" onClick={onClose}>Cerrar</Button>
+        <Button
+          variant="text"
+          className="bg-[#FFDA00] text-[#2B338C]"
+          onClick={onClose}
+        >
+          Cerrar
+        </Button>
       </DialogFooter>
     </Dialog>
   );
 }
 
-/* ===================== ENDPOINT 4: AGREGAR DOCENTE ===================== */
+
+/* ===================== AGREGAR DOCENTE ===================== */
 function AgregarDocente({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
 
   const [f, setF] = useState({
-    nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
-    provinciaId: "", cantonId: "", fechaIngreso: "",
-    atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
-    rolDocenteId: "",   
-    enLinea: false, comentarios: ""
+    nombre: "",
+    primerApellido: "",
+    segundoApellido: "",
+    generoId: "",
+    cedula: "",
+    correo: "",
+    telefono: "",
+    provinciaId: "",
+    cantonId: "",
+    sedeId: "",
+    periodoIngresoId: "",
+    atestadoId: "",
+    categoriaId: "",
+    tipoContratoId: "",
+    estadoPersonaId: "",
+    rolDocenteId: "",
+    motivoDesvinculacionId: "",
+    periodoDesvinculacionId: "",
+    enLinea: false,
+    comentarios: "",
   });
   const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
 
   const [cat, setCat] = useState({
-    generos: [], provincias: [], categorias: [], estados: [],
-    tiposContrato: [], atestados: [], roles: [] 
+    generos: [],
+    provincias: [],
+    categorias: [],
+    estados: [],
+    tiposContrato: [],
+    atestados: [],
+    roles: [],
+    sedes: [],
+    periodos: [],
+    motivos: [],
   });
 
   const [cantonesByProv, setCantonesByProv] = useState({});
@@ -183,14 +295,28 @@ function AgregarDocente({ open, onClose, onSaved }) {
     let live = true;
     (async () => {
       try {
-        const [generos, provincias, categorias, estados, tiposContrato, atestados, roles] = await Promise.all([
+        const [
+          generos,
+          provincias,
+          categorias,
+          estados,
+          tiposContrato,
+          atestados,
+          roles,
+          sedes,
+          periodos,
+          motivos,
+        ] = await Promise.all([
           fetchArray(URL.generos),
           fetchArray(URL.provincias),
           fetchArray(URL.categorias),
           fetchArray(URL.estados),
           fetchArray(URL.tiposContrato),
           fetchArray(URL.atestados),
-          fetchArray(URL.roles),                    
+          fetchArray(URL.roles),
+          fetchArray(URL.sedes),
+          fetchArray(URL.periodos),
+          fetchArray(URL.motivos),
         ]);
         if (!live) return;
         const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
@@ -201,7 +327,10 @@ function AgregarDocente({ open, onClose, onSaved }) {
           estados: norm(estados),
           tiposContrato: norm(tiposContrato),
           atestados: norm(atestados),
-          roles: norm(roles),                    
+          roles: norm(roles),
+          sedes: norm(sedes),
+          periodos: norm(periodos),
+          motivos: norm(motivos),
         });
       } catch (e) { console.error("catálogos:", e); }
     })();
@@ -243,12 +372,25 @@ function AgregarDocente({ open, onClose, onSaved }) {
 
   const validar = () => {
     const req = [
-      ["nombre", f.nombre], ["generoId", f.generoId], ["cedula", f.cedula], ["correo", f.correo], ["telefono", f.telefono],
-      ["provinciaId", f.provinciaId], ["cantonId", f.cantonId], ["fechaIngreso", f.fechaIngreso],
-      ["atestadoId", f.atestadoId], ["categoriaId", f.categoriaId], ["tipoContratoId", f.tipoContratoId],
-      ["estadoPersonaId", f.estadoPersonaId], ["rolDocenteId", f.rolDocenteId]  
+      ["nombre", f.nombre],
+      ["primerApellido", f.primerApellido],
+      ["generoId", f.generoId],
+      ["cedula", f.cedula],
+      ["correo", f.correo],
+      ["telefono", f.telefono],
+      ["provinciaId", f.provinciaId],
+      ["cantonId", f.cantonId],
+      ["periodoIngresoId", f.periodoIngresoId],
+      ["atestadoId", f.atestadoId],
+      ["categoriaId", f.categoriaId],
+      ["tipoContratoId", f.tipoContratoId],
+      ["estadoPersonaId", f.estadoPersonaId],
+      ["rolDocenteId", f.rolDocenteId],
     ];
-    if (req.some(([_, v]) => !v)) { alert("Completa los campos obligatorios."); return false; }
+    if (req.some(([_, v]) => !v)) {
+      alert("Completa los campos obligatorios.");
+      return false;
+    }
     return true;
   };
 
@@ -258,20 +400,27 @@ function AgregarDocente({ open, onClose, onSaved }) {
     try {
       const body = {
         nombre: f.nombre,
+        primerApellido: f.primerApellido,
+        segundoApellido: f.segundoApellido,
         generoId: Number(f.generoId),
         cedula: f.cedula,
         correo: f.correo,
         telefono: f.telefono,
         provinciaId: Number(f.provinciaId),
         cantonId: Number(f.cantonId),
-        fechaIngreso: new Date(f.fechaIngreso).toISOString(),
+        sedeId: f.sedeId ? Number(f.sedeId) : null,
+        periodoIngresoId: f.periodoIngresoId ? Number(f.periodoIngresoId) : null,
         atestadoId: Number(f.atestadoId),
         categoriaId: Number(f.categoriaId),
         tipoContratoId: Number(f.tipoContratoId),
         estadoPersonaId: Number(f.estadoPersonaId),
-        rolDocenteId: Number(f.rolDocenteId),     
+        rolDocenteId: Number(f.rolDocenteId),
+        motivoDesvinculacionId: f.motivoDesvinculacionId
+          ? Number(f.motivoDesvinculacionId) : null,
+        periodoDesvinculacionId: f.periodoDesvinculacionId
+          ? Number(f.periodoDesvinculacionId) : null,
         enLinea: !!f.enLinea,
-        comentarios: f.comentarios ?? ""
+        comentarios: f.comentarios ?? "",
       };
       const r = await fetch(URL.personas, {
         method: "POST",
@@ -285,9 +434,10 @@ function AgregarDocente({ open, onClose, onSaved }) {
         const txt = await r.text();
         if (txt) {
           const j = JSON.parse(txt);
-          newId = j?.id ?? j?.data?.id ?? j?.result?.id ?? j?.personaId ?? j?.data?.personaId ?? null;
+          newId = j?.id ?? j?.data?.id ?? j?.result?.id ??
+            j?.personaId ?? j?.data?.personaId ?? null;
         }
-      } catch {}
+      } catch { }
       if (!newId) {
         const loc = r.headers.get("Location");
         if (loc) newId = loc.split("/").pop();
@@ -304,10 +454,26 @@ function AgregarDocente({ open, onClose, onSaved }) {
   useEffect(() => {
     if (!open) {
       setF({
-        nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
-        provinciaId: "", cantonId: "", fechaIngreso: "",
-        atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
-        rolDocenteId: "", enLinea: false, comentarios: ""
+        nombre: "",
+        primerApellido: "",
+        segundoApellido: "",
+        generoId: "",
+        cedula: "",
+        correo: "",
+        telefono: "",
+        provinciaId: "",
+        cantonId: "",
+        sedeId: "",
+        periodoIngresoId: "",
+        atestadoId: "",
+        categoriaId: "",
+        tipoContratoId: "",
+        estadoPersonaId: "",
+        rolDocenteId: "",
+        motivoDesvinculacionId: "",
+        periodoDesvinculacionId: "",
+        enLinea: false,
+        comentarios: "",
       });
     }
   }, [open]);
@@ -324,10 +490,21 @@ function AgregarDocente({ open, onClose, onSaved }) {
       <DialogHeader className="text-[#2B338C]">Agregar docente</DialogHeader>
 
       <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
+        {/* Nombre, apellidos */}
         <Field>
           <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
         </Field>
+        <Field>
+          <Input label="Primer apellido *" value={f.primerApellido} onChange={e => onChange("primerApellido", e.target.value)} crossOrigin="" />
+        </Field>
+        <Field>
+          <Input label="Segundo apellido" value={f.segundoApellido} onChange={e => onChange("segundoApellido", e.target.value)} crossOrigin="" />
+        </Field>
+        <Field>
+          <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
+        </Field>
 
+        {/* Género, correo */}
         <Field>
           <Select
             label="Género *"
@@ -340,19 +517,14 @@ function AgregarDocente({ open, onClose, onSaved }) {
             {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
           </Select>
         </Field>
-
-        <Field>
-          <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
-        </Field>
-
         <Field>
           <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
         </Field>
 
+        {/* Teléfono, provincia */}
         <Field>
           <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
         </Field>
-
         <Field>
           <Select
             label="Provincia *"
@@ -366,6 +538,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
           </Select>
         </Field>
 
+        {/* Cantón, sede */}
         <Field>
           <Select
             label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
@@ -379,17 +552,32 @@ function AgregarDocente({ open, onClose, onSaved }) {
             {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
           </Select>
         </Field>
-
         <Field>
-          <Input
-            type="date"
-            label="Fecha de ingreso *"
-            value={f.fechaIngreso}
-            onChange={e => onChange("fechaIngreso", e.target.value)}
-            crossOrigin=""
-          />
+          <Select
+            label="Sede"
+            value={f.sedeId}
+            onChange={(v) => onChange("sedeId", String(v ?? ""))}
+            selected={() => findLabel(cat.sedes, f.sedeId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.sedes.map(s => <Option key={s.id} value={s.id} className="bg-white">{s.nombre}</Option>)}
+          </Select>
         </Field>
 
+        {/* Periodo ingreso, atestado */}
+        <Field>
+          <Select
+            label="Periodo de ingreso *"
+            value={f.periodoIngresoId}
+            onChange={(v) => onChange("periodoIngresoId", String(v ?? ""))}
+            selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+          </Select>
+        </Field>
         <Field>
           <Select
             label="Atestado *"
@@ -403,6 +591,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
           </Select>
         </Field>
 
+        {/* Categoría, rol docente */}
         <Field>
           <Select
             label="Categoría *"
@@ -415,7 +604,32 @@ function AgregarDocente({ open, onClose, onSaved }) {
             {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
           </Select>
         </Field>
+        <Field>
+          <Select
+            label="Rol docente *"
+            value={f.rolDocenteId}
+            onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
+            selected={() => findLabel(cat.roles, f.rolDocenteId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+          </Select>
+        </Field>
 
+        {/* Estado persona, tipo contrato */}
+        <Field>
+          <Select
+            label="Estado persona *"
+            value={f.estadoPersonaId}
+            onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+            selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            containerProps={{ className: CONT_CLS }}
+          >
+            {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+          </Select>
+        </Field>
         <Field>
           <Select
             label="Tipo de contrato *"
@@ -429,32 +643,45 @@ function AgregarDocente({ open, onClose, onSaved }) {
           </Select>
         </Field>
 
+        {/* Motivo y periodo de desvinculación */}
         <Field>
           <Select
-            label="Estado *"
-            value={f.estadoPersonaId}
-            onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
-            selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+            label="Motivo de desvinculación"
+            value={f.motivoDesvinculacionId}
+            onChange={(v) => onChange("motivoDesvinculacionId", String(v ?? ""))}
+            selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
             menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+            {cat.motivos.map(m => <Option key={m.id} value={m.id} className="bg-white">{m.nombre}</Option>)}
           </Select>
         </Field>
-
         <Field>
           <Select
-            label="Rol docente *"                
-            value={f.rolDocenteId}
-            onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
-            selected={() => findLabel(cat.roles, f.rolDocenteId)}
+            label="Periodo de desvinculación"
+            value={f.periodoDesvinculacionId}
+            onChange={(v) => onChange("periodoDesvinculacionId", String(v ?? ""))}
+            selected={() => findLabel(cat.periodos, f.periodoDesvinculacionId)}
             menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+            {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
           </Select>
         </Field>
 
+        {/* Comentario */}
+        <div className="md:col-span-2">
+          <Field>
+            <Input
+              label="Comentario"
+              value={f.comentarios}
+              onChange={e => onChange("comentarios", e.target.value)}
+              crossOrigin=""
+            />
+          </Field>
+        </div>
+
+        {/* En línea */}
         <div className="md:col-span-2 flex items-center gap-3">
           <Typography className="text-blue-gray-700 font-medium">
             ¿El docente imparte clases 100% en línea?
@@ -466,19 +693,21 @@ function AgregarDocente({ open, onClose, onSaved }) {
             ripple={false}
           />
         </div>
-
-        <Field>
-          <div className="md:col-span-2">
-            <Input label="Comentarios" value={f.comentarios} onChange={e => onChange("comentarios", e.target.value)} crossOrigin="" />
-          </div>
-        </Field>
       </DialogBody>
 
       <DialogFooter className="gap-2">
-        <Button variant="outlined" className="border-blue-gray-300 text-blue-gray-700" onClick={onClose}>
+        <Button
+          variant="outlined"
+          className="border-blue-gray-300 text-blue-gray-700"
+          onClick={onClose}
+        >
           Cancelar
         </Button>
-        <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={submit} disabled={saving}>
+        <Button
+          className="bg-[#FFDA00] text-[#2B338C]"
+          onClick={submit}
+          disabled={saving}
+        >
           {saving ? "Guardando..." : "Guardar"}
         </Button>
       </DialogFooter>
@@ -486,23 +715,46 @@ function AgregarDocente({ open, onClose, onSaved }) {
   );
 }
 
-/* ===================== ENDPOINT 3: EDITAR DOCENTE ===================== */
+/* ===================== EDITAR DOCENTE ===================== */
 function EditarDocente({ open, onClose, id, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [f, setF] = useState({
-    nombre: "", generoId: "", cedula: "", correo: "", telefono: "",
-    provinciaId: "", cantonId: "", fechaIngreso: "",
-    atestadoId: "", categoriaId: "", tipoContratoId: "", estadoPersonaId: "",
-    rolDocenteId: "",                                
-    enLinea: false, comentarios: ""
+    nombre: "",
+    primerApellido: "",
+    segundoApellido: "",
+    generoId: "",
+    cedula: "",
+    correo: "",
+    telefono: "",
+    provinciaId: "",
+    cantonId: "",
+    sedeId: "",
+    periodoIngresoId: "",
+    atestadoId: "",
+    categoriaId: "",
+    tipoContratoId: "",
+    estadoPersonaId: "",
+    rolDocenteId: "",
+    motivoDesvinculacionId: "",
+    periodoDesvinculacionId: "",
+    enLinea: false,
+    comentarios: "",
   });
   const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
 
   const [cat, setCat] = useState({
-    generos: [], provincias: [], categorias: [], estados: [],
-    tiposContrato: [], atestados: [], roles: []   
+    generos: [],
+    provincias: [],
+    categorias: [],
+    estados: [],
+    tiposContrato: [],
+    atestados: [],
+    roles: [],
+    sedes: [],
+    periodos: [],
+    motivos: [],
   });
 
   const [cantonesByProv, setCantonesByProv] = useState({});
@@ -533,14 +785,28 @@ function EditarDocente({ open, onClose, id, onSaved }) {
     let live = true;
     (async () => {
       try {
-        const [generos, provincias, categorias, estados, tiposContrato, atestados, roles] = await Promise.all([
+        const [
+          generos,
+          provincias,
+          categorias,
+          estados,
+          tiposContrato,
+          atestados,
+          roles,
+          sedes,
+          periodos,
+          motivos,
+        ] = await Promise.all([
           fetchArray(URL.generos),
           fetchArray(URL.provincias),
           fetchArray(URL.categorias),
           fetchArray(URL.estados),
           fetchArray(URL.tiposContrato),
           fetchArray(URL.atestados),
-          fetchArray(URL.roles),         
+          fetchArray(URL.roles),
+          fetchArray(URL.sedes),
+          fetchArray(URL.periodos),
+          fetchArray(URL.motivos),
         ]);
         if (!live) return;
         const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
@@ -551,11 +817,25 @@ function EditarDocente({ open, onClose, id, onSaved }) {
           estados: norm(estados),
           tiposContrato: norm(tiposContrato),
           atestados: norm(atestados),
-          roles: norm(roles),                    
+          roles: norm(roles),
+          sedes: norm(sedes),
+          periodos: norm(periodos),
+          motivos: norm(motivos),
         });
       } catch (e) {
         console.error("catálogos (editar):", e);
-        setCat({ generos: [], provincias: [], categorias: [], estados: [], tiposContrato: [], atestados: [], roles: [] });
+        setCat({
+          generos: [],
+          provincias: [],
+          categorias: [],
+          estados: [],
+          tiposContrato: [],
+          atestados: [],
+          roles: [],
+          sedes: [],
+          periodos: [],
+          motivos: [],
+        });
       } finally {
         if (live) setCatsReady(true);
       }
@@ -630,8 +910,24 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         const estadoPersonaId = mapEstadoToId(cat.estados, x);
 
         const rolDocenteId =
-          pickId(x, "rolDocenteId", "rolId", "rolDocente.id") ||   
+          pickId(x, "rolDocenteId", "rolId", "rolDocente.id") ||
           findIdByNombre(cat.roles, x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? "");
+
+        const sedeId =
+          pickId(x, "sedeId", "sede.id") ||
+          findIdByNombre(cat.sedes, x?.sede?.nombre ?? x?.sede ?? "");
+
+        const periodoIngresoId =
+          pickId(x, "periodoIngresoId", "periodoIngreso.id") ||
+          findIdByNombre(cat.periodos, x?.periodoIngreso?.nombre ?? x?.periodoIngreso ?? "");
+
+        const motivoDesvinculacionId =
+          pickId(x, "motivoDesvinculacionId", "motivoDesvinculacion.id") ||
+          findIdByNombre(cat.motivos, x?.motivoDesvinculacion?.nombre ?? x?.motivoDesvinculacion ?? "");
+
+        const periodoDesvinculacionId =
+          pickId(x, "periodoDesvinculacionId", "periodoDesvinculacion.id") ||
+          findIdByNombre(cat.periodos, x?.periodoDesvinculacion?.nombre ?? x?.periodoDesvinculacion ?? "");
 
         let cantonId = "";
         if (provinciaId) {
@@ -644,18 +940,23 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         if (!live) return;
         setF({
           nombre: x?.nombre ?? "",
+          primerApellido: x?.primerApellido ?? "",
+          segundoApellido: x?.segundoApellido ?? "",
           generoId: String(generoId || ""),
           cedula: x?.cedula ?? "",
           correo: x?.correo ?? "",
           telefono: x?.telefono ?? "",
           provinciaId: String(provinciaId || ""),
           cantonId: String(cantonId || ""),
-          fechaIngreso: x?.fechaIngreso ? String(x.fechaIngreso).slice(0, 10) : "",
+          sedeId: String(sedeId || ""),
+          periodoIngresoId: String(periodoIngresoId || ""),
           atestadoId: String(atestadoId || ""),
           categoriaId: String(categoriaId || ""),
           tipoContratoId: String(tipoContratoId || ""),
           estadoPersonaId: String(estadoPersonaId || ""),
-          rolDocenteId: String(rolDocenteId || ""), 
+          rolDocenteId: String(rolDocenteId || ""),
+          motivoDesvinculacionId: String(motivoDesvinculacionId || ""),
+          periodoDesvinculacionId: String(periodoDesvinculacionId || ""),
           enLinea: !!x?.enLinea,
           comentarios: x?.comentarios ?? "",
         });
@@ -673,12 +974,25 @@ function EditarDocente({ open, onClose, id, onSaved }) {
 
   const validar = () => {
     const req = [
-      ["nombre", f.nombre], ["generoId", f.generoId], ["cedula", f.cedula], ["correo", f.correo], ["telefono", f.telefono],
-      ["provinciaId", f.provinciaId], ["cantonId", f.cantonId], ["fechaIngreso", f.fechaIngreso],
-      ["atestadoId", f.atestadoId], ["categoriaId", f.categoriaId], ["tipoContratoId", f.tipoContratoId],
-      ["estadoPersonaId", f.estadoPersonaId], ["rolDocenteId", f.rolDocenteId]  
+      ["nombre", f.nombre],
+      ["primerApellido", f.primerApellido],
+      ["generoId", f.generoId],
+      ["cedula", f.cedula],
+      ["correo", f.correo],
+      ["telefono", f.telefono],
+      ["provinciaId", f.provinciaId],
+      ["cantonId", f.cantonId],
+      ["periodoIngresoId", f.periodoIngresoId],
+      ["atestadoId", f.atestadoId],
+      ["categoriaId", f.categoriaId],
+      ["tipoContratoId", f.tipoContratoId],
+      ["estadoPersonaId", f.estadoPersonaId],
+      ["rolDocenteId", f.rolDocenteId],
     ];
-    if (req.some(([_, v]) => !v)) { alert("Completa los campos obligatorios."); return false; }
+    if (req.some(([_, v]) => !v)) {
+      alert("Completa los campos obligatorios.");
+      return false;
+    }
     return true;
   };
 
@@ -690,20 +1004,27 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         id: Number(id),
         personaId: Number(id),
         nombre: f.nombre,
+        primerApellido: f.primerApellido,
+        segundoApellido: f.segundoApellido,
         generoId: Number(f.generoId),
         cedula: f.cedula,
         correo: f.correo,
         telefono: f.telefono,
         provinciaId: Number(f.provinciaId),
         cantonId: Number(f.cantonId),
-        fechaIngreso: new Date(f.fechaIngreso).toISOString(),
+        sedeId: f.sedeId ? Number(f.sedeId) : null,
+        periodoIngresoId: f.periodoIngresoId ? Number(f.periodoIngresoId) : null,
         atestadoId: Number(f.atestadoId),
         categoriaId: Number(f.categoriaId),
         tipoContratoId: Number(f.tipoContratoId),
         estadoPersonaId: Number(f.estadoPersonaId),
-        rolDocenteId: Number(f.rolDocenteId),   
+        rolDocenteId: Number(f.rolDocenteId),
+        motivoDesvinculacionId: f.motivoDesvinculacionId
+          ? Number(f.motivoDesvinculacionId) : null,
+        periodoDesvinculacionId: f.periodoDesvinculacionId
+          ? Number(f.periodoDesvinculacionId) : null,
         enLinea: !!f.enLinea,
-        comentarios: f.comentarios ?? ""
+        comentarios: f.comentarios ?? "",
       };
       const r = await fetch(URL.personaById(id), {
         method: "PUT",
@@ -735,8 +1056,21 @@ function EditarDocente({ open, onClose, id, onSaved }) {
           <div className="md:col-span-2 text-blue-gray-600">Cargando…</div>
         ) : (
           <>
-            <Field><Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" /></Field>
+            {/* Nombre, apellidos */}
+            <Field>
+              <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
+            </Field>
+            <Field>
+              <Input label="Primer apellido *" value={f.primerApellido} onChange={e => onChange("primerApellido", e.target.value)} crossOrigin="" />
+            </Field>
+            <Field>
+              <Input label="Segundo apellido" value={f.segundoApellido} onChange={e => onChange("segundoApellido", e.target.value)} crossOrigin="" />
+            </Field>
+            <Field>
+              <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
+            </Field>
 
+            {/* Género, correo */}
             <Field>
               <Select
                 label="Género *"
@@ -749,11 +1083,14 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
               </Select>
             </Field>
+            <Field>
+              <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
+            </Field>
 
-            <Field><Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" /></Field>
-            <Field><Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" /></Field>
-            <Field><Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" /></Field>
-
+            {/* Teléfono, provincia */}
+            <Field>
+              <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
+            </Field>
             <Field>
               <Select
                 label="Provincia *"
@@ -767,6 +1104,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               </Select>
             </Field>
 
+            {/* Cantón, sede */}
             <Field>
               <Select
                 label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
@@ -780,9 +1118,32 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
               </Select>
             </Field>
+            <Field>
+              <Select
+                label="Sede"
+                value={f.sedeId}
+                onChange={(v) => onChange("sedeId", String(v ?? ""))}
+                selected={() => findLabel(cat.sedes, f.sedeId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.sedes.map(s => <Option key={s.id} value={s.id} className="bg-white">{s.nombre}</Option>)}
+              </Select>
+            </Field>
 
-            <Field><Input type="date" label="Fecha de ingreso *" value={f.fechaIngreso} onChange={e => onChange("fechaIngreso", e.target.value)} crossOrigin="" /></Field>
-
+            {/* Periodo ingreso, atestado */}
+            <Field>
+              <Select
+                label="Periodo de ingreso *"
+                value={f.periodoIngresoId}
+                onChange={(v) => onChange("periodoIngresoId", String(v ?? ""))}
+                selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+              </Select>
+            </Field>
             <Field>
               <Select
                 label="Atestado *"
@@ -796,6 +1157,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               </Select>
             </Field>
 
+            {/* Categoría, rol docente */}
             <Field>
               <Select
                 label="Categoría *"
@@ -808,7 +1170,32 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
               </Select>
             </Field>
+            <Field>
+              <Select
+                label="Rol docente *"
+                value={f.rolDocenteId}
+                onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
+                selected={() => findLabel(cat.roles, f.rolDocenteId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+              </Select>
+            </Field>
 
+            {/* Estado persona, tipo contrato */}
+            <Field>
+              <Select
+                label="Estado persona *"
+                value={f.estadoPersonaId}
+                onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+                selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                containerProps={{ className: CONT_CLS }}
+              >
+                {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+              </Select>
+            </Field>
             <Field>
               <Select
                 label="Tipo de contrato *"
@@ -822,32 +1209,45 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               </Select>
             </Field>
 
+            {/* Motivo y periodo de desvinculación */}
             <Field>
               <Select
-                label="Estado *"
-                value={f.estadoPersonaId}
-                onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
-                selected={() => findLabel(cat.estados, f.estadoPersonaId)}
+                label="Motivo de desvinculación"
+                value={f.motivoDesvinculacionId}
+                onChange={(v) => onChange("motivoDesvinculacionId", String(v ?? ""))}
+                selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
                 menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+                {cat.motivos.map(m => <Option key={m.id} value={m.id} className="bg-white">{m.nombre}</Option>)}
               </Select>
             </Field>
-
             <Field>
               <Select
-                label="Rol docente *"                 
-                value={f.rolDocenteId}
-                onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
-                selected={() => findLabel(cat.roles, f.rolDocenteId)}
+                label="Periodo de desvinculación"
+                value={f.periodoDesvinculacionId}
+                onChange={(v) => onChange("periodoDesvinculacionId", String(v ?? ""))}
+                selected={() => findLabel(cat.periodos, f.periodoDesvinculacionId)}
                 menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+                {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
               </Select>
             </Field>
 
+            {/* Comentario */}
+            <div className="md:col-span-2">
+              <Field>
+                <Input
+                  label="Comentario"
+                  value={f.comentarios}
+                  onChange={e => onChange("comentarios", e.target.value)}
+                  crossOrigin=""
+                />
+              </Field>
+            </div>
+
+            {/* En línea */}
             <div className="md:col-span-2 flex items-center gap-3">
               <Typography className="text-blue-gray-700 font-medium">
                 ¿El docente imparte clases 100% en línea?
@@ -859,21 +1259,23 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 ripple={false}
               />
             </div>
-
-            <div className="md:col-span-2">
-              <Field>
-                <Input label="Comentarios" value={f.comentarios} onChange={e => onChange("comentarios", e.target.value)} crossOrigin="" />
-              </Field>
-            </div>
           </>
         )}
       </DialogBody>
 
       <DialogFooter className="gap-2">
-        <Button variant="outlined" className="border-blue-gray-300 text-blue-gray-700" onClick={onClose}>
+        <Button
+          variant="outlined"
+          className="border-blue-gray-300 text-blue-gray-700"
+          onClick={onClose}
+        >
           Cancelar
         </Button>
-        <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={submit} disabled={saving || loading}>
+        <Button
+          className="bg-[#FFDA00] text-[#2B338C]"
+          onClick={submit}
+          disabled={saving || loading}
+        >
           {saving ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
@@ -881,329 +1283,5 @@ function EditarDocente({ open, onClose, id, onSaved }) {
   );
 }
 
-/* ===================== ENDPOINT 1: VISTA GENERAL ===================== */
-export default function Docentes() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [rows, setRows] = useState([]);
-
-  // Filtros
-  const [q, setQ] = useState("");
-  const [fAtestado, setFAtestado] = useState("Todos");
-  const [fCategoria, setFCategoria] = useState("Todas");
-  const [fEstado, setFEstado] = useState("Todos");
-  const [fTipoContrato, setFTipoContrato] = useState("Todos");
-
-  // Catálogos
-  const [cats, setCats] = useState({ categorias: [], estados: [], tiposContrato: [], atestados: [] });
-  const [provMap, setProvMap] = useState({});
-
-  // Paginación
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [page, setPage] = useState(1);
-
-  // Para priorizar último agregado/editado
-  const [lastTouchedId, setLastTouchedId] = useState(null);
-
-  // Modales
-  const [openAdd, setOpenAdd] = useState(false);
-  const [openFicha, setOpenFicha] = useState(false);
-  const [fichaId, setFichaId] = useState(null);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [editId, setEditId] = useState(null);
-
-  const loadCats = async () => {
-    try {
-      const [pp, cc, ee, tt, aa] = await Promise.all([
-        fetchArray(URL.provincias), fetchArray(URL.categorias), fetchArray(URL.estados),
-        fetchArray(URL.tiposContrato), fetchArray(URL.atestados),
-      ]);
-      setCats({ categorias: cc, estados: ee, tiposContrato: tt, atestados: aa });
-      const m = {}; pp.forEach(p => { m[String(p.id)] = p.nombre; }); setProvMap(m);
-    } catch (e) { console.error("Error catálogos:", e); }
-  };
-
-  const loadRows = async () => {
-    setLoading(true); setError("");
-    try {
-      const r = await fetch(URL.personas);
-      if (!r.ok) throw new Error("GET personas");
-      const json = await r.json();
-      const arr = Array.isArray(json) ? json : (json.data ?? json.items ?? json.result ?? json.results ?? []);
-      const safe = Array.isArray(arr) ? arr : [];
-
-      const provById = provMap || {};
-      const catById = Object.fromEntries((cats?.categorias ?? []).map(c => [String(c.id), c.nombre]));
-      const contratoById = Object.fromEntries((cats?.tiposContrato ?? []).map(t => [String(t.id), t.nombre]));
-      const atestadoById = Object.fromEntries((cats?.atestados ?? []).map(a => [String(a.id), a.nombre]));
-
-      let mapped = safe.map(x => {
-        const provinciaId = x.provinciaId ?? x?.provincia?.id ?? null;
-        const provinciaNombre = x.provinciaNombre ?? x?.provincia?.nombre ?? x.provincia ?? (provinciaId != null ? provById[String(provinciaId)] ?? "" : "");
-        const categoriaId = x.categoriaId ?? x?.categoria?.id ?? null;
-        const categoriaNombre = x.categoriaNombre ?? x?.categoria?.nombre ?? x.categoria ?? (categoriaId != null ? catById[String(categoriaId)] ?? "" : "");
-        const tipoContratoId = x.tipoContratoId ?? x?.tipoContrato?.id ?? null;
-        const tipoContratoNombre = x.tipoContratoNombre ?? x?.tipoContrato?.nombre ?? x.tipoContrato ?? (tipoContratoId != null ? contratoById[String(tipoContratoId)] ?? "" : "");
-        const atestadoId = x.atestadoId ?? x?.atestado?.id ?? null;
-        const atestadoNombre = x.atestadoNombre ?? x?.atestado?.nombre ?? x.atestado ?? (atestadoId != null ? atestadoById[String(atestadoId)] ?? "" : "");
-        const estadoNombre = (typeof x.estado === "boolean") ? (x.estado ? "Activo" : "Inactivo") : (x.estadoNombre ?? x?.estado ?? x?.estadoPersona?.nombre ?? "");
-        return {
-          id: x.id ?? x.personaId,
-          nombre: x.nombre ?? x.nombreCompleto,
-          cedula: x.cedula ?? x.identificacion,
-          correo: x.correo ?? x.email,
-          telefono: x.telefono ?? x.celular,
-          provincia: provinciaNombre,
-          categoria: categoriaNombre,
-          tipoContrato: tipoContratoNombre,
-          atestado: atestadoNombre,
-          estado: estadoNombre,
-        };
-      });
-
-      if (lastTouchedId != null) {
-        const lid = String(lastTouchedId);
-        mapped.sort((a, b) => {
-          if (String(a.id) === lid) return -1;
-          if (String(b.id) === lid) return 1;
-          return 0;
-        });
-      }
-
-      setRows(mapped);
-    } catch (e) {
-      console.error(e); setError("No se pudieron cargar los docentes.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { loadCats(); }, []);
-  useEffect(() => { loadRows(); }, [
-    Object.keys(provMap).length,
-    (cats?.categorias ?? []).length,
-    (cats?.tiposContrato ?? []).length,
-    (cats?.atestados ?? []).length,
-    lastTouchedId,
-  ]);
-
-  const filtered = useMemo(() => {
-    try {
-      return rows.filter(r => {
-        if (!matches(`${r.nombre} ${r.cedula} ${r.correo} ${r.telefono} ${r.categoria} ${r.tipoContrato} ${r.provincia} ${r.atestado}`, q)) return false;
-        if (fAtestado !== "Todos" && r.atestado !== fAtestado) return false;
-        if (fCategoria !== "Todas" && r.categoria !== fCategoria) return false;
-        if (fEstado !== "Todos" && String(r.estado).toLowerCase() !== String(fEstado).toLowerCase()) return false;
-        if (fTipoContrato !== "Todos" && r.tipoContrato !== fTipoContrato) return false;
-        return true;
-      });
-    } catch { return rows; }
-  }, [rows, q, fAtestado, fCategoria, fEstado, fTipoContrato]);
-
-  const total = filtered.length;
-  const activos = filtered.filter(x => String(x.estado).toLowerCase() === "activo").length;
-  const inactivos = filtered.filter(x => String(x.estado).toLowerCase() === "inactivo").length;
-
-  const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
-  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
-
-  const pageData = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    return filtered.slice(start, start + rowsPerPage);
-  }, [filtered, page, rowsPerPage]);
-
-  const clearFilters = () => {
-    setQ(""); setFAtestado("Todos"); setFCategoria("Todas"); setFEstado("Todos"); setFTipoContrato("Todos");
-    setRowsPerPage(10); setPage(1);
-  };
-
-  return (
-    <div className="p-2 md:p-6 space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <Typography className="text-2xl font-extrabold text-[#2B338C]">Docentes</Typography>
-          <Typography className="text-blue-gray-600">Vista general</Typography>
-        </div>
-        <Button size="sm" className="bg-[#2B338C] text-white flex items-center gap-2 rounded-lg px-3 py-2"
-          onClick={() => setOpenAdd(true)}>
-          <PlusIcon className="h-4 w-4" />
-          Agregar docente
-        </Button>
-      </div>
-
-      {/* Filtros */}
-      <Card className="p-2 overflow-visible relative z-50">
-        <div className="relative flex items-center gap-2 flex-nowrap overflow-visible py-1 px-1">
-          <div className="min-w-[220px]">
-            <Input size="sm" crossOrigin="" label="Buscar…" icon={<MagnifyingGlassIcon className="h-4 w-4" />}
-              value={q} onChange={(e) => setQ(e.target.value)} />
-          </div>
-
-          <div className="min-w-[180px]">
-            <Select size="sm" label="Atestado" value={fAtestado}
-              onChange={(v) => setFAtestado(v || "Todos")}
-              selected={() => (fAtestado === "Todos" ? "Todos" : fAtestado)}
-              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-              containerProps={{ className: CONT_CLS }}>
-              <Option value="Todos">Todos</Option>
-              {(cats.atestados ?? []).map(a => <Option key={a.id} value={a.nombre} className="bg-white">{a.nombre}</Option>)}
-            </Select>
-          </div>
-
-          <div className="min-w-[180px]">
-            <Select size="sm" label="Categoría" value={fCategoria}
-              onChange={(v) => setFCategoria(v || "Todas")}
-              selected={() => (fCategoria === "Todas" ? "Todas" : fCategoria)}
-              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-              containerProps={{ className: CONT_CLS }}>
-              <Option value="Todas">Todas</Option>
-              {(cats.categorias ?? []).map(c => <Option key={c.id} value={c.nombre} className="bg-white">{c.nombre}</Option>)}
-            </Select>
-          </div>
-
-          <div className="min-w-[180px]">
-            <Select size="sm" label="Contratación" value={fTipoContrato}
-              onChange={(v) => setFTipoContrato(v || "Todos")}
-              selected={() => (fTipoContrato === "Todos" ? "Todos" : fTipoContrato)}
-              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-              containerProps={{ className: CONT_CLS }}>
-              <Option value="Todos">Todos</Option>
-              {(cats.tiposContrato ?? []).map(t => <Option key={t.id} value={t.nombre} className="bg-white">{t.nombre}</Option>)}
-            </Select>
-          </div>
-
-          <div className="min-w-[160px]">
-            <Select size="sm" label="Estado" value={fEstado}
-              onChange={(v) => setFEstado(v || "Todos")}
-              selected={() => (fEstado === "Todos" ? "Todos" : fEstado)}
-              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-              containerProps={{ className: CONT_CLS }}>
-              <Option value="Todos">Todos</Option>
-              {(cats.estados ?? []).map(e => <Option key={e.id} value={e.nombre} className="bg-white">{e.nombre}</Option>)}
-            </Select>
-          </div>
-
-          <div className="min-w-[120px]">
-            <Select size="sm" label="Filas" value={String(rowsPerPage)}
-              onChange={(v) => { setRowsPerPage(Number(v || 10)); setPage(1); }}
-              selected={() => String(rowsPerPage)}
-              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-              containerProps={{ className: CONT_CLS }}>
-              <Option value="10">10</Option>
-              <Option value="20">20</Option>
-              <Option value="50">50</Option>
-            </Select>
-          </div>
-
-          <div className="ml-auto">
-            <Button size="sm" variant="outlined" className="border-[#2B338C] text-[#2B338C]" onClick={clearFilters}>
-              Limpiar
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Resumen */}
-      <div className="flex flex-wrap gap-2">
-        <Pill className="bg-[#2B338C]">TOTAL: {total}</Pill>
-        <Pill className="bg-green-600">ACTIVOS: {activos}</Pill>
-        <Pill className="bg-red-600">INACTIVOS: {inactivos}</Pill>
-      </div>
-
-      {/* Tabla */}
-      <Card className="overflow-hidden relative z-0">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1150px] w-full text-left">
-            <thead>
-              <tr className="bg-blue-gray-50 text-blue-gray-700">
-                {[
-                  { key: "cedula", label: "Cédula" },
-                  { key: "nombre", label: "Nombre" },
-                  { key: "apellido", label: "Apellido" },
-                  { key: "correo", label: "Correo" },
-                  { key: "atestado", label: "Atestado" }, 
-                  { key: "telefono", label: "Teléfono" },
-                  { key: "provincia", label: "Provincia" },
-                  { key: "estado", label: "Estado" },
-                ].map(h => <th key={h.key} className="p-3 text-sm font-semibold">{h.label}</th>)}
-                <th className="p-3 text-sm font-semibold">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={10} className="p-6 text-center text-blue-gray-500">Cargando…</td></tr>
-              ) : error ? (
-                <tr><td colSpan={10} className="p-6 text-center text-red-600">{error}</td></tr>
-              ) : pageData.length === 0 ? (
-                <tr><td colSpan={10} className="p-6 text-center text-blue-gray-500">Sin registros.</td></tr>
-              ) : pageData.map(d => (
-                <tr key={d.id} className="border-b">
-                  <td className="p-3">{d.cedula}</td>
-                  <td className="p-3">{d.nombre}</td>
-                  <td className="p-3">-</td>
-                  <td className="p-3">{d.correo}</td>
-                  <td className="p-3">{d.atestado}</td> 
-                  <td className="p-3">{d.telefono}</td>
-                  <td className="p-3">{d.provincia}</td>
-                  <td className="p-3"><EstadoChip value={d.estado} /></td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <Tooltip content="Ver ficha">
-                        <span>
-                          <Button size="sm" variant="outlined" className="border-[#2B338C] text-[#2B338C] p-2"
-                            onClick={() => { setFichaId(d.id); setOpenFicha(true); }}>
-                            <EyeIcon className="h-4 w-4" />
-                          </Button>
-                        </span>
-                      </Tooltip>
-
-                      <Tooltip content="Editar">
-                        <span>
-                          <Button
-                            size="sm"
-                            className="bg-[#FFDA00] text-[#2B338C] p-2"
-                            onClick={() => { setEditId(d.id); setOpenEdit(true); }}
-                          >
-                            <PencilSquareIcon className="h-4 w-4" />
-                          </Button>
-                        </span>
-                      </Tooltip>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Paginación */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
-          <span className="text-sm text-blue-gray-600">
-            Mostrando <b>{total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, total)}</b> de <b>{total}</b>
-          </span>
-          <div className="flex items-center gap-1">
-            <Button variant="outlined" size="sm" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <span className="px-2 text-sm">Página <b>{page}</b> de <b>{totalPages}</b></span>
-            <Button variant="outlined" size="sm" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Modales */}
-      <AgregarDocente
-        open={openAdd}
-        onClose={() => setOpenAdd(false)}
-        onSaved={(newId) => { setLastTouchedId(newId ?? null); loadRows(); }}
-      />
-      <FichaDocente open={openFicha} onClose={() => setOpenFicha(false)} id={fichaId} />
-      <EditarDocente
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        id={editId}
-        onSaved={(savedId) => { setLastTouchedId(savedId ?? null); loadRows(); }}
-      />
-    </div>
-  );
-}
+/* exports */
+export { FichaDocente, AgregarDocente, EditarDocente };

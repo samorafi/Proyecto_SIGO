@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 // Importación de las vistas
-import Docentes from "@/pages/docentes";
+import Docentes from "@/pages/docentes/DocentesPage";
 import Reportes from "@/pages/reportes";
 import BitacoraAuditoria from "@/pages/bitacoras";  
 import Admin from "@/pages/admin";
@@ -52,7 +52,7 @@ export const routes = [
           { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
         ],
       },
-      { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes", element: <Docentes /> },
+      { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes/DocentesPage", element: <Docentes /> },
       { icon: <ClipboardDocumentListIcon className="h-5 w-5" />, name: "Reportes", path: "/reportes", element: <Reportes /> },
       { icon: <BellAlertIcon className="h-5 w-5" />, name: "Notificaciones", path: "/notificaciones", element: <Notificaciones /> },
       { icon: <Cog6ToothIcon className="h-5 w-5" />, name: "Administración del sistema", path: "/admin", element: <Admin /> },
