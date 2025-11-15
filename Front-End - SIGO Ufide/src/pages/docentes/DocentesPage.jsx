@@ -59,8 +59,49 @@ async function fetchArray(url) {
     __raw: x
   }));
 }
+
 const matches = (t, q) =>
   !q || String(t ?? "").toLowerCase().includes(String(q ?? "").toLowerCase());
+
+
+const buildPeriodoLabel = (x) => {
+  if (!x) return "";
+  const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
+  const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
+  if (numero && anio) return `${numero}Q ${anio}`;   
+  if (anio) return String(anio);
+  return (
+    x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ??
+    x.periodo ?? ""
+  );
+};
+
+async function fetchPeriodosOrdered() {
+  const url = URL.periodos;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  const txt = await r.text();
+  if (!txt) return [];
+  let j; try { j = JSON.parse(txt); } catch { return []; }
+  let arr = Array.isArray(j) ? j : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+  if (!Array.isArray(arr)) arr = [];
+
+
+  arr.sort((a, b) => {
+    const ay = Number(a.anio ?? a.Anio ?? 0);
+    const by = Number(b.anio ?? b.Anio ?? 0);
+    if (ay !== by) return ay - by; // ascendente: 2025, 2026...
+    const an = Number(a.numero ?? a.Numero ?? 0);
+    const bn = Number(b.numero ?? b.Numero ?? 0);
+    return an - bn;
+  });
+
+  return arr.map(x => ({
+    id: String(x.periodoId ?? x.id ?? x.Id ?? x.ID),
+    nombre: buildPeriodoLabel(x),
+    __raw: x,
+  }));
+}
 
 /* Z-index/menu fixes */
 const MENU_CLS =
@@ -101,8 +142,10 @@ function Docentes() {
     estados: [],
     tiposContrato: [],
     atestados: [],
+    periodos: [],
   });
   const [provMap, setProvMap] = useState({});
+  const [periodoMap, setPeriodoMap] = useState({});
 
   // Paginación
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -120,17 +163,30 @@ function Docentes() {
 
   const loadCats = async () => {
     try {
-      const [pp, cc, ee, tt, aa] = await Promise.all([
+      const [pp, cc, ee, tt, aa, per] = await Promise.all([
         fetchArray(URL.provincias),
         fetchArray(URL.categorias),
         fetchArray(URL.estados),
         fetchArray(URL.tiposContrato),
         fetchArray(URL.atestados),
+        fetchPeriodosOrdered(),
       ]);
-      setCats({ categorias: cc, estados: ee, tiposContrato: tt, atestados: aa });
+
+      setCats({
+        categorias: cc,
+        estados: ee,
+        tiposContrato: tt,
+        atestados: aa,
+        periodos: per,
+      });
+
       const m = {};
       pp.forEach(p => { m[String(p.id)] = p.nombre; });
       setProvMap(m);
+
+      const pm = {};
+      per.forEach(p => { pm[String(p.id)] = p.nombre; });
+      setPeriodoMap(pm);
     } catch (e) {
       console.error("Error catálogos:", e);
     }
@@ -151,28 +207,46 @@ function Docentes() {
       const catById = Object.fromEntries((cats?.categorias ?? []).map(c => [String(c.id), c.nombre]));
       const contratoById = Object.fromEntries((cats?.tiposContrato ?? []).map(t => [String(t.id), t.nombre]));
       const atestadoById = Object.fromEntries((cats?.atestados ?? []).map(a => [String(a.id), a.nombre]));
+      const perById = Object.keys(periodoMap).length
+        ? periodoMap
+        : Object.fromEntries((cats?.periodos ?? []).map(p => [String(p.id), p.nombre]));
 
       let mapped = safe.map(x => {
         const provinciaId = x.provinciaId ?? x?.provincia?.id ?? null;
         const provinciaNombre =
           x.provinciaNombre ?? x?.provincia?.nombre ?? x.provincia ??
           (provinciaId != null ? provById[String(provinciaId)] ?? "" : "");
+
         const categoriaId = x.categoriaId ?? x?.categoria?.id ?? null;
         const categoriaNombre =
           x.categoriaNombre ?? x?.categoria?.nombre ?? x.categoria ??
           (categoriaId != null ? catById[String(categoriaId)] ?? "" : "");
+
         const tipoContratoId = x.tipoContratoId ?? x?.tipoContrato?.id ?? null;
         const tipoContratoNombre =
           x.tipoContratoNombre ?? x?.tipoContrato?.nombre ?? x.tipoContrato ??
           (tipoContratoId != null ? contratoById[String(tipoContratoId)] ?? "" : "");
+
         const atestadoId = x.atestadoId ?? x?.atestado?.id ?? null;
         const atestadoNombre =
           x.atestadoNombre ?? x?.atestado?.nombre ?? x.atestado ??
           (atestadoId != null ? atestadoById[String(atestadoId)] ?? "" : "");
+
         const estadoNombre =
           (typeof x.estado === "boolean")
             ? (x.estado ? "Activo" : "Inactivo")
             : (x.estadoNombre ?? x?.estado ?? x?.estadoPersona?.nombre ?? "");
+
+        const periodoIngresoId =
+          x.periodoIngresoId ??
+          x?.periodoIngreso?.id ??
+          x?.periodoIngreso?.periodoId ??
+          null;
+
+        const periodoIngresoNombre =
+          x?.periodoIngreso?.nombre ??
+          x?.periodoIngreso ??
+          (periodoIngresoId != null ? perById[String(periodoIngresoId)] ?? "" : "");
 
         return {
           id: x.id ?? x.personaId,
@@ -187,6 +261,7 @@ function Docentes() {
           tipoContrato: tipoContratoNombre,
           atestado: atestadoNombre,
           estado: estadoNombre,
+          periodoIngreso: periodoIngresoNombre, 
         };
       });
 
@@ -216,6 +291,7 @@ function Docentes() {
     (cats?.categorias ?? []).length,
     (cats?.tiposContrato ?? []).length,
     (cats?.atestados ?? []).length,
+    (cats?.periodos ?? []).length,
     lastTouchedId,
   ]);
 
@@ -223,7 +299,7 @@ function Docentes() {
     try {
       return rows.filter(r => {
         if (!matches(
-          `${r.nombre} ${r.primerApellido} ${r.segundoApellido} ${r.cedula} ${r.correo} ${r.telefono} ${r.categoria} ${r.tipoContrato} ${r.provincia} ${r.atestado}`,
+          `${r.nombre} ${r.primerApellido} ${r.segundoApellido} ${r.cedula} ${r.correo} ${r.telefono} ${r.categoria} ${r.tipoContrato} ${r.provincia} ${r.atestado} ${r.periodoIngreso}`,
           q
         )) return false;
         if (fAtestado !== "Todos" && r.atestado !== fAtestado) return false;
@@ -410,7 +486,7 @@ function Docentes() {
       {/* Tabla */}
       <Card className="overflow-hidden relative z-0">
         <div className="overflow-x-auto">
-          <table className="min-w-[1150px] w-full text-left">
+          <table className="min-w-[1250px] w-full text-left">
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
                 {[
@@ -421,6 +497,7 @@ function Docentes() {
                   { key: "correo", label: "Correo" },
                   { key: "telefono", label: "Teléfono" },
                   { key: "provincia", label: "Provincia" },
+                  { key: "periodoIngreso", label: "Periodo ingreso" }, // 🔹 NUEVA COLUMNA
                   { key: "estado", label: "Estado" },
                 ].map(h => (
                   <th key={h.key} className="p-3 text-sm font-semibold">
@@ -433,19 +510,19 @@ function Docentes() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="p-6 text-center text-blue-gray-500">
+                  <td colSpan={11} className="p-6 text-center text-blue-gray-500">
                     Cargando…
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={10} className="p-6 text-center text-red-600">
+                  <td colSpan={11} className="p-6 text-center text-red-600">
                     {error}
                   </td>
                 </tr>
               ) : pageData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-6 text-center text-blue-gray-500">
+                  <td colSpan={11} className="p-6 text-center text-blue-gray-500">
                     Sin registros.
                   </td>
                 </tr>
@@ -459,6 +536,7 @@ function Docentes() {
                     <td className="p-3">{d.correo}</td>
                     <td className="p-3">{d.telefono}</td>
                     <td className="p-3">{d.provincia}</td>
+                    <td className="p-3">{d.periodoIngreso || "—"}</td>
                     <td className="p-3">
                       <EstadoChip value={d.estado} />
                     </td>

@@ -28,12 +28,24 @@ const URL = {
 async function fetchArray(url) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+
   const txt = await r.text();
   if (!txt) return [];
-  let j; try { j = JSON.parse(txt); } catch { return []; }
-  let arr = Array.isArray(j) ? j : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+
+  let j;
+  try {
+    j = JSON.parse(txt);
+  } catch {
+    return [];
+  }
+
+  let arr = Array.isArray(j)
+    ? j
+    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+
   if (!Array.isArray(arr)) arr = [];
-  return arr.map(x => ({
+
+  return arr.map((x) => ({
     id: String(
       x.id ?? x.Id ?? x.ID ?? x.valor ?? x.value ??
       x.generoId ?? x.provinciaId ?? x.cantonId ?? x.categoriaId ??
@@ -48,32 +60,97 @@ async function fetchArray(url) {
       x.estado ?? x.tipoContrato ?? x.atestado ?? x.rol ?? x.rolDocente ??
       x.motivo ?? x.periodo ?? x.sede
     ),
-    __raw: x
+    __raw: x,
   }));
 }
 
 const findLabel = (list, id) =>
-  (list || []).find(x => String(x.id) === String(id))?.nombre ?? "";
+  (list || []).find((x) => String(x.id) === String(id))?.nombre ?? "";
+
+const buildPeriodoLabel = (x) => {
+  if (!x) return "";
+  if (typeof x === "string") return x;
+
+  const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
+  const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
+
+  if (numero && anio) return `${numero}Q ${anio}`; // ej: 1Q 2025
+  if (anio) return String(anio);
+
+  return (
+    x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ?? x.periodo ?? ""
+  );
+};
+
+async function fetchPeriodosOrdered() {
+  const url = URL.periodos; 
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+
+  const txt = await r.text();
+  if (!txt) return [];
+
+  let j;
+  try {
+    j = JSON.parse(txt);
+  } catch {
+    return [];
+  }
+
+  let arr = Array.isArray(j)
+    ? j
+    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+  if (!Array.isArray(arr)) arr = [];
+
+  arr.sort((a, b) => {
+    const ay = Number(a.anio ?? a.Anio ?? a.anioAcademico ?? a.year ?? 0);
+    const by = Number(b.anio ?? b.Anio ?? b.anioAcademico ?? b.year ?? 0);
+    if (ay !== by) return ay - by;
+
+    const an = Number(a.numero ?? a.Numero ?? a.num ?? a.Num ?? 0);
+    const bn = Number(b.numero ?? b.Numero ?? b.num ?? b.Num ?? 0);
+    return an - bn;
+  });
+
+  return arr.map((x) => ({
+    id: String(x.periodoId ?? x.id ?? x.Id ?? x.ID),
+    nombre: buildPeriodoLabel(x),
+    __raw: x,
+  }));
+}
 
 /* Z-index/menu fixes */
 const MENU_CLS =
   "z-[2147483647] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
 const CONT_CLS = "relative z-0";
+
 const Field = ({ children }) => (
   <div className="relative z-0 focus-within:z-[500]">{children}</div>
 );
 
 /* ===================== Chips / filas ===================== */
 const Pill = ({ children, className = "" }) => (
-  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white ${className}`}>
+  <span
+    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white ${className}`}
+  >
     {children}
   </span>
 );
+
 const EstadoChip = ({ value }) => {
   const v = String(value ?? "").toLowerCase();
-  const map = { activo: "bg-green-600", inactivo: "bg-red-600", suspendido: "bg-amber-600" };
-  return <Pill className={map[v] || "bg-blue-gray-600"}>{(v || "—").toUpperCase()}</Pill>;
+  const map = {
+    activo: "bg-green-600",
+    inactivo: "bg-red-600",
+    suspendido: "bg-amber-600",
+  };
+  return (
+    <Pill className={map[v] || "bg-blue-gray-600"}>
+      {(v || "—").toUpperCase()}
+    </Pill>
+  );
 };
+
 function RowInfo({ label, value }) {
   return (
     <div className="text-sm">
@@ -118,7 +195,6 @@ function FichaDocente({ open, onClose, id }) {
     };
   }, [open, id]);
 
-  // 2) Cuando ya tenemos la persona, buscar nombres de periodos por id
   useEffect(() => {
     let live = true;
 
@@ -131,7 +207,8 @@ function FichaDocente({ open, onClose, id }) {
           const r = await fetch(URL.periodoById(id));
           if (!r.ok) throw new Error("GET periodo");
           const j = await r.json();
-          return j?.nombre ?? j?.descripcion ?? fallback ?? "—";
+          const label = buildPeriodoLabel(j);
+          return label || fallback || "—";
         } catch {
           return fallback || "—";
         }
@@ -140,21 +217,25 @@ function FichaDocente({ open, onClose, id }) {
       const ingresoId =
         p.periodoIngresoId ??
         p.periodoIngreso?.id ??
+        p.periodoIngreso?.periodoId ??
         null;
 
       const desvId =
         p.periodoDesvinculacionId ??
         p.periodoDesvinculacion?.id ??
+        p.periodoDesvinculacion?.periodoId ??
         null;
 
       const ingresoFallback =
-        p.periodoIngreso?.nombre ??
-        p.periodoIngreso ??
+        buildPeriodoLabel(p.periodoIngreso) ||
+        p.periodoIngreso?.nombre ||
+        p.periodoIngreso ||
         "";
 
       const desvFallback =
-        p.periodoDesvinculacion?.nombre ??
-        p.periodoDesvinculacion ??
+        buildPeriodoLabel(p.periodoDesvinculacion) ||
+        p.periodoDesvinculacion?.nombre ||
+        p.periodoDesvinculacion ||
         "";
 
       const [ingresoNombre, desvNombre] = await Promise.all([
@@ -186,7 +267,8 @@ function FichaDocente({ open, onClose, id }) {
         : "Inactivo"
       : p?.estadoPersona?.nombre ?? p?.estado;
   const rolTxt = p?.rolDocente?.nombre ?? p?.rol ?? p?.rolDocente ?? "—";
-  const motivoTxt = p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
+  const motivoTxt =
+    p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
   const sedeTxt = p?.sede?.nombre ?? p?.sede ?? "—";
   const enLineaTxt = p?.enLinea ? "Sí" : "No";
 
@@ -245,7 +327,6 @@ function FichaDocente({ open, onClose, id }) {
   );
 }
 
-
 /* ===================== AGREGAR DOCENTE ===================== */
 function AgregarDocente({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
@@ -272,7 +353,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
     enLinea: false,
     comentarios: "",
   });
-  const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
+  const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
   const [cat, setCat] = useState({
     generos: [],
@@ -315,11 +396,12 @@ function AgregarDocente({ open, onClose, onSaved }) {
           fetchArray(URL.atestados),
           fetchArray(URL.roles),
           fetchArray(URL.sedes),
-          fetchArray(URL.periodos),
+          fetchPeriodosOrdered(),
           fetchArray(URL.motivos),
         ]);
         if (!live) return;
-        const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
+        const norm = (a) =>
+          a.map((x) => ({ id: String(x.id), nombre: String(x.nombre) }));
         setCat({
           generos: norm(generos),
           provincias: norm(provincias),
@@ -332,9 +414,13 @@ function AgregarDocente({ open, onClose, onSaved }) {
           periodos: norm(periodos),
           motivos: norm(motivos),
         });
-      } catch (e) { console.error("catálogos:", e); }
+      } catch (e) {
+        console.error("catálogos:", e);
+      }
     })();
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [open]);
 
   const loadCantones = async (provIdStr) => {
@@ -344,7 +430,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
     setLoadingCantones(true);
     try {
       const lista = await fetchArray(URL.cantones(pid));
-      const filtered = lista.filter(c => {
+      const filtered = lista.filter((c) => {
         const raw = c.__raw ?? {};
         const cid =
           raw.provinciaId ?? raw.provincia_id ?? raw.ProvinciaId ?? raw.ProvinciaID ??
@@ -352,13 +438,15 @@ function AgregarDocente({ open, onClose, onSaved }) {
         return cid == null ? true : String(cid) === pid;
       });
       const final = filtered.length ? filtered : lista;
-      setCantonesByProv(prev => ({ ...prev, [pid]: final }));
+      setCantonesByProv((prev) => ({ ...prev, [pid]: final }));
       return final;
     } catch (e) {
       console.error("cantones:", e);
-      setCantonesByProv(prev => ({ ...prev, [pid]: [] }));
+      setCantonesByProv((prev) => ({ ...prev, [pid]: [] }));
       return [];
-    } finally { setLoadingCantones(false); }
+    } finally {
+      setLoadingCantones(false);
+    }
   };
 
   const onProvinciaChange = (pid) => {
@@ -416,9 +504,11 @@ function AgregarDocente({ open, onClose, onSaved }) {
         estadoPersonaId: Number(f.estadoPersonaId),
         rolDocenteId: Number(f.rolDocenteId),
         motivoDesvinculacionId: f.motivoDesvinculacionId
-          ? Number(f.motivoDesvinculacionId) : null,
+          ? Number(f.motivoDesvinculacionId)
+          : null,
         periodoDesvinculacionId: f.periodoDesvinculacionId
-          ? Number(f.periodoDesvinculacionId) : null,
+          ? Number(f.periodoDesvinculacionId)
+          : null,
         enLinea: !!f.enLinea,
         comentarios: f.comentarios ?? "",
       };
@@ -434,10 +524,11 @@ function AgregarDocente({ open, onClose, onSaved }) {
         const txt = await r.text();
         if (txt) {
           const j = JSON.parse(txt);
-          newId = j?.id ?? j?.data?.id ?? j?.result?.id ??
+          newId =
+            j?.id ?? j?.data?.id ?? j?.result?.id ??
             j?.personaId ?? j?.data?.personaId ?? null;
         }
-      } catch { }
+      } catch {}
       if (!newId) {
         const loc = r.headers.get("Location");
         if (loc) newId = loc.split("/").pop();
@@ -448,7 +539,9 @@ function AgregarDocente({ open, onClose, onSaved }) {
     } catch (e) {
       console.error(e);
       alert("No fue posible guardar.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -492,16 +585,40 @@ function AgregarDocente({ open, onClose, onSaved }) {
       <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
         {/* Nombre, apellidos */}
         <Field>
-          <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
+          <Input
+            label="Nombre *"
+            value={f.nombre}
+            onChange={(e) => onChange("nombre", e.target.value)}
+            crossOrigin=""
+          />
         </Field>
         <Field>
-          <Input label="Primer apellido *" value={f.primerApellido} onChange={e => onChange("primerApellido", e.target.value)} crossOrigin="" />
+          <Input
+            label="Primer apellido *"
+            value={f.primerApellido}
+            onChange={(e) =>
+              onChange("primerApellido", e.target.value)
+            }
+            crossOrigin=""
+          />
         </Field>
         <Field>
-          <Input label="Segundo apellido" value={f.segundoApellido} onChange={e => onChange("segundoApellido", e.target.value)} crossOrigin="" />
+          <Input
+            label="Segundo apellido"
+            value={f.segundoApellido}
+            onChange={(e) =>
+              onChange("segundoApellido", e.target.value)
+            }
+            crossOrigin=""
+          />
         </Field>
         <Field>
-          <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
+          <Input
+            label="Cédula *"
+            value={f.cedula}
+            onChange={(e) => onChange("cedula", e.target.value)}
+            crossOrigin=""
+          />
         </Field>
 
         {/* Género, correo */}
@@ -509,21 +626,39 @@ function AgregarDocente({ open, onClose, onSaved }) {
           <Select
             label="Género *"
             value={f.generoId}
-            onChange={v => onChange("generoId", String(v ?? ""))}
+            onChange={(v) => onChange("generoId", String(v ?? ""))}
             selected={() => findLabel(cat.generos, f.generoId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
+            {cat.generos.map((g) => (
+              <Option key={g.id} value={g.id} className="bg-white">
+                {g.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
-          <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
+          <Input
+            label="Correo *"
+            value={f.correo}
+            onChange={(e) => onChange("correo", e.target.value)}
+            crossOrigin=""
+          />
         </Field>
 
         {/* Teléfono, provincia */}
         <Field>
-          <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
+          <Input
+            label="Teléfono *"
+            value={f.telefono}
+            onChange={(e) => onChange("telefono", e.target.value)}
+            crossOrigin=""
+          />
         </Field>
         <Field>
           <Select
@@ -531,10 +666,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             value={f.provinciaId}
             onChange={(v) => onProvinciaChange(String(v ?? ""))}
             selected={() => findLabel(cat.provincias, f.provinciaId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.provincias.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+            {cat.provincias.map((p) => (
+              <Option key={p.id} value={p.id} className="bg-white">
+                {p.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -546,10 +689,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             onChange={(v) => onChange("cantonId", String(v ?? ""))}
             selected={() => findLabel(cantonesVisibles, f.cantonId)}
             disabled={!f.provinciaId}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+            {cantonesVisibles.map((c) => (
+              <Option key={c.id} value={c.id} className="bg-white">
+                {c.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
@@ -558,10 +709,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             value={f.sedeId}
             onChange={(v) => onChange("sedeId", String(v ?? ""))}
             selected={() => findLabel(cat.sedes, f.sedeId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.sedes.map(s => <Option key={s.id} value={s.id} className="bg-white">{s.nombre}</Option>)}
+            {cat.sedes.map((s) => (
+              <Option key={s.id} value={s.id} className="bg-white">
+                {s.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -570,12 +729,22 @@ function AgregarDocente({ open, onClose, onSaved }) {
           <Select
             label="Periodo de ingreso *"
             value={f.periodoIngresoId}
-            onChange={(v) => onChange("periodoIngresoId", String(v ?? ""))}
+            onChange={(v) =>
+              onChange("periodoIngresoId", String(v ?? ""))
+            }
             selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+            {cat.periodos.map((p) => (
+              <Option key={p.id} value={p.id} className="bg-white">
+                {p.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
@@ -584,10 +753,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             value={f.atestadoId}
             onChange={(v) => onChange("atestadoId", String(v ?? ""))}
             selected={() => findLabel(cat.atestados, f.atestadoId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.atestados.map(a => <Option key={a.id} value={a.id} className="bg-white">{a.nombre}</Option>)}
+            {cat.atestados.map((a) => (
+              <Option key={a.id} value={a.id} className="bg-white">
+                {a.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -598,10 +775,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             value={f.categoriaId}
             onChange={(v) => onChange("categoriaId", String(v ?? ""))}
             selected={() => findLabel(cat.categorias, f.categoriaId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+            {cat.categorias.map((c) => (
+              <Option key={c.id} value={c.id} className="bg-white">
+                {c.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
@@ -610,10 +795,18 @@ function AgregarDocente({ open, onClose, onSaved }) {
             value={f.rolDocenteId}
             onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
             selected={() => findLabel(cat.roles, f.rolDocenteId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+            {cat.roles.map((r) => (
+              <Option key={r.id} value={r.id} className="bg-white">
+                {r.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -622,24 +815,44 @@ function AgregarDocente({ open, onClose, onSaved }) {
           <Select
             label="Estado persona *"
             value={f.estadoPersonaId}
-            onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+            onChange={(v) =>
+              onChange("estadoPersonaId", String(v ?? ""))
+            }
             selected={() => findLabel(cat.estados, f.estadoPersonaId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+            {cat.estados.map((e) => (
+              <Option key={e.id} value={e.id} className="bg-white">
+                {e.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
           <Select
             label="Tipo de contrato *"
             value={f.tipoContratoId}
-            onChange={(v) => onChange("tipoContratoId", String(v ?? ""))}
+            onChange={(v) =>
+              onChange("tipoContratoId", String(v ?? ""))
+            }
             selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.tiposContrato.map(t => <Option key={t.id} value={t.id} className="bg-white">{t.nombre}</Option>)}
+            {cat.tiposContrato.map((t) => (
+              <Option key={t.id} value={t.id} className="bg-white">
+                {t.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -648,24 +861,44 @@ function AgregarDocente({ open, onClose, onSaved }) {
           <Select
             label="Motivo de desvinculación"
             value={f.motivoDesvinculacionId}
-            onChange={(v) => onChange("motivoDesvinculacionId", String(v ?? ""))}
+            onChange={(v) =>
+              onChange("motivoDesvinculacionId", String(v ?? ""))
+            }
             selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.motivos.map(m => <Option key={m.id} value={m.id} className="bg-white">{m.nombre}</Option>)}
+            {cat.motivos.map((m) => (
+              <Option key={m.id} value={m.id} className="bg-white">
+                {m.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
         <Field>
           <Select
             label="Periodo de desvinculación"
             value={f.periodoDesvinculacionId}
-            onChange={(v) => onChange("periodoDesvinculacionId", String(v ?? ""))}
+            onChange={(v) =>
+              onChange("periodoDesvinculacionId", String(v ?? ""))
+            }
             selected={() => findLabel(cat.periodos, f.periodoDesvinculacionId)}
-            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+            menuProps={{
+              className: MENU_CLS,
+              keepMounted: true,
+              placement: "bottom-start",
+            }}
             containerProps={{ className: CONT_CLS }}
           >
-            {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+            {cat.periodos.map((p) => (
+              <Option key={p.id} value={p.id} className="bg-white">
+                {p.nombre}
+              </Option>
+            ))}
           </Select>
         </Field>
 
@@ -675,7 +908,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
             <Input
               label="Comentario"
               value={f.comentarios}
-              onChange={e => onChange("comentarios", e.target.value)}
+              onChange={(e) => onChange("comentarios", e.target.value)}
               crossOrigin=""
             />
           </Field>
@@ -742,7 +975,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
     enLinea: false,
     comentarios: "",
   });
-  const onChange = (k, v) => setF(s => ({ ...s, [k]: v }));
+  const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
   const [cat, setCat] = useState({
     generos: [],
@@ -769,17 +1002,26 @@ function EditarDocente({ open, onClose, id, onSaved }) {
     return "";
   };
   const byNombre = (arr, nombre) =>
-    (arr || []).find(x => String(x.nombre).toLowerCase() === String(nombre ?? "").toLowerCase());
+    (arr || []).find(
+      (x) =>
+        String(x.nombre).toLowerCase() ===
+        String(nombre ?? "").toLowerCase()
+    );
   const findIdByNombre = (arr, nombre) => byNombre(arr, nombre)?.id ?? "";
   const mapEstadoToId = (estados, x) => {
     const idDirecto = pickId(x, "estadoPersonaId", "estadoPersona.id");
     if (idDirecto) return String(idDirecto);
-    const boolNombre = (typeof x?.estado === "boolean") ? (x.estado ? "Activo" : "Inactivo") : "";
-    const nombre = x?.estadoPersona?.nombre ?? x?.estado ?? boolNombre ?? "";
-    return nombre ? (findIdByNombre(estados, nombre) || "") : "";
+    const boolNombre =
+      typeof x?.estado === "boolean"
+        ? x.estado
+          ? "Activo"
+          : "Inactivo"
+        : "";
+    const nombre =
+      x?.estadoPersona?.nombre ?? x?.estado ?? boolNombre ?? "";
+    return nombre ? findIdByNombre(estados, nombre) || "" : "";
   };
 
-  // Cargar catálogos
   useEffect(() => {
     if (!open) return;
     let live = true;
@@ -805,11 +1047,12 @@ function EditarDocente({ open, onClose, id, onSaved }) {
           fetchArray(URL.atestados),
           fetchArray(URL.roles),
           fetchArray(URL.sedes),
-          fetchArray(URL.periodos),
+          fetchPeriodosOrdered(),
           fetchArray(URL.motivos),
         ]);
         if (!live) return;
-        const norm = a => a.map(x => ({ id: String(x.id), nombre: String(x.nombre) }));
+        const norm = (a) =>
+          a.map((x) => ({ id: String(x.id), nombre: String(x.nombre) }));
         setCat({
           generos: norm(generos),
           provincias: norm(provincias),
@@ -840,7 +1083,9 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         if (live) setCatsReady(true);
       }
     })();
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [open]);
 
   const loadCantones = async (provIdStr) => {
@@ -850,7 +1095,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
     setLoadingCantones(true);
     try {
       const lista = await fetchArray(URL.cantones(pid));
-      const filtered = lista.filter(c => {
+      const filtered = lista.filter((c) => {
         const raw = c.__raw ?? {};
         const cid =
           raw.provinciaId ?? raw.provincia_id ?? raw.ProvinciaId ?? raw.ProvinciaID ??
@@ -858,13 +1103,15 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         return cid == null ? true : String(cid) === pid;
       });
       const final = filtered.length ? filtered : lista;
-      setCantonesByProv(prev => ({ ...prev, [pid]: final }));
+      setCantonesByProv((prev) => ({ ...prev, [pid]: final }));
       return final;
     } catch (e) {
       console.error("cantones (editar):", e);
-      setCantonesByProv(prev => ({ ...prev, [pid]: [] }));
+      setCantonesByProv((prev) => ({ ...prev, [pid]: [] }));
       return [];
-    } finally { setLoadingCantones(false); }
+    } finally {
+      setLoadingCantones(false);
+    }
   };
 
   const onProvinciaChange = async (pid) => {
@@ -876,7 +1123,6 @@ function EditarDocente({ open, onClose, id, onSaved }) {
 
   const cantonesVisibles = cantonesByProv[String(f.provinciaId)] ?? [];
 
-  // Cargar persona por id y setear formulario (espera catálogos)
   useEffect(() => {
     let live = true;
     const load = async () => {
@@ -889,52 +1135,96 @@ function EditarDocente({ open, onClose, id, onSaved }) {
 
         const generoId =
           pickId(x, "generoId", "genero.id") ||
-          findIdByNombre(cat.generos, x?.genero?.nombre ?? x?.genero ?? "");
+          findIdByNombre(
+            cat.generos,
+            x?.genero?.nombre ?? x?.genero ?? ""
+          );
 
         const provinciaId =
           pickId(x, "provinciaId", "provincia.id", "provinciaIdFk") ||
-          findIdByNombre(cat.provincias, x?.provincia?.nombre ?? x?.provincia ?? "");
+          findIdByNombre(
+            cat.provincias,
+            x?.provincia?.nombre ?? x?.provincia ?? ""
+          );
 
         const atestadoId =
           pickId(x, "atestadoId", "atestado.id") ||
-          findIdByNombre(cat.atestados, x?.atestado?.nombre ?? x?.atestado ?? "");
+          findIdByNombre(
+            cat.atestados,
+            x?.atestado?.nombre ?? x?.atestado ?? ""
+          );
 
         const categoriaId =
           pickId(x, "categoriaId", "categoria.id") ||
-          findIdByNombre(cat.categorias, x?.categoria?.nombre ?? x?.categoria ?? "");
+          findIdByNombre(
+            cat.categorias,
+            x?.categoria?.nombre ?? x?.categoria ?? ""
+          );
 
         const tipoContratoId =
           pickId(x, "tipoContratoId", "tipoContrato.id") ||
-          findIdByNombre(cat.tiposContrato, x?.tipoContrato?.nombre ?? x?.tipoContrato ?? "");
+          findIdByNombre(
+            cat.tiposContrato,
+            x?.tipoContrato?.nombre ?? x?.tipoContrato ?? ""
+          );
 
         const estadoPersonaId = mapEstadoToId(cat.estados, x);
 
         const rolDocenteId =
           pickId(x, "rolDocenteId", "rolId", "rolDocente.id") ||
-          findIdByNombre(cat.roles, x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? "");
+          findIdByNombre(
+            cat.roles,
+            x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? ""
+          );
 
         const sedeId =
           pickId(x, "sedeId", "sede.id") ||
-          findIdByNombre(cat.sedes, x?.sede?.nombre ?? x?.sede ?? "");
+          findIdByNombre(
+            cat.sedes,
+            x?.sede?.nombre ?? x?.sede ?? ""
+          );
+
+        const periodoIngresoLabel =
+          buildPeriodoLabel(x?.periodoIngreso) ||
+          x?.periodoIngreso?.nombre ||
+          x?.periodoIngreso ||
+          "";
 
         const periodoIngresoId =
           pickId(x, "periodoIngresoId", "periodoIngreso.id") ||
-          findIdByNombre(cat.periodos, x?.periodoIngreso?.nombre ?? x?.periodoIngreso ?? "");
+          findIdByNombre(cat.periodos, periodoIngresoLabel);
 
         const motivoDesvinculacionId =
           pickId(x, "motivoDesvinculacionId", "motivoDesvinculacion.id") ||
-          findIdByNombre(cat.motivos, x?.motivoDesvinculacion?.nombre ?? x?.motivoDesvinculacion ?? "");
+          findIdByNombre(
+            cat.motivos,
+            x?.motivoDesvinculacion?.nombre ||
+              x?.motivoDesvinculacion ||
+              ""
+          );
+
+        const periodoDesvinculacionLabel =
+          buildPeriodoLabel(x?.periodoDesvinculacion) ||
+          x?.periodoDesvinculacion?.nombre ||
+          x?.periodoDesvinculacion ||
+          "";
 
         const periodoDesvinculacionId =
-          pickId(x, "periodoDesvinculacionId", "periodoDesvinculacion.id") ||
-          findIdByNombre(cat.periodos, x?.periodoDesvinculacion?.nombre ?? x?.periodoDesvinculacion ?? "");
+          pickId(
+            x,
+            "periodoDesvinculacionId",
+            "periodoDesvinculacion.id"
+          ) || findIdByNombre(cat.periodos, periodoDesvinculacionLabel);
 
         let cantonId = "";
         if (provinciaId) {
           const cantonesList = await loadCantones(provinciaId);
           cantonId =
             pickId(x, "cantonId", "canton.id") ||
-            findIdByNombre(cantonesList, x?.canton?.nombre ?? x?.canton ?? "");
+            findIdByNombre(
+              cantonesList,
+              x?.canton?.nombre ?? x?.canton ?? ""
+            );
         }
 
         if (!live) return;
@@ -969,7 +1259,9 @@ function EditarDocente({ open, onClose, id, onSaved }) {
       }
     };
     load();
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [open, id, catsReady]);
 
   const validar = () => {
@@ -1013,16 +1305,20 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         provinciaId: Number(f.provinciaId),
         cantonId: Number(f.cantonId),
         sedeId: f.sedeId ? Number(f.sedeId) : null,
-        periodoIngresoId: f.periodoIngresoId ? Number(f.periodoIngresoId) : null,
+        periodoIngresoId: f.periodoIngresoId
+          ? Number(f.periodoIngresoId)
+          : null,
         atestadoId: Number(f.atestadoId),
         categoriaId: Number(f.categoriaId),
         tipoContratoId: Number(f.tipoContratoId),
         estadoPersonaId: Number(f.estadoPersonaId),
         rolDocenteId: Number(f.rolDocenteId),
         motivoDesvinculacionId: f.motivoDesvinculacionId
-          ? Number(f.motivoDesvinculacionId) : null,
+          ? Number(f.motivoDesvinculacionId)
+          : null,
         periodoDesvinculacionId: f.periodoDesvinculacionId
-          ? Number(f.periodoDesvinculacionId) : null,
+          ? Number(f.periodoDesvinculacionId)
+          : null,
         enLinea: !!f.enLinea,
         comentarios: f.comentarios ?? "",
       };
@@ -1037,7 +1333,9 @@ function EditarDocente({ open, onClose, id, onSaved }) {
     } catch (e) {
       console.error("editar PUT:", e);
       alert("No fue posible guardar los cambios.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -1053,21 +1351,47 @@ function EditarDocente({ open, onClose, id, onSaved }) {
 
       <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
         {loading ? (
-          <div className="md:col-span-2 text-blue-gray-600">Cargando…</div>
+          <div className="md:col-span-2 text-blue-gray-600">
+            Cargando…
+          </div>
         ) : (
           <>
             {/* Nombre, apellidos */}
             <Field>
-              <Input label="Nombre *" value={f.nombre} onChange={e => onChange("nombre", e.target.value)} crossOrigin="" />
+              <Input
+                label="Nombre *"
+                value={f.nombre}
+                onChange={(e) => onChange("nombre", e.target.value)}
+                crossOrigin=""
+              />
             </Field>
             <Field>
-              <Input label="Primer apellido *" value={f.primerApellido} onChange={e => onChange("primerApellido", e.target.value)} crossOrigin="" />
+              <Input
+                label="Primer apellido *"
+                value={f.primerApellido}
+                onChange={(e) =>
+                  onChange("primerApellido", e.target.value)
+                }
+                crossOrigin=""
+              />
             </Field>
             <Field>
-              <Input label="Segundo apellido" value={f.segundoApellido} onChange={e => onChange("segundoApellido", e.target.value)} crossOrigin="" />
+              <Input
+                label="Segundo apellido"
+                value={f.segundoApellido}
+                onChange={(e) =>
+                  onChange("segundoApellido", e.target.value)
+                }
+                crossOrigin=""
+              />
             </Field>
             <Field>
-              <Input label="Cédula *" value={f.cedula} onChange={e => onChange("cedula", e.target.value)} crossOrigin="" />
+              <Input
+                label="Cédula *"
+                value={f.cedula}
+                onChange={(e) => onChange("cedula", e.target.value)}
+                crossOrigin=""
+              />
             </Field>
 
             {/* Género, correo */}
@@ -1075,21 +1399,39 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               <Select
                 label="Género *"
                 value={f.generoId}
-                onChange={v => onChange("generoId", String(v ?? ""))}
+                onChange={(v) => onChange("generoId", String(v ?? ""))}
                 selected={() => findLabel(cat.generos, f.generoId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.generos.map(g => <Option key={g.id} value={g.id} className="bg-white">{g.nombre}</Option>)}
+                {cat.generos.map((g) => (
+                  <Option key={g.id} value={g.id} className="bg-white">
+                    {g.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
-              <Input label="Correo *" value={f.correo} onChange={e => onChange("correo", e.target.value)} crossOrigin="" />
+              <Input
+                label="Correo *"
+                value={f.correo}
+                onChange={(e) => onChange("correo", e.target.value)}
+                crossOrigin=""
+              />
             </Field>
 
             {/* Teléfono, provincia */}
             <Field>
-              <Input label="Teléfono *" value={f.telefono} onChange={e => onChange("telefono", e.target.value)} crossOrigin="" />
+              <Input
+                label="Teléfono *"
+                value={f.telefono}
+                onChange={(e) => onChange("telefono", e.target.value)}
+                crossOrigin=""
+              />
             </Field>
             <Field>
               <Select
@@ -1097,10 +1439,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 value={f.provinciaId}
                 onChange={(v) => onProvinciaChange(String(v ?? ""))}
                 selected={() => findLabel(cat.provincias, f.provinciaId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.provincias.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+                {cat.provincias.map((p) => (
+                  <Option key={p.id} value={p.id} className="bg-white">
+                    {p.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1112,10 +1462,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 onChange={(v) => onChange("cantonId", String(v ?? ""))}
                 selected={() => findLabel(cantonesVisibles, f.cantonId)}
                 disabled={!f.provinciaId}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cantonesVisibles.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+                {cantonesVisibles.map((c) => (
+                  <Option key={c.id} value={c.id} className="bg-white">
+                    {c.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
@@ -1124,10 +1482,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 value={f.sedeId}
                 onChange={(v) => onChange("sedeId", String(v ?? ""))}
                 selected={() => findLabel(cat.sedes, f.sedeId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.sedes.map(s => <Option key={s.id} value={s.id} className="bg-white">{s.nombre}</Option>)}
+                {cat.sedes.map((s) => (
+                  <Option key={s.id} value={s.id} className="bg-white">
+                    {s.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1136,12 +1502,22 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               <Select
                 label="Periodo de ingreso *"
                 value={f.periodoIngresoId}
-                onChange={(v) => onChange("periodoIngresoId", String(v ?? ""))}
+                onChange={(v) =>
+                  onChange("periodoIngresoId", String(v ?? ""))
+                }
                 selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+                {cat.periodos.map((p) => (
+                  <Option key={p.id} value={p.id} className="bg-white">
+                    {p.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
@@ -1150,10 +1526,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 value={f.atestadoId}
                 onChange={(v) => onChange("atestadoId", String(v ?? ""))}
                 selected={() => findLabel(cat.atestados, f.atestadoId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.atestados.map(a => <Option key={a.id} value={a.id} className="bg-white">{a.nombre}</Option>)}
+                {cat.atestados.map((a) => (
+                  <Option key={a.id} value={a.id} className="bg-white">
+                    {a.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1164,10 +1548,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 value={f.categoriaId}
                 onChange={(v) => onChange("categoriaId", String(v ?? ""))}
                 selected={() => findLabel(cat.categorias, f.categoriaId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.categorias.map(c => <Option key={c.id} value={c.id} className="bg-white">{c.nombre}</Option>)}
+                {cat.categorias.map((c) => (
+                  <Option key={c.id} value={c.id} className="bg-white">
+                    {c.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
@@ -1176,10 +1568,18 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 value={f.rolDocenteId}
                 onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
                 selected={() => findLabel(cat.roles, f.rolDocenteId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.roles.map(r => <Option key={r.id} value={r.id} className="bg-white">{r.nombre}</Option>)}
+                {cat.roles.map((r) => (
+                  <Option key={r.id} value={r.id} className="bg-white">
+                    {r.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1188,24 +1588,46 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               <Select
                 label="Estado persona *"
                 value={f.estadoPersonaId}
-                onChange={(v) => onChange("estadoPersonaId", String(v ?? ""))}
+                onChange={(v) =>
+                  onChange("estadoPersonaId", String(v ?? ""))
+                }
                 selected={() => findLabel(cat.estados, f.estadoPersonaId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.estados.map(e => <Option key={e.id} value={e.id} className="bg-white">{e.nombre}</Option>)}
+                {cat.estados.map((e) => (
+                  <Option key={e.id} value={e.id} className="bg-white">
+                    {e.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
               <Select
                 label="Tipo de contrato *"
                 value={f.tipoContratoId}
-                onChange={(v) => onChange("tipoContratoId", String(v ?? ""))}
-                selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                onChange={(v) =>
+                  onChange("tipoContratoId", String(v ?? ""))
+                }
+                selected={() =>
+                  findLabel(cat.tiposContrato, f.tipoContratoId)
+                }
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.tiposContrato.map(t => <Option key={t.id} value={t.id} className="bg-white">{t.nombre}</Option>)}
+                {cat.tiposContrato.map((t) => (
+                  <Option key={t.id} value={t.id} className="bg-white">
+                    {t.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1214,24 +1636,46 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               <Select
                 label="Motivo de desvinculación"
                 value={f.motivoDesvinculacionId}
-                onChange={(v) => onChange("motivoDesvinculacionId", String(v ?? ""))}
+                onChange={(v) =>
+                  onChange("motivoDesvinculacionId", String(v ?? ""))
+                }
                 selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.motivos.map(m => <Option key={m.id} value={m.id} className="bg-white">{m.nombre}</Option>)}
+                {cat.motivos.map((m) => (
+                  <Option key={m.id} value={m.id} className="bg-white">
+                    {m.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
             <Field>
               <Select
                 label="Periodo de desvinculación"
                 value={f.periodoDesvinculacionId}
-                onChange={(v) => onChange("periodoDesvinculacionId", String(v ?? ""))}
-                selected={() => findLabel(cat.periodos, f.periodoDesvinculacionId)}
-                menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                onChange={(v) =>
+                  onChange("periodoDesvinculacionId", String(v ?? ""))
+                }
+                selected={() =>
+                  findLabel(cat.periodos, f.periodoDesvinculacionId)
+                }
+                menuProps={{
+                  className: MENU_CLS,
+                  keepMounted: true,
+                  placement: "bottom-start",
+                }}
                 containerProps={{ className: CONT_CLS }}
               >
-                {cat.periodos.map(p => <Option key={p.id} value={p.id} className="bg-white">{p.nombre}</Option>)}
+                {cat.periodos.map((p) => (
+                  <Option key={p.id} value={p.id} className="bg-white">
+                    {p.nombre}
+                  </Option>
+                ))}
               </Select>
             </Field>
 
@@ -1241,7 +1685,9 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 <Input
                   label="Comentario"
                   value={f.comentarios}
-                  onChange={e => onChange("comentarios", e.target.value)}
+                  onChange={(e) =>
+                    onChange("comentarios", e.target.value)
+                  }
                   crossOrigin=""
                 />
               </Field>
@@ -1254,7 +1700,9 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               </Typography>
               <Switch
                 checked={!!f.enLinea}
-                onChange={(e) => onChange("enLinea", !!e.target.checked)}
+                onChange={(e) =>
+                  onChange("enLinea", !!e.target.checked)
+                }
                 label={f.enLinea ? "Sí" : "No"}
                 ripple={false}
               />
