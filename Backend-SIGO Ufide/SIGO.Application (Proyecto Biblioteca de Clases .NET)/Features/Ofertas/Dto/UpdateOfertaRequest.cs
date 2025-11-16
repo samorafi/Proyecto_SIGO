@@ -11,4 +11,6 @@ public class UpdateOfertaRequest
     public int? CoordinadorId { get; set; }
     public string? Comentarios { get; set; }
     public int? EstadoOfertaId { get; set; }
+    public int? Cupo { get; set; }
+    public int? Matriculados { get; set; }
 }

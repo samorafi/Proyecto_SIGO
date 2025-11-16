@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Domain.Entities;
 
@@ -13,17 +14,36 @@ public class CreateOfertaCommandHandler : IRequestHandler<CreateOfertaCommand, i
     {
         var r = request.Data;
 
+        var cursoId = ToNullIfZero(r.CursoId);
+        var sedeId = ToNullIfZero(r.SedeId);
+        var modalidadId = ToNullIfZero(r.ModalidadId);
+        var periodoId = ToNullIfZero(r.PeriodoId);
+
+        var maxGrupo = await _db.Ofertas
+            .Where(o =>
+                o.CursoId == cursoId &&
+                o.SedeId == sedeId &&
+                o.ModalidadId == modalidadId &&
+                o.PeriodoId == periodoId)
+            .MaxAsync(o => (int?)o.Grupo, ct);
+
+        var nextGrupo = (maxGrupo ?? 0) + 1;
+
         var entity = new Oferta
         {
-            CursoId = ToNullIfZero(r.CursoId),
-            SedeId = ToNullIfZero(r.SedeId),
-            ModalidadId = ToNullIfZero(r.ModalidadId),
+            CursoId = cursoId,
+            SedeId = sedeId,
+            ModalidadId = modalidadId,
             HorarioId = r.HorarioId,
-            PeriodoId = ToNullIfZero(r.PeriodoId),
+            PeriodoId = periodoId,
             AccionId = ToNullIfZero(r.AccionId),
             CoordinadorId = ToNullIfZero(r.CoordinadorId),
             Comentarios = r.Comentarios,
-            EstadoOfertaId = ToNullIfZero(r.EstadoOfertaId)
+            EstadoOfertaId = ToNullIfZero(r.EstadoOfertaId),
+
+            Grupo = nextGrupo,
+            Cupo = r.Cupo,
+            Matriculados = r.Matriculados
         };
 
         _db.Ofertas.Add(entity);

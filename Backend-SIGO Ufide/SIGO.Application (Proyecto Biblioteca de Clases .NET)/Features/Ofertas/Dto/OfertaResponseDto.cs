@@ -12,6 +12,9 @@ public class OfertaResponseDto
     public int? CoordinadorId { get; set; }
     public string? Comentarios { get; set; }
     public string? Estado { get; set; }
+    public int Grupo { get; set; }
+    public int? Cupo { get; set; }
+    public int? Matriculados { get; set; }
 
     public static OfertaResponseDto FromEntity(SIGO.Domain.Entities.Oferta o) => new()
     {
@@ -24,6 +27,9 @@ public class OfertaResponseDto
         Accion = o.Accion?.Nombre,
         CoordinadorId = o.CoordinadorId,
         Comentarios = o.Comentarios,
-        Estado = o.EstadoOferta?.Nombre
+        Estado = o.EstadoOferta?.Nombre,
+        Grupo = o.Grupo,
+        Cupo = o.Cupo,
+        Matriculados = o.Matriculados
     };
 }

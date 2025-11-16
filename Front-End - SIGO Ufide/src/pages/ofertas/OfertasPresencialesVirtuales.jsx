@@ -248,9 +248,9 @@ export default function OfertasPresencialesVirtuales() {
     const handleNuevaOferta = async () => {
         try {
             // Validar campos obligatorios
-            const { cursoId, sedeId, horarioId, periodoId, coordinadorId } = fichaForm;
+            const { cursoId, sedeId, modalidadId, horarioId, periodoId, coordinadorId } = fichaForm;
 
-            if (!cursoId || !sedeId || !horarioId || !periodoId || !coordinadorId) {
+            if (!cursoId || !sedeId || !modalidadId || !horarioId || !periodoId || !coordinadorId) {
                 alert("Todos los campos son obligatorios.");
                 return;
             }
@@ -279,12 +279,13 @@ export default function OfertasPresencialesVirtuales() {
             setFichaForm({
                 cursoId: "",
                 sedeId: "",
-                modalidadId: 3, // Modalidad en línea por defecto
+                modalidadId: "",
                 horarioId: "",
                 periodoId: "",
                 coordinadorId: "",
                 comentarios: "",
-                accionId: 2,    // Estado Pendiente por defecto
+                accionId: 2,
+                estadoOfertaId: 2,
             });
 
             // Refrescar lista
@@ -363,7 +364,7 @@ export default function OfertasPresencialesVirtuales() {
             const normalized = {
                 cursoId: matchCursoId(data.curso) || data.cursoId || "",
                 sedeId: matchSedeId(data.sede) || data.sedeId || "",
-                modalidadId: matchModalidadId(data.modalidad) || data.modalidadId,
+                modalidadId: matchModalidadId(data.modalidad) || data.modalidadId || 3,
                 horarioId: matchHorarioId(data.horario, data.horarioId),
                 periodoId: matchPeriodoId(data.periodo) || data.periodoId || "",
                 coordinadorId: matchCoordinadorId(data.coordinador) || data.coordinadorId || "",
@@ -371,19 +372,24 @@ export default function OfertasPresencialesVirtuales() {
                 accionId:
                     typeof data.accionId === "number"
                         ? data.accionId
-                        : estados.find((e) => e.nombre === data.accion)?.accionId ?? 2,
-
-                accionId:
-                    typeof data.accionId === "number"
-                        ? data.accionId
-                        : estados.find((e) => e.nombre === data.accion)?.accionId ?? 2,
-
-                estadoId:
-                    typeof data.estadoId === "number"
-                        ? data.estadoId
-                        : estados.find((e) => e.nombre === data.estado)?.accionId ?? 2,
-
+                        : matchAccionIdDesdeEstadoOAccion(data.estado, data.accion),
+                estadoOfertaId:
+                    typeof data.estadoOfertaId === "number"
+                        ? data.estadoOfertaId
+                        : (
+                            estadoOferta.find((e) => e.nombre === data.estado)?.estadoOfertaId
+                            ?? 2
+                        ),
+                cupo:
+                    typeof data.cupo === "number"
+                        ? data.cupo
+                        : (data.cupo ?? null),
+                matriculados:
+                    typeof data.matriculados === "number"
+                        ? data.matriculados
+                        : (data.matriculados ?? null),
             };
+
 
             // Guardamos los datos normalizados
             setFichaForm(normalized);
@@ -825,9 +831,10 @@ export default function OfertasPresencialesVirtuales() {
                                 <th className="p-3">Modalidad</th>
                                 <th className="p-3">Horario</th>
                                 <th className="p-3">Periodo</th>
-                                <th className="p-3">Estado</th>
                                 <th className="p-3">Coordinador</th>
+                                <th className="p-3">Grupo</th>
                                 <th className="p-3">Acciones</th>
+                                <th className="p-3">Estado Oferta</th>
                                 <th className="p-3">Opciones</th>
                             </tr>
                         </thead>
@@ -839,9 +846,10 @@ export default function OfertasPresencialesVirtuales() {
                                     <td className="p-3">{o.modalidad}</td>
                                     <td className="p-3">{getHorarioNombre(o.horarioId)}</td> {/* este sí sigue siendo ID */}
                                     <td className="p-3">{o.periodo}</td>
-                                    <td className="p-3">{getEstadoChip(o.estado)}</td>
                                     <td className="p-3">{getCoordinadorNombre(o.coordinadorId)}</td>
+                                    <td className="p-3">{o.grupo}</td>
                                     <td className="p-3">{getAccionesColors(o.accion)}</td>
+                                    <td className="p-3">{getEstadoChip(o.estado)}</td>
                                     <td className="p-3">
                                         <div className="flex items-center gap-2">
                                             <Tooltip content="Ver detalle">
@@ -892,15 +900,27 @@ export default function OfertasPresencialesVirtuales() {
                 {/* Header */}
                 <DialogHeader className="bg-[#2B338C] text-white font-semibold text-base px-6 py-3 rounded-t-xl flex items-center gap-2 shadow-md">
                     <span className="w-2.5 h-2.5 bg-[#FFDA00] rounded-full"></span>
-                    {modo === "nuevo"
-                        ? "Registrar Nueva Oferta"
-                        : modo === "editar"
-                            ? "Editar Ficha de Oferta"
-                            : `Ficha de Oferta ${fichaData?.curso
-                                ? `- ${fichaData.curso} - ${fichaData.sede} - ${fichaData.periodo}`
-                                : ""
-                            }`}
+
+                    {/* Título original */}
+                    <span>
+                        {modo === "nuevo"
+                            ? "Registrar Nueva Oferta"
+                            : modo === "editar"
+                                ? "Editar Ficha de Oferta"
+                                : `Ficha de Oferta ${fichaData?.curso
+                                    ? `- ${fichaData.curso} - ${fichaData.sede} - ${fichaData.periodo}`
+                                    : ""
+                                }`}
+                    </span>
+
+                    {/* Grupo: se muestra siempre que exista en fichaData */}
+                    {fichaData?.grupo != null && (
+                        <span className="ml-2 text-white font-semibold text-base px-6 py-3 rounded-t-xl items-center gap-2 shadow-md">
+                            Grupo {fichaData.grupo}
+                        </span>
+                    )}
                 </DialogHeader>
+
 
                 {/* Cuerpo */}
                 <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200">
@@ -924,7 +944,6 @@ export default function OfertasPresencialesVirtuales() {
                             </h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
-
                                 {/* Curso */}
                                 <Select
                                     label="Curso"
@@ -939,30 +958,29 @@ export default function OfertasPresencialesVirtuales() {
                                     ))}
                                 </Select>
 
-                                {/* Modalidad */}
-                                <Select
-                                    label="Modalidad"
-                                    value={fichaForm?.modalidadId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) =>
-                                        setFichaForm((prev) => ({ ...prev, modalidadId: Number(v) }))
-                                    }
-                                >
-                                    {modalidades
-                                        .filter((m) => m.modalidadId !== 3 && m.nombre !== "En Línea") // Excluye las ofertas En Línea
-                                        .map((m) => (
-                                            <Option key={m.modalidadId} value={m.modalidadId}>
-                                                {m.nombre}
-                                            </Option>
-                                        ))}
-                                </Select>
-
                                 {/* Sede */}
                                 <Select
                                     label="Sede"
                                     value={fichaForm?.sedeId || ""}
                                     disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, sedeId: Number(v) }))}
+                                    onChange={(v) =>
+                                        setFichaForm((prev) => {
+                                            const sedeId = Number(v);
+                                            let modalidadId = prev.modalidadId;
+
+                                            if (sedeId === 3) {
+                                                modalidadId = 2; // Virtual
+                                            } else if (sedeId === 1 || sedeId === 2) {
+                                                modalidadId = 1; // Presencial
+                                            }
+
+                                            return {
+                                                ...prev,
+                                                sedeId,
+                                                modalidadId,
+                                            };
+                                        })
+                                    }
                                 >
                                     {sedes.map((s) => (
                                         <Option key={s.sedeId} value={s.sedeId}>
@@ -1014,13 +1032,66 @@ export default function OfertasPresencialesVirtuales() {
                                 </Select>
                             </div>
 
+                            {/* Cupo y Matriculados */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-4">
+                                {/* Cupo */}
+                                <div>
+                                    <p className="text-[#2B338C] font-bold text-sm mb-1">Cupo</p>
+                                    {editMode ? (
+                                        <Input
+                                            type="number"
+                                            label="Cupo"
+                                            value={fichaForm?.cupo ?? ""}
+                                            disabled={OfertaCancelada}
+                                            onChange={(e) =>
+                                                setFichaForm((prev) => ({
+                                                    ...prev,
+                                                    cupo:
+                                                        e.target.value === ""
+                                                            ? null
+                                                            : Number(e.target.value),
+                                                }))
+                                            }
+                                        />
+                                    ) : (
+                                        <p className="text-gray-700 text-sm">
+                                            {fichaData?.cupo ?? "No definido"}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Matriculados */}
+                                <div>
+                                    <p className="text-[#2B338C] font-bold text-sm mb-1">
+                                        Estudiantes matriculados
+                                    </p>
+                                    {editMode ? (
+                                        <Input
+                                            type="number"
+                                            label="Matriculados"
+                                            value={fichaForm?.matriculados ?? ""}
+                                            disabled={OfertaCancelada}
+                                            onChange={(e) =>
+                                                setFichaForm((prev) => ({
+                                                    ...prev,
+                                                    matriculados:
+                                                        e.target.value === ""
+                                                            ? null
+                                                            : Number(e.target.value),
+                                                }))
+                                            }
+                                        />
+                                    ) : (
+                                        <p className="text-gray-700 text-sm">
+                                            {fichaData?.matriculados ?? "No definido"}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Línea divisoria */}
                             <hr className="my-4 border-gray-300" />
 
-                            {/* Sección: Estado de Oferta */}
-                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
-                                Estado de Oferta
-                            </h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
                                 {!editMode ? (
@@ -1031,7 +1102,7 @@ export default function OfertasPresencialesVirtuales() {
                                         </div>
 
                                         <div>
-                                            <p className="text-[#2B338C] font-bold">Estado:</p>
+                                            <p className="text-[#2B338C] font-bold">Estado de la Oferta:</p>
                                             {getEstadoChip(fichaData?.estado)}
                                         </div>
                                     </>
@@ -1080,7 +1151,6 @@ export default function OfertasPresencialesVirtuales() {
                             )}
                         </div>
                     )}
-
                 </DialogBody>
 
                 {/* Footer */}

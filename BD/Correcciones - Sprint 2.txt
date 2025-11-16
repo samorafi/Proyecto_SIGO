@@ -218,5 +218,36 @@ ALTER TABLE universidad.oferta ADD COLUMN IF NOT EXISTS estado_oferta_id INT NUL
 ALTER TABLE universidad.oferta ADD CONSTRAINT fk_oferta_estado_oferta
 FOREIGN KEY (estado_oferta_id) REFERENCES universidad.estado_ofertas (estado_oferta_id);
 
+-- -------------------------------------------------------------
+-- ---------- CAMBIOS A TABLA OFERTA (15/11/2025)  -------------
+-- -------------------------------------------------------------  
+
+ALTER TABLE universidad.oferta
+    ADD COLUMN grupo        integer,
+    ADD COLUMN cupo         integer,
+    ADD COLUMN matriculados integer;
+
+WITH ranked AS (
+    SELECT 
+        oferta_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY curso_id, sede_id, modalidad_id, periodo_id
+            ORDER BY oferta_id
+        ) AS rn
+    FROM universidad.oferta
+)
+UPDATE universidad.oferta o
+SET grupo = r.rn
+FROM ranked r
+WHERE r.oferta_id = o.oferta_id;
+
+ALTER TABLE universidad.oferta
+    ALTER COLUMN grupo SET NOT NULL;
+
+ALTER TABLE universidad.oferta
+    ADD CONSTRAINT ux_oferta_curso_sede_modalidad_periodo_grupo
+    UNIQUE (curso_id, sede_id, modalidad_id, periodo_id, grupo);
+
+
 
   

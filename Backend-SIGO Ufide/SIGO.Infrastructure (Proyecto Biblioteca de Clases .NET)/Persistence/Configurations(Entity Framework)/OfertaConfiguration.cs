@@ -19,6 +19,13 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
         b.Property(x => x.CoordinadorId).HasColumnName("coordinador_id");
         b.Property(x => x.Comentarios).HasColumnName("comentarios");
         b.Property(x => x.EstadoOfertaId).HasColumnName("estado_oferta_id");
+        b.Property(x => x.Grupo).HasColumnName("grupo").IsRequired();
+        b.Property(x => x.Cupo).HasColumnName("cupo");
+        b.Property(x => x.Matriculados).HasColumnName("matriculados");
+
+        b.HasIndex(x => new { x.CursoId, x.SedeId, x.ModalidadId, x.PeriodoId, x.Grupo })
+            .IsUnique()
+            .HasDatabaseName("ux_oferta_curso_sede_modalidad_periodo_grupo");
 
         b.HasOne(o => o.Curso).WithMany().HasForeignKey(o => o.CursoId);
         b.HasOne(o => o.Sede).WithMany().HasForeignKey(o => o.SedeId);
