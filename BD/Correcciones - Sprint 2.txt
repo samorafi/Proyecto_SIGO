@@ -248,6 +248,59 @@ ALTER TABLE universidad.oferta
     ADD CONSTRAINT ux_oferta_curso_sede_modalidad_periodo_grupo
     UNIQUE (curso_id, sede_id, modalidad_id, periodo_id, grupo);
 
-
+-- -------------------------------------------------------------
+-- -------- IMPLEMENTACIÓN SOLICITUDES (17/11/2025)  -----------
+-- ------------------------------------------------------------- 
 
   
+CREATE TABLE universidad.solicitud_oferta (
+    solicitud_oferta_id  SERIAL PRIMARY KEY,
+
+    -- Oferta enviada al docente
+    oferta_id            INTEGER NOT NULL
+        REFERENCES universidad.oferta (oferta_id)
+        ON DELETE CASCADE,
+
+    -- Docente que recibirá la oferta
+    persona_id           INTEGER NOT NULL
+        REFERENCES universidad.persona (persona_id),
+
+    -- Se guarda el email enviado (por si el docente cambia correo luego)
+    destinatario_email   TEXT NOT NULL,
+
+    -- Copia del mensaje enviado (auditoría)
+    asunto               TEXT NOT NULL,
+    cuerpo               TEXT NOT NULL,
+
+    -- Estado de la solicitud:
+    -- 0 = Pendiente, 1 = Aceptada, 2 = Rechazada
+    estado_solicitud     SMALLINT NOT NULL DEFAULT 0
+        CHECK (estado_solicitud IN (0, 1, 2)),
+
+    fecha_envio          TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    fecha_respuesta      TIMESTAMP WITHOUT TIME ZONE,
+
+    -- Token para el enlace (lo genera backend con Guid.NewGuid().ToString())
+    token                TEXT NOT NULL,
+
+    -- Estado del envío de correo:
+    -- 0 = Pendiente, 1 = Enviado OK, 2 = Error
+    estado_envio         SMALLINT NOT NULL DEFAULT 0
+        CHECK (estado_envio IN (0, 1, 2)),
+
+    error_envio          TEXT
+);
+
+-- Validación del enlace al entrar al sistema
+CREATE UNIQUE INDEX ux_solicitud_oferta_token
+    ON universidad.solicitud_oferta (token);
+
+-- Histórico de solicitudes por persona y oferta
+CREATE INDEX ix_solicitud_oferta_oferta_persona
+    ON universidad.solicitud_oferta (oferta_id, persona_id);
+
+-- No permitir solicitudes pendientes duplicadas
+CREATE UNIQUE INDEX ux_solicitud_oferta_pendiente
+    ON universidad.solicitud_oferta (oferta_id, persona_id)
+    WHERE estado_solicitud = 0;
+

@@ -35,6 +35,7 @@ namespace SIGO.Application.Abstractions
         DbSet<RolDocente> RolesDocente { get; }
         DbSet<EstadoOferta> EstadoOfertas { get; }
         DbSet<BitacoraAuditoria> BitacoraAuditorias { get; }
+        DbSet<SolicitudOferta> SolicitudesOferta { get; } 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

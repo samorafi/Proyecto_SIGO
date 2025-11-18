@@ -35,7 +35,7 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<Coordinacion> Coordinaciones => Set<Coordinacion>();
         public DbSet<CoordinacionCurso> CoordinacionesCursos => Set<CoordinacionCurso>();
         public DbSet<EstadoOferta> EstadoOfertas => Set<EstadoOferta>();
-
+        public DbSet<SolicitudOferta> SolicitudesOferta { get; set; } = null!;
         public DbSet<RolDocente> RolesDocente => Set<RolDocente>();
 
         public DbSet<ConfSmtp> ConfSmtps { get; set; }

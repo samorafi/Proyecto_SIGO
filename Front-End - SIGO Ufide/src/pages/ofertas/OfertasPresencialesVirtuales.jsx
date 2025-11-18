@@ -3,6 +3,14 @@ import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFoote
 import { EyeIcon, PencilSquareIcon, PaperAirplaneIcon, XCircleIcon, ArrowUpTrayIcon, PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { useCatalogosOfertas } from "@/hooks/useCatalogosOfertas";
 
+const API = import.meta.env.VITE_API_BASE ?? "";
+const URL = {
+    personas: `${API}/api/personas`,
+};
+
+const matches = (t, q) =>
+    !q || String(t ?? "").toLowerCase().includes(String(q ?? "").toLowerCase());
+
 export default function OfertasPresencialesVirtuales() {
 
     // Estados de datos de ofertas
@@ -207,6 +215,44 @@ export default function OfertasPresencialesVirtuales() {
 
     const [modo, setModo] = useState("ver");
 
+    const [openEnviar, setOpenEnviar] = useState(false);
+    const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
+    const [docenteId, setDocenteId] = useState("");
+    const [enviando, setEnviando] = useState(false);
+
+    // Docentes para enviar oferta
+    const [docentes, setDocentes] = useState([]);
+    const [docentesLoading, setDocentesLoading] = useState(false);
+    const [docentesError, setDocentesError] = useState("");
+    const [filtroDocente, setFiltroDocente] = useState("");
+
+    const getNombreHorario = (horarioId) =>
+        horario.find(h => h.horarioId === horarioId)
+            ? `${horario.find(h => h.horarioId === horarioId).dia} - ${horario.find(h => h.horarioId === horarioId).rango}`
+            : "Horario";
+
+    const docentesFiltrados = useMemo(
+        () =>
+            docentes.filter(d =>
+                matches(
+                    `${d.nombre} ${d.primerApellido} ${d.segundoApellido} ${d.cedula} ${d.correo}`,
+                    filtroDocente
+                )
+            ),
+        [docentes, filtroDocente]
+    );
+
+    const getNombreDocente = useCallback(
+        (id) => {
+            const d = docentes.find(doc => String(doc.id) === String(id));
+            if (!d) return "Docente";
+            return `${d.nombre} ${d.primerApellido} ${d.segundoApellido}`.trim();
+        },
+        [docentes]
+    );
+
+
+
     //----------------------------------------------------------------------------
     // : Obtener listado de ofertas (Filtrado por modalidad en línea).
     //----------------------------------------------------------------------------
@@ -239,6 +285,40 @@ export default function OfertasPresencialesVirtuales() {
     // Cargar las ofertas al montar el componente.
     useEffect(() => {
         fetchOfertas();
+    }, []);
+
+    useEffect(() => {
+        const loadDocentes = async () => {
+            setDocentesLoading(true);
+            setDocentesError("");
+            try {
+                const r = await fetch(URL.personas);
+                if (!r.ok) throw new Error("Error al cargar docentes.");
+                const json = await r.json();
+                const arr = Array.isArray(json)
+                    ? json
+                    : (json.data ?? json.items ?? json.result ?? json.results ?? []);
+                const safe = Array.isArray(arr) ? arr : [];
+
+                const mapped = safe.map(x => ({
+                    id: x.id ?? x.personaId,
+                    nombre: x.nombre ?? "",
+                    primerApellido: x.primerApellido ?? "",
+                    segundoApellido: x.segundoApellido ?? "",
+                    cedula: x.cedula ?? x.identificacion ?? "",
+                    correo: x.correo ?? x.email ?? "",
+                }));
+
+                setDocentes(mapped);
+            } catch (e) {
+                console.error(e);
+                setDocentesError("No se pudieron cargar los docentes.");
+            } finally {
+                setDocentesLoading(false);
+            }
+        };
+
+        loadDocentes();
     }, []);
 
     //----------------------------------------------------------------------------
@@ -534,6 +614,68 @@ export default function OfertasPresencialesVirtuales() {
     };
 
     //----------------------------------------------------------------------------
+    // Enviar oferta a docente
+    //----------------------------------------------------------------------------
+
+    const handleAbrirEnviar = (oferta) => {
+        setOfertaSeleccionada(oferta);
+        setDocenteId("");
+        setOpenEnviar(true);
+    };
+
+    const handleCerrarEnviar = () => {
+        setOpenEnviar(false);
+        setOfertaSeleccionada(null);
+        setDocenteId("");
+    };
+
+    const handleEnviarOferta = async () => {
+        if (!ofertaSeleccionada) {
+            alert("No hay una oferta seleccionada.");
+            return;
+        }
+
+        if (!docenteId) {
+            alert("Debe seleccionar el docente al que se enviará la oferta.");
+            return;
+        }
+
+        try {
+            setEnviando(true);
+
+            const response = await fetch("/api/SolicitudesOferta", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ofertaId: ofertaSeleccionada.ofertaId,
+                    personaId: Number(docenteId),
+                }),
+            });
+
+            if (!response.ok) throw new Error("Error al enviar la oferta al docente.");
+
+            setOfertas(prev =>
+                prev.map(o =>
+                    o.ofertaId === ofertaSeleccionada.ofertaId
+                        ? { ...o, estado: "Enviada", estadoOfertaId: 1 }
+                        : o
+                )
+            );
+
+            alert("La oferta fue enviada al docente correctamente.");
+
+            handleCerrarEnviar();
+            await fetchOfertas(); // refrescar estados si cambian
+
+        } catch (error) {
+            console.error(error);
+            alert("No fue posible enviar la oferta al docente.");
+        } finally {
+            setEnviando(false);
+        }
+    };
+
+    //----------------------------------------------------------------------------
     // Renderizado de datos
     //----------------------------------------------------------------------------
 
@@ -599,6 +741,31 @@ export default function OfertasPresencialesVirtuales() {
             />
         );
     };
+
+    const renderDocenteOptions = () => {
+        if (docentesLoading) {
+            return (
+                <Option key="loading" disabled>
+                    Cargando docentes...
+                </Option>
+            );
+        }
+
+        if (!docentesLoading && docentesFiltrados.length === 0) {
+            return (
+                <Option key="empty" disabled>
+                    Sin resultados
+                </Option>
+            );
+        }
+
+        return docentesFiltrados.map((d) => (
+            <Option key={d.id} value={String(d.id)}>
+                {`${d.nombre} ${d.primerApellido} ${d.segundoApellido}`.trim()} — {d.cedula}
+            </Option>
+        ));
+    };
+
 
     return (
 
@@ -862,7 +1029,11 @@ export default function OfertasPresencialesVirtuales() {
                                                 <Button size="sm" variant="outlined" className="border-red-500 text-red-600 p-2" onClick={() => handleCancelar(o.ofertaId)}><XCircleIcon className="h-4 w-4" /></Button>
                                             </Tooltip>
                                             <Tooltip content="Enviar a docente">
-                                                <Button size="sm" variant="outlined" className="border-green-600 text-green-700 p-2"><PaperAirplaneIcon className="h-4 w-4" /></Button>
+                                                <Button
+                                                    size="sm" variant="outlined" className="border-green-600 text-green-700 p-2" onClick={() => handleAbrirEnviar(o)}
+                                                >
+                                                    <PaperAirplaneIcon className="h-4 w-4" />
+                                                </Button>
                                             </Tooltip>
                                         </div>
                                     </td>
@@ -1197,6 +1368,98 @@ export default function OfertasPresencialesVirtuales() {
                     )}
                 </DialogFooter>
 
+            </Dialog>
+
+            {/* Modal: Enviar oferta a docente */}
+            <Dialog
+                open={openEnviar}
+                handler={handleCerrarEnviar}
+                size="sm"
+                className="rounded-xl shadow-xl bg-white"
+            >
+                <DialogHeader className="bg-[#2B338C] text-white font-semibold text-base px-6 py-3 rounded-t-xl flex items-center gap-2 shadow-md">
+                    <span className="w-2.5 h-2.5 bg-[#FFDA00] rounded-full"></span>
+                    Enviar oferta a docente
+                </DialogHeader>
+
+                <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200 space-y-4">
+                    {!ofertaSeleccionada ? (
+                        <Typography className="text-sm text-blue-gray-700">
+                            No hay una oferta seleccionada.
+                        </Typography>
+                    ) : (
+                        <>
+                            {/* Selección de docente */}
+                            <div className="grid grid-cols-1 gap-3">
+                                <Input
+                                    label="Buscar docente por nombre, apellidos o cédula"
+                                    value={filtroDocente}
+                                    onChange={(e) => setFiltroDocente(e.target.value)}
+                                    size="md"
+                                />
+
+                                <Select
+                                    label="Docente"
+                                    value={docenteId ? String(docenteId) : ""}
+                                    onChange={(v) => setDocenteId(v || "")}
+                                    menuProps={{ className: "max-h-64 overflow-auto" }}
+                                >
+                                    {renderDocenteOptions()}
+                                </Select>
+
+                                {docentesError && (
+                                    <Typography className="text-xs text-red-600 mt-1">
+                                        {docentesError}
+                                    </Typography>
+                                )}
+                            </div>
+
+                            {/* Previsualización del correo */}
+                            <div className="mt-4 border border-gray-200 rounded-lg bg-white p-4 max-h-80 overflow-auto">
+                                <Typography className="text-[#2B338C] font-bold text-sm mb-2">
+                                    Previsualización del correo
+                                </Typography>
+                                <pre className="whitespace-pre-wrap text-sm text-blue-gray-800 font-mono">
+                                    {`Estimado(a) ${docenteId ? getNombreDocente(docenteId) : "Nombre del docente"},
+
+                                    La Universidad Fidélitas le ofrece la siguiente carga:
+
+                                    - Curso: ${ofertaSeleccionada.curso}
+                                    - Sede: ${ofertaSeleccionada.sede}
+                                    - Modalidad: ${ofertaSeleccionada.modalidad}
+                                    - Período: ${ofertaSeleccionada.periodo}
+                                    - Horario: ${getNombreHorario(ofertaSeleccionada.horarioId)}
+                                    - Grupo: ${ofertaSeleccionada.grupo ?? ""}
+                                    - Cupo: ${ofertaSeleccionada.cupo ?? "N/A"} estudiantes
+
+                                    En el correo real se incluirán los enlaces para aceptar o rechazar la oferta.
+
+                                    Saludos cordiales,
+                                    Coordinación Académica`}
+                                </pre>
+                            </div>
+                        </>
+                    )}
+                </DialogBody>
+
+                <DialogFooter className="bg-gray-50 border-t border-gray-200 px-5 py-3 rounded-b-xl flex justify-end gap-2">
+                    <Button
+                        variant="outlined"
+                        className="border-[#2B338C] text-[#2B338C]"
+                        onClick={handleCerrarEnviar}
+                        disabled={enviando}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        className="bg-green-600 text-white font-semibold flex items-center gap-2"
+                        onClick={handleEnviarOferta}
+                        disabled={enviando || !ofertaSeleccionada}
+                    >
+                        {enviando ? "Enviando..." : "Enviar oferta"}
+                        <PaperAirplaneIcon className="h-4 w-4" />
+                    </Button>
+                </DialogFooter>
             </Dialog>
 
         </div >
