@@ -220,7 +220,6 @@ export default function CatalogoCarreras() {
           <table className="min-w-[700px] w-full text-left">
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
-                <th className="p-3 text-sm font-semibold">ID</th>
                 <th className="p-3 text-sm font-semibold">Nombre</th>
                 <th className="p-3 text-sm font-semibold">Acciones</th>
               </tr>
@@ -248,7 +247,6 @@ export default function CatalogoCarreras() {
               ) : (
                 pageData.map((c) => (
                   <tr key={c.id} className="border-b">
-                    <td className="p-3">{c.id}</td>
                     <td className="p-3">{c.nombre}</td>
                     <td className="p-3">
                       <Tooltip content="Editar carrera">

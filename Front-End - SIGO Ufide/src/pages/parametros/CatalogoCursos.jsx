@@ -308,7 +308,6 @@ export default function CatalogoCursos() {
           <table className="min-w-[950px] w-full text-left">
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
-                <th className="p-3 text-sm font-semibold">ID</th>
                 <th className="p-3 text-sm font-semibold">Código</th>
                 <th className="p-3 text-sm font-semibold">Nombre</th>
                 <th className="p-3 text-sm font-semibold">Carrera</th>
@@ -340,7 +339,6 @@ export default function CatalogoCursos() {
               ) : (
                 pageData.map((c) => (
                   <tr key={c.cursoId} className="border-b">
-                    <td className="p-3">{c.cursoId}</td>
                     <td className="p-3">{c.codigo}</td>
                     <td className="p-3">{c.nombre}</td>
                     <td className="p-3">{c.carreraNombre ?? "—"}</td>
