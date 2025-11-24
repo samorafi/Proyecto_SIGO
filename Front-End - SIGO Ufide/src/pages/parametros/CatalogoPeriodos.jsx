@@ -151,9 +151,9 @@ export default function CatalogoPeriodos() {
 
   // opciones dinámicas para número de período
   const numeroOptions = useMemo(() => {
-    if (formData.tipo === "P") return ["1"]; // Periodo
+    if (formData.tipo === "P") return ["1","2","3","4","5","6","7","8","9","10"]; // Periodo
     if (formData.tipo === "C") return ["1", "2", "3"]; // Cuatrimestres
-    if (formData.tipo === "T") return ["1", "2", "3", "4"]; // Trimestres
+    if (formData.tipo === "T") return ["1", "2", "3"]; // Trimestres
     return [];
   }, [formData.tipo]);
 
