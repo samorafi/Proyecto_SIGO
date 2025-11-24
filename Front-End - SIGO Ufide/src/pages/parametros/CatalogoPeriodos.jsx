@@ -1,7 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Input, Select, Option, Tooltip} from "@material-tailwind/react";
-import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { PlusIcon, PencilSquareIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import {
+  Card,
+  Typography,
+  Button,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Input,
+  Select,
+  Option,
+  Tooltip,
+} from "@material-tailwind/react";
+import {
+  MagnifyingGlassIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  PencilSquareIcon,
+  ArrowLeftIcon,
+} from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 
 export default function CatalogoPeriodos() {
@@ -17,7 +37,12 @@ export default function CatalogoPeriodos() {
 
   // modal - formulario
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ numero: "", anio: "" });
+  const [formData, setFormData] = useState({
+    numero: "",
+    anio: "",
+    tipo: "",
+    estado: true,
+  });
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -46,26 +71,49 @@ export default function CatalogoPeriodos() {
   }, []);
 
   const handleSave = async () => {
-    if (!formData.numero || !formData.anio) {
+    if (!formData.tipo || !formData.numero || !formData.anio) {
       alert("Todos los campos son obligatorios.");
       return;
     }
 
+    const numeroNum = Number(formData.numero);
+    const anioNum = Number(formData.anio);
+
+    if (Number.isNaN(numeroNum) || Number.isNaN(anioNum)) {
+      alert("Número de período y año deben ser numéricos.");
+      return;
+    }
+
+    const payload = {
+      numero: numeroNum,
+      anio: anioNum,
+      tipo: formData.tipo,
+      estado: formData.estado, 
+    };
+
     setSaving(true);
-    const method = editId ? "PUT" : "POST";
-    const url = editId ? `/api/periodos/${editId}` : "/api/periodos";
+
+    const isEdit = editId !== null; 
+    const method = isEdit ? "PUT" : "POST";
+    const url = isEdit ? `/api/periodos/${editId}` : "/api/periodos";
 
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
+
       if (!res.ok) throw new Error("Error al guardar periodo");
 
       await fetchPeriodos();
       setOpen(false);
-      setFormData({ numero: "", anio: "" });
+      setFormData({
+        numero: "",
+        anio: "",
+        tipo: "",
+        estado: true, 
+      });
       setEditId(null);
     } catch (e) {
       console.error(e);
@@ -85,6 +133,7 @@ export default function CatalogoPeriodos() {
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [totalPages, page]);
@@ -100,9 +149,22 @@ export default function CatalogoPeriodos() {
     setPage(1);
   };
 
+  // opciones dinámicas para número de período
+  const numeroOptions = useMemo(() => {
+    if (formData.tipo === "S") return ["1", "2"]; // Semestres
+    if (formData.tipo === "C") return ["1", "2", "3"]; // Cuatrimestres
+    if (formData.tipo === "T") return ["1", "2", "3"]; // Trimestres
+    return [];
+  }, [formData.tipo]);
+
+  // etiqueta dinámica para mostrar en el modal
+  const etiquetaPreview = useMemo(() => {
+    if (!formData.numero || !formData.tipo || !formData.anio) return "";
+    return `${formData.numero}${formData.tipo}, ${formData.anio}`;
+  }, [formData.numero, formData.tipo, formData.anio]);
+
   return (
     <div className="p-2 md:p-6 space-y-4">
-
       {/* Encabezado */}
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -115,7 +177,16 @@ export default function CatalogoPeriodos() {
         <div className="flex items-center gap-2">
           <Button
             className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditId(null);
+              setFormData({
+                numero: "",
+                anio: "",
+                tipo: "",
+                estado: true, // por defecto activo en nuevo
+              });
+              setOpen(true);
+            }}
           >
             <PlusIcon className="h-5 w-5" /> Nuevo Periodo
           </Button>
@@ -190,9 +261,11 @@ export default function CatalogoPeriodos() {
           <table className="min-w-[700px] w-full text-left">
             <thead>
               <tr className="bg-blue-gray-50 text-blue-gray-700">
-                <th className="p-3 text-sm font-semibold">ID</th>
+                <th className="p-3 text-sm font-semibold">Etiqueta</th>
                 <th className="p-3 text-sm font-semibold">Número</th>
+                <th className="p-3 text-sm font-semibold">Tipo</th>
                 <th className="p-3 text-sm font-semibold">Año</th>
+                <th className="p-3 text-sm font-semibold">Estado</th>
                 <th className="p-3 text-sm font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -200,30 +273,45 @@ export default function CatalogoPeriodos() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="p-6 text-center text-blue-gray-500">
+                  <td
+                    colSpan={6}
+                    className="p-6 text-center text-blue-gray-500"
+                  >
                     Cargando…
                   </td>
                 </tr>
               ) : err ? (
                 <tr>
-                  <td colSpan={4} className="p-6 text-center text-red-600">
+                  <td colSpan={6} className="p-6 text-center text-red-600">
                     {err}
                   </td>
                 </tr>
               ) : pageData.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-6 text-center text-blue-gray-500">
+                  <td
+                    colSpan={6}
+                    className="p-6 text-center text-blue-gray-500"
+                  >
                     Sin registros.
                   </td>
                 </tr>
               ) : (
                 pageData.map((p) => (
                   <tr key={p.periodoId} className="border-b">
-                    <td className="p-3">{p.periodoId}</td>
-                    <td className="p-3">
-                      {p.numero}Q
-                    </td>
+                    <td className="p-3">{p.etiqueta}</td>
+                    <td className="p-3">{p.numero}</td>
+                    <td className="p-3">{p.tipo}</td>
                     <td className="p-3">{p.anio}</td>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${p.estado
+                          ? "bg-green-500 text-white"
+                          : "bg-red-500 text-white"
+                          }`}
+                      >
+                        {p.estado ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
                     <td className="p-3">
                       <Tooltip content="Editar periodo">
                         <Button
@@ -231,7 +319,12 @@ export default function CatalogoPeriodos() {
                           className="bg-[#FFDA00] text-[#2B338C] p-2"
                           onClick={() => {
                             setEditId(p.periodoId);
-                            setFormData({ numero: p.numero, anio: p.anio });
+                            setFormData({
+                              numero: String(p.numero),
+                              anio: String(p.anio),
+                              tipo: p.tipo,
+                              estado: p.estado,
+                            });
                             setOpen(true);
                           }}
                         >
@@ -250,7 +343,13 @@ export default function CatalogoPeriodos() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
           <span className="text-sm text-blue-gray-600">
             Mostrando{" "}
-            <b>{total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, total)}</b>{" "}
+            <b>
+              {total === 0
+                ? 0
+                : (page - 1) * rowsPerPage + 1}
+              –
+              {Math.min(page * rowsPerPage, total)}
+            </b>{" "}
             de <b>{total}</b>
           </span>
           <div className="flex items-center gap-1">
@@ -280,39 +379,93 @@ export default function CatalogoPeriodos() {
       </Card>
 
       {/* Modal */}
-      <Dialog open={open} handler={() => setOpen(false)} size="sm">
+      <Dialog open={open} handler={setOpen} size="sm">
         <DialogHeader className="text-[#2B338C] font-bold">
           {editId ? "Editar Periodo" : "Registrar Nuevo Periodo"}
         </DialogHeader>
 
         <DialogBody className="space-y-4">
-          
+          {/* Tipo */}
           <Select
-            label="Cuatrimestre"
-            value={String(formData.numero)}
-            onChange={(v) => setFormData({ ...formData, numero: Number(v) })}
+            label="Tipo de período"
+            value={formData.tipo || ""}
+            onChange={(v) =>
+              setFormData((prev) => ({
+                ...prev,
+                tipo: v,
+                numero: "", // limpiamos número cuando cambia tipo
+              }))
+            }
           >
-            <Option value="1">1Q</Option>
-            <Option value="2">2Q</Option>
-            <Option value="3">3Q</Option>
+            <Option value="C">C - Cuatrimestre</Option>
+            <Option value="T">T - Trimestre</Option>
+            <Option value="S">S - Semestre</Option>
           </Select>
 
-          {/* Select Año Académico */}
+          {/* Número (depende del tipo) */}
+          <Select
+            label="Número de período"
+            disabled={!formData.tipo}
+            onChange={(v) =>
+              setFormData((prev) => ({ ...prev, numero: v }))
+            }
+          >
+            {numeroOptions.map((n) => (
+              <Option
+                key={n}
+                value={n}
+                // Si estamos editando, marcamos el que viene de BD
+                selected={editId ? formData.numero === n : false}
+              >
+                {n}
+              </Option>
+            ))}
+          </Select>
+
+
+          {/* Año académico */}
           <Select
             label="Año académico"
-            value={String(formData.anio)}
-            onChange={(v) => setFormData({ ...formData, anio: Number(v) })}
+            value={formData.anio || ""}
+            onChange={(v) =>
+              setFormData((prev) => ({ ...prev, anio: v }))
+            }
           >
             {Array.from({ length: 101 }, (_, i) => 2021 + i).map((year) => (
               <Option
                 key={year}
-                value={year}
-                disabled={year < 2021} 
+                value={String(year)}
+                disabled={year < 2021}
               >
                 {year}
               </Option>
             ))}
           </Select>
+
+          {/* Etiqueta dinámica (solo lectura) */}
+          <Input
+            label="Etiqueta"
+            value={etiquetaPreview}
+            readOnly
+            crossOrigin=""
+          />
+
+          {/* Estado solo en editar */}
+          {editId && (
+            <Select
+              label="Estado"
+              value={formData.estado ? "true" : "false"}
+              onChange={(v) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  estado: v === "true",
+                }))
+              }
+            >
+              <Option value="true">Activo</Option>
+              <Option value="false">Inactivo</Option>
+            </Select>
+          )}
         </DialogBody>
 
         <DialogFooter>
@@ -321,7 +474,12 @@ export default function CatalogoPeriodos() {
             color="gray"
             onClick={() => {
               setOpen(false);
-              setFormData({ numero: "", anio: "" });
+              setFormData({
+                numero: "",
+                anio: "",
+                tipo: "",
+                estado: true,
+              });
               setEditId(null);
             }}
             className="mr-2"
@@ -332,8 +490,11 @@ export default function CatalogoPeriodos() {
           <Button
             className="bg-[#FFDA00] text-[#2B338C]"
             onClick={() => {
-              // Validación extra antes de guardar
-              if (formData.anio < 2021) {
+              if (!formData.tipo || !formData.numero || !formData.anio) {
+                alert("Todos los campos son obligatorios.");
+                return;
+              }
+              if (Number(formData.anio) < 2021) {
                 alert("El año académico debe ser 2021 o mayor.");
                 return;
               }
