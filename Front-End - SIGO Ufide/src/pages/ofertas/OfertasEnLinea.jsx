@@ -105,6 +105,18 @@ export default function OfertasEnLinea() {
         [coordinadores]
     );
 
+    // Normalización: Coordinador Id a String
+    const getCoordinadorPrimerApellido = useCallback(
+        (id) => coordinadores.find((c) => c.id === id)?.primerApellido ?? id,
+        [coordinadores]
+    );
+
+    // Normalización: Coordinador Id a String
+    const getCoordinadorSegundoApellido = useCallback(
+        (id) => coordinadores.find((c) => c.id === id)?.segundoApellido ?? id,
+        [coordinadores]
+    );
+
     // Normalización: Acción / Estado String a Id
     const matchAccionIdDesdeEstadoOAccion = (estado, accion) => {
         const nombre = estado || accion;
@@ -775,21 +787,6 @@ export default function OfertasEnLinea() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <input
-                        id="import-presencial"
-                        type="file"
-                        accept=".csv,.xls,.xlsx"
-                        className="hidden"
-                    />
-                    <label htmlFor="import-presencial">
-                        <Tooltip content="Importar desde CSV o Excel">
-                            <Button variant="outlined" className="border-[#2B338C] text-[#2B338C] flex items-center gap-2">
-                                <ArrowUpTrayIcon className="h-5 w-5" />
-                                Importar
-                            </Button>
-                        </Tooltip>
-                    </label>
-
                     <Button
                         className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
                         onClick={handleOpenNueva}
@@ -1009,7 +1006,7 @@ export default function OfertasEnLinea() {
                                     <td className="p-3">{o.modalidad}</td>
                                     <td className="p-3">{getHorarioNombre(o.horarioId)}</td> {/* este sí sigue siendo ID */}
                                     <td className="p-3">{o.periodo}</td>
-                                    <td className="p-3">{getCoordinadorNombre(o.coordinadorId)}</td>
+                                    <td className="p-3">{getCoordinadorNombre(o.coordinadorId)} {getCoordinadorPrimerApellido(o.coordinadorId)} {getCoordinadorSegundoApellido(o.coordinadorId)}</td>
                                     <td className="p-3">{o.grupo}</td>
                                     <td className="p-3">{getAccionesColors(o.accion)}</td>
                                     <td className="p-3">{getEstadoChip(o.estado)}</td>
