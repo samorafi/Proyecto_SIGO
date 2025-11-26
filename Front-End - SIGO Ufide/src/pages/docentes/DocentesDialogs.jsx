@@ -4,6 +4,8 @@ import {
   Button, Input, Select, Option, Typography,
   Dialog, DialogHeader, DialogBody, DialogFooter, Switch,
 } from "@material-tailwind/react";
+import { useNavigate } from "react-router-dom"; 
+
 
 /* ===================== API CONFIG ===================== */
 const API = import.meta.env.VITE_API_BASE ?? "";
@@ -71,19 +73,32 @@ const buildPeriodoLabel = (x) => {
   if (!x) return "";
   if (typeof x === "string") return x;
 
+  const etiqueta =
+    x.etiqueta ??
+    x.Etiqueta ??
+    x.label ??
+    x.nombre ??
+    x.Nombre ??
+    x.descripcion ??
+    x.periodo;
+
+  if (etiqueta) return String(etiqueta);
+
   const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
+  const tipo = x.tipo ?? x.Tipo ?? "";
   const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
 
-  if (numero && anio) return `${numero}Q ${anio}`; // ej: 1Q 2025
-  if (anio) return String(anio);
+  const numTipo = [numero, tipo].filter(Boolean).join(""); 
 
-  return (
-    x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ?? x.periodo ?? ""
-  );
+  if (numTipo && anio) return `${numTipo}, ${anio}`; 
+  if (anio) return String(anio);
+  if (numTipo) return numTipo;
+
+  return "";
 };
 
 async function fetchPeriodosOrdered() {
-  const url = URL.periodos; 
+  const url = URL.periodos;
   const r = await fetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
 
@@ -100,24 +115,22 @@ async function fetchPeriodosOrdered() {
   let arr = Array.isArray(j)
     ? j
     : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+
   if (!Array.isArray(arr)) arr = [];
 
   arr.sort((a, b) => {
-    const ay = Number(a.anio ?? a.Anio ?? a.anioAcademico ?? a.year ?? 0);
-    const by = Number(b.anio ?? b.Anio ?? b.anioAcademico ?? b.year ?? 0);
-    if (ay !== by) return ay - by;
-
-    const an = Number(a.numero ?? a.Numero ?? a.num ?? a.Num ?? 0);
-    const bn = Number(b.numero ?? b.Numero ?? b.num ?? b.Num ?? 0);
-    return an - bn;
+    const aId = Number(a.periodoId ?? a.id ?? a.Id ?? a.ID ?? 0);
+    const bId = Number(b.periodoId ?? b.id ?? b.Id ?? b.ID ?? 0);
+    return bId - aId; // descendente
   });
 
   return arr.map((x) => ({
     id: String(x.periodoId ?? x.id ?? x.Id ?? x.ID),
-    nombre: buildPeriodoLabel(x),
+    nombre: buildPeriodoLabel(x), 
     __raw: x,
   }));
 }
+
 
 /* Z-index/menu fixes */
 const MENU_CLS =
@@ -168,6 +181,10 @@ function FichaDocente({ open, onClose, id }) {
 
   const [periodoIngresoNombre, setPeriodoIngresoNombre] = useState("—");
   const [periodoDesvNombre, setPeriodoDesvNombre] = useState("—");
+
+  // pestañas internas
+  const [activeTab, setActiveTab] = useState("ficha"); // "ficha" | "constelacion"
+  const navigate = useNavigate();
 
   // 1) Cargar persona
   useEffect(() => {
@@ -272,16 +289,48 @@ function FichaDocente({ open, onClose, id }) {
   const sedeTxt = p?.sede?.nombre ?? p?.sede ?? "—";
   const enLineaTxt = p?.enLinea ? "Sí" : "No";
 
+  // clases para las pestañas (como el ejemplo Ofertas / Docentes)
+  const tabBase =
+    "flex-1 text-center py-2 text-sm font-semibold rounded-xl transition-colors";
+  const tabActive = "bg-[#2B338C] text-white shadow";
+  const tabInactive = "bg-white text-[#2B338C]";
+
   return (
     <Dialog open={open} handler={onClose} size="lg">
-      <DialogHeader className="text-[#2B338C]">Ficha del docente</DialogHeader>
+      <DialogHeader className="flex flex-col gap-3 text-[#2B338C]">
+        <span>Ficha del docente</span>
+        {/* barra de pestañas */}
+        <div className="flex w-full rounded-2xl bg-blue-gray-50 p-1">
+          <button
+            type="button"
+            className={`${tabBase} ${
+              activeTab === "ficha" ? tabActive : tabInactive
+            }`}
+            onClick={() => setActiveTab("ficha")}
+          >
+            Ficha docente
+          </button>
+          <button
+            type="button"
+            className={`${tabBase} ${
+              activeTab === "constelacion" ? tabActive : tabInactive
+            }`}
+            onClick={() => setActiveTab("constelacion")}
+          >
+            Constelación docente
+          </button>
+        </div>
+      </DialogHeader>
+
       <DialogBody className="space-y-4">
         {loading && <p className="text-blue-gray-600">Cargando…</p>}
         {error && !loading && <p className="text-red-600">{error}</p>}
         {!loading && !error && !p && (
           <p className="text-blue-gray-600">No hay datos.</p>
         )}
-        {!loading && !!p && (
+
+        {/* TAB 1: FICHA DOCENTE (contenido actual) */}
+        {!loading && !!p && activeTab === "ficha" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <RowInfo label="Nombre" value={p.nombre} />
             <RowInfo label="Primer apellido" value={p.primerApellido} />
@@ -313,7 +362,20 @@ function FichaDocente({ open, onClose, id }) {
             <RowInfo label="En línea" value={enLineaTxt} />
           </div>
         )}
+
+        {/* TAB 2: CONSTELACIÓN DOCENTE */}
+        {!loading && !!p && activeTab === "constelacion" && (
+          <div className="space-y-4">
+            <Typography className="text-blue-gray-700">
+              Aquí irá la información de constelación docente (asignaciones,
+              carga, etc.). Por el momento este espacio se deja reservado.
+            </Typography>
+
+          
+          </div>
+        )}
       </DialogBody>
+
       <DialogFooter>
         <Button
           variant="text"

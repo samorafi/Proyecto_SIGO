@@ -66,15 +66,32 @@ const matches = (t, q) =>
 
 const buildPeriodoLabel = (x) => {
   if (!x) return "";
+  if (typeof x === "string") return x;
+
+  const etiqueta =
+    x.etiqueta ??
+    x.Etiqueta ??
+    x.label ??
+    x.nombre ??
+    x.Nombre ??
+    x.descripcion ??
+    x.periodo;
+
+  if (etiqueta) return String(etiqueta);
+
   const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
+  const tipo = x.tipo ?? x.Tipo ?? "";
   const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
-  if (numero && anio) return `${numero}Q ${anio}`;   
+
+  const numTipo = [numero, tipo].filter(Boolean).join("");
+
+  if (numTipo && anio) return `${numTipo}, ${anio}`;
   if (anio) return String(anio);
-  return (
-    x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ??
-    x.periodo ?? ""
-  );
+  if (numTipo) return numTipo;
+
+  return "";
 };
+
 
 async function fetchPeriodosOrdered() {
   const url = URL.periodos;
@@ -83,17 +100,18 @@ async function fetchPeriodosOrdered() {
   const txt = await r.text();
   if (!txt) return [];
   let j; try { j = JSON.parse(txt); } catch { return []; }
-  let arr = Array.isArray(j) ? j : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+
+  let arr = Array.isArray(j)
+    ? j
+    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+
   if (!Array.isArray(arr)) arr = [];
 
 
   arr.sort((a, b) => {
-    const ay = Number(a.anio ?? a.Anio ?? 0);
-    const by = Number(b.anio ?? b.Anio ?? 0);
-    if (ay !== by) return ay - by; // ascendente: 2025, 2026...
-    const an = Number(a.numero ?? a.Numero ?? 0);
-    const bn = Number(b.numero ?? b.Numero ?? 0);
-    return an - bn;
+    const aId = Number(a.periodoId ?? a.id ?? a.Id ?? a.ID ?? 0);
+    const bId = Number(b.periodoId ?? b.id ?? b.Id ?? b.ID ?? 0);
+    return bId - aId;
   });
 
   return arr.map(x => ({
@@ -102,6 +120,7 @@ async function fetchPeriodosOrdered() {
     __raw: x,
   }));
 }
+
 
 /* Z-index/menu fixes */
 const MENU_CLS =
@@ -248,6 +267,7 @@ function Docentes() {
           x?.periodoIngreso ??
           (periodoIngresoId != null ? perById[String(periodoIngresoId)] ?? "" : "");
 
+
         return {
           id: x.id ?? x.personaId,
           nombre: x.nombre ?? x.nombreCompleto,
@@ -261,7 +281,7 @@ function Docentes() {
           tipoContrato: tipoContratoNombre,
           atestado: atestadoNombre,
           estado: estadoNombre,
-          periodoIngreso: periodoIngresoNombre, 
+          periodoIngreso: periodoIngresoNombre,
         };
       });
 
