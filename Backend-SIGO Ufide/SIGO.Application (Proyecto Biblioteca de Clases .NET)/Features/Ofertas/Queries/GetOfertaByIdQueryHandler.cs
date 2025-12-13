@@ -30,7 +30,9 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
                 Estado = o.EstadoOferta != null ? o.EstadoOferta.Nombre : null,
                 Grupo = o.Grupo,
                 Cupo = o.Cupo,
-                Matriculados = o.Matriculados
+                Matriculados = o.Matriculados,
+                Archivados = o.Archivados
+
             })
             .FirstOrDefaultAsync(ct);
 

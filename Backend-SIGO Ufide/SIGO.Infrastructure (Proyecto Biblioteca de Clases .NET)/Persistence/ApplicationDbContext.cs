@@ -53,5 +53,11 @@ namespace SIGO.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
         }
 
+        public Task<List<T>> SqlQueryAsync<T>(FormattableString query, CancellationToken cancellationToken = default)
+        {
+            return Database.SqlQuery<T>(query).ToListAsync(cancellationToken);
+        }
+
+
     }
 }

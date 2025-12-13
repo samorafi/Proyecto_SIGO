@@ -1,7 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
+using SIGO.Application.Features.Ofertas.Commands.Archivar;
+using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
 using SIGO.Application.Features.Ofertas.Commands.Create;
+using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Queries;
@@ -77,4 +80,26 @@ public class OfertasController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("archivar")]
+    public async Task<IActionResult> Archivar([FromBody] ArchivarOfertasCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
+    [HttpPost("archivar-por-modalidad")]
+    public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
+    [HttpPost("duplicar")]
+    public async Task<IActionResult> Duplicar([FromBody] DuplicarOfertasCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
 }

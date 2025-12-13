@@ -15,6 +15,7 @@ public class OfertaResponseDto
     public int Grupo { get; set; }
     public int? Cupo { get; set; }
     public int? Matriculados { get; set; }
+    public Boolean? Archivados { get; set; }
 
     public static OfertaResponseDto FromEntity(SIGO.Domain.Entities.Oferta o) => new()
     {
@@ -30,6 +31,7 @@ public class OfertaResponseDto
         Estado = o.EstadoOferta?.Nombre,
         Grupo = o.Grupo,
         Cupo = o.Cupo,
-        Matriculados = o.Matriculados
+        Matriculados = o.Matriculados,
+        Archivados = o.Archivados
     };
 }

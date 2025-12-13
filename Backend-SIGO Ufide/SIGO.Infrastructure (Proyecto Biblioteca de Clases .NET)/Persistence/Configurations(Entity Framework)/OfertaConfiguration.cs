@@ -22,6 +22,7 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
         b.Property(x => x.Grupo).HasColumnName("grupo").IsRequired();
         b.Property(x => x.Cupo).HasColumnName("cupo");
         b.Property(x => x.Matriculados).HasColumnName("matriculados");
+        b.Property(x => x.Archivados).HasColumnName("archivado");
 
         b.HasIndex(x => new { x.CursoId, x.SedeId, x.ModalidadId, x.PeriodoId, x.Grupo })
             .IsUnique()

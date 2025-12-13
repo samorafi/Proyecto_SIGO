@@ -43,7 +43,8 @@ public class CreateOfertaCommandHandler : IRequestHandler<CreateOfertaCommand, i
 
             Grupo = nextGrupo,
             Cupo = r.Cupo,
-            Matriculados = r.Matriculados
+            Matriculados = r.Matriculados,
+            Archivados = r.Archivados
         };
 
         _db.Ofertas.Add(entity);

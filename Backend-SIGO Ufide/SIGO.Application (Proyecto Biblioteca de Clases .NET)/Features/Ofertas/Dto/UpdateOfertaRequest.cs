@@ -13,4 +13,5 @@ public class UpdateOfertaRequest
     public int? EstadoOfertaId { get; set; }
     public int? Cupo { get; set; }
     public int? Matriculados { get; set; }
+    public Boolean Archivados { get; set; }
 }
