@@ -1094,3 +1094,169 @@ CREATE INDEX ix_solicitud_oferta_oferta_persona
 CREATE UNIQUE INDEX ux_solicitud_oferta_pendiente
     ON universidad.solicitud_oferta (oferta_id, persona_id)
     WHERE estado_solicitud = 0;
+
+-- ------------------------------------------------------------------
+-- CAMBIOS OFERTAS - HARLYN LUNA BRENES 3:31 PM 12/13/2025
+-- ------------------------------------------------------------------
+
+
+-- Agregar booleano "Archivado" en table ofertas
+ALTER TABLE universidad.oferta
+ADD COLUMN IF NOT EXISTS archivado BOOLEAN;
+
+
+-- SP archivar_ofertas_por_periodo v1 - NO CUENTA CON MODALIDAD
+CREATE OR REPLACE FUNCTION universidad.archivar_ofertas_por_periodo(
+    p_periodo_id INT
+)
+RETURNS TEXT AS
+$$
+DECLARE
+    v_total_archivadas INT;
+    v_total_existentes INT;
+BEGIN
+    -- Contamos cuántas ofertas existen para ese período
+    SELECT COUNT(*)
+    INTO v_total_existentes
+    FROM universidad.oferta
+    WHERE periodo_id = p_periodo_id;
+
+    IF v_total_existentes = 0 THEN
+        RETURN 'No existen ofertas para el período especificado.';
+    END IF;
+
+    -- Archivamos solo las que no estén archivadas
+    UPDATE universidad.oferta
+    SET archivado = TRUE
+    WHERE periodo_id = p_periodo_id
+      AND (archivado IS NULL OR archivado = FALSE);
+
+    GET DIAGNOSTICS v_total_archivadas = ROW_COUNT;
+
+    -- Caso: ya estaban archivadas
+    IF v_total_archivadas = 0 THEN
+        RETURN 'Todas las ofertas de este período ya se encuentran archivadas.';
+    END IF;
+
+    -- Caso: se archivó algo
+    RETURN FORMAT('Se archivaron %s oferta(s) del período.', v_total_archivadas);
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- SP archivar_ofertas_por_periodo v2 - CUENTA CON MODALIDAD
+CREATE OR REPLACE FUNCTION universidad.archivar_ofertas_por_periodo_y_modalidad(
+    p_periodo_id INT,
+    p_modalidades INT[]
+)
+RETURNS TEXT AS
+$$
+DECLARE
+    v_total_existentes INT;
+    v_total_archivadas INT;
+BEGIN
+    -- Validar si existen ofertas con ese período y esas modalidades
+    SELECT COUNT(*)
+    INTO v_total_existentes
+    FROM universidad.oferta
+    WHERE periodo_id = p_periodo_id
+      AND modalidad_id = ANY(p_modalidades);
+
+    IF v_total_existentes = 0 THEN
+        RETURN 'No existen ofertas para el período.';
+    END IF;
+
+    -- Actualizar (archivar)
+    UPDATE universidad.oferta
+    SET archivado = TRUE
+    WHERE periodo_id = p_periodo_id
+      AND modalidad_id = ANY(p_modalidades)
+      AND (archivado IS NULL OR archivado = FALSE);
+
+    GET DIAGNOSTICS v_total_archivadas = ROW_COUNT;
+
+    IF v_total_archivadas = 0 THEN
+        RETURN 'Todas las ofertas ya estaban archivadas para esta modalidad.';
+    END IF;
+
+    RETURN FORMAT(
+        'Se archivaron %s oferta(s) del período %s para modalidades %s.',
+        v_total_archivadas,
+        p_periodo_id,
+        array_to_string(p_modalidades, ', ')
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- SP universidad.duplicar_ofertas_por_periodo
+
+CREATE OR REPLACE FUNCTION universidad.duplicar_ofertas_por_periodo(
+    p_periodo_origen INT,
+    p_periodo_destino INT,
+    p_modalidades INT[]
+)
+RETURNS TABLE (
+    total_duplicadas INT,
+    mensaje TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_count INT := 0;
+BEGIN
+    -- Validar si existen ofertas para duplicar
+    SELECT COUNT(*) INTO v_count
+    FROM universidad.oferta
+    WHERE periodo_id = p_periodo_origen
+      AND modalidad_id = ANY(p_modalidades);
+
+    IF v_count = 0 THEN
+        RETURN QUERY
+        SELECT 0, 'No existen ofertas para duplicar con los criterios indicados.';
+        RETURN;
+    END IF;
+
+    -- Insertar las ofertas duplicadas
+    INSERT INTO universidad.oferta (
+        curso_id,
+        sede_id,
+        modalidad_id,
+        horario_id,
+        periodo_id,
+        accion_id,
+        coordinador_id,
+        comentarios,
+        estado_oferta_id,
+        grupo,
+        cupo,
+        matriculados,
+        archivado
+    )
+    SELECT
+        curso_id,
+        sede_id,
+        modalidad_id,
+        horario_id,
+        p_periodo_destino,   -- Nuevo periodo
+        1,                   -- accion_id por defecto
+        coordinador_id,
+        '',                  -- comentarios vacíos
+        2,                   -- estado_oferta_id por defecto
+        grupo,
+        cupo,
+        0,                   -- matriculados reinicia
+        FALSE                -- archivado siempre false
+    FROM universidad.oferta
+    WHERE periodo_id = p_periodo_origen
+      AND modalidad_id = ANY(p_modalidades);
+
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+
+    RETURN QUERY
+    SELECT v_count,
+           'Se duplicaron ' || v_count || ' ofertas desde el periodo ' ||
+           p_periodo_origen || ' hacia el periodo ' || p_periodo_destino || '.';
+
+END;
+$$;
