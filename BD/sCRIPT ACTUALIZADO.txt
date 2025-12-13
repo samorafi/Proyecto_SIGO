@@ -1,0 +1,1096 @@
+-- ========================================================================================
+-- Creacion y selección del Schema
+-- ========================================================================================
+
+CREATE SCHEMA IF NOT EXISTS universidad;
+SET search_path TO universidad;
+BEGIN;
+
+-- ========================================================================================
+-- Catálogos generales (No necesitan CRUD, solo datos inyectados)
+-- ========================================================================================
+
+CREATE TABLE genero (
+  genero_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE provincia (
+  provincia_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE canton (
+  canton_id SERIAL PRIMARY KEY,
+  provincia_id INT NOT NULL REFERENCES provincia(provincia_id),
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE categoria_docente (
+  categoria_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE tipo_contrato (
+  tipo_contrato_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE estado_persona (
+  estado_persona_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE atestado (
+  atestado_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE sede (
+  sede_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL 
+);
+
+CREATE TABLE grado (
+  grado_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE horario (
+  horario_id SERIAL PRIMARY KEY,
+  dia TEXT NOT NULL,
+  rango TEXT NOT NULL
+);
+
+CREATE TABLE modalidad (
+  modalidad_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE accion_oferta (
+  accion_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE motivo_desvinculacion (
+  motivo_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL
+);
+
+CREATE TABLE rol_docente (
+  rol_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL 
+);
+
+-- =====INSERTS NECESARIOS=====
+
+INSERT INTO universidad.genero (nombre) VALUES 
+	('Masculino'), 
+	('Femenino'), 
+	('Otro');
+
+INSERT INTO universidad.provincia (nombre) VALUES 
+	('San José'), 
+	('Alajuela'), 
+	('Cartago'), 
+	('Heredia'), 
+	('Guanacaste'), 
+	('Puntarenas'), 
+	('Limón');
+
+INSERT INTO universidad.canton (provincia_id, nombre) VALUES
+	(1, 'San José'), (1, 'Escazú'), (1, 'Desamparados'), (1, 'Puriscal'), 
+	(1, 'Tarrazú'), (1, 'Aserrí'), (1, 'Mora'), (1, 'Goicoechea'), 
+	(1, 'Santa Ana'), (1, 'Alajuelita'), (1, 'Vázquez de Coronado'), 
+	(1, 'Acosta'), (1, 'Tibás'), (1, 'Moravia'), (1, 'Montes de Oca'), 
+	(1, 'Turrubares'), (1, 'Dota'), (1, 'Curridabat'), 
+	(1, 'Pérez Zeledón'), (1, 'León Cortés Castro'),
+
+	(2, 'Alajuela'), (2, 'San Ramón'), (2, 'Grecia'), (2, 'San Mateo'), 
+	(2, 'Atenas'), (2, 'Naranjo'), (2, 'Palmares'), (2, 'Poás'), 
+	(2, 'Orotina'), (2, 'San Carlos'), (2, 'Zarcero'), (2, 'Sarchí'), 
+	(2, 'Upala'), (2, 'Los Chiles'), (2, 'Guatuso'), (2, 'Río Cuarto'),
+
+	(3, 'Cartago'), (3, 'Paraíso'), (3, 'La Unión'), (3, 'Jiménez'), 
+	(3, 'Turrialba'), (3, 'Alvarado'), (3, 'Oreamuno'), (3, 'El Guarco'),
+
+	(4, 'Heredia'), (4, 'Barva'), (4, 'Santo Domingo'), (4, 'Santa Bárbara'), 
+	(4, 'San Rafael'), (4, 'San Isidro'), (4, 'Belén'), (4, 'Flores'), 
+	(4, 'San Pablo'), (4, 'Sarapiquí'),
+
+	(5, 'Liberia'), (5, 'Nicoya'), (5, 'Santa Cruz'), (5, 'Bagaces'), 
+	(5, 'Carrillo'), (5, 'Cañas'), (5, 'Abangares'), (5, 'Tilarán'), 
+	(5, 'Nandayure'), (5, 'La Cruz'), (5, 'Hojancha'),
+
+	(6, 'Puntarenas'), (6, 'Esparza'), (6, 'Buenos Aires'), (6, 'Montes de Oro'), 
+	(6, 'Osa'), (6, 'Quepos'), (6, 'Golfito'), (6, 'Coto Brus'), 
+	(6, 'Parrita'), (6, 'Corredores'), (6, 'Garabito'),
+
+	(7, 'Limón'), (7, 'Pococí'), (7, 'Siquirres'), (7, 'Talamanca'), 
+	(7, 'Matina'), (7, 'Guácimo');
+
+INSERT INTO universidad.categoria_docente (nombre) VALUES 
+	('Dirección'), 
+	('Académico con Permanencia'), 
+	('Docente Regular'), ('Productor'),
+	('Facilitador'), 
+	('Docente Regular Educación Continua'), 
+	('Docente Regular Postgrados');
+
+INSERT INTO universidad.tipo_contrato (nombre) VALUES 
+	('Planilla'), 
+	('Honorarios');
+
+INSERT INTO universidad.estado_persona (nombre) VALUES 
+	('Activo'), 
+	('Inactivo');
+
+INSERT INTO universidad.atestado (nombre) VALUES 
+	('Bachiller'), 
+	('Licenciado(a)'), 
+	('Máster'), 
+	('Doctor(a)');
+
+INSERT INTO universidad.sede (sede_id, nombre) VALUES
+  (1,'Sede Heredia'),
+  (2,'Sede San Pedro'),
+  (3,'Campus Virtual');
+
+INSERT INTO universidad.grado (grado_id, nombre) VALUES
+  (1,'Diplomado'),
+  (2,'Bachillerato'),
+  (3,'Licenciatura'),
+  (4,'Maestría');
+
+INSERT INTO universidad.horario (dia, rango) VALUES
+  ('Lunes','09:00-12:00'),
+  ('Lunes','14:00-17:00'),
+  ('Lunes','18:00-21:00'),
+  ('Martes','09:00-12:00'),
+  ('Martes','14:00-17:00'),
+  ('Martes','18:00-21:00'),
+  ('Miercoles','09:00-12:00'),
+  ('Miercoles','14:00-17:00'),
+  ('Miercoles','18:00-21:00'),
+  ('Jueves','09:00-12:00'),
+  ('Jueves','14:00-17:00'),
+  ('Jueves','18:00-21:00'),
+  ('Viernes','09:00-12:00'),
+  ('Viernes','14:00-17:00'),
+  ('Viernes','18:00-21:00'),
+  ('Sabado','8:00-11:00');
+
+INSERT INTO universidad.modalidad (modalidad_id, nombre) VALUES
+  (1,'Presencial'),
+  (2,'Virtual'),
+  (3,'En Línea');
+
+INSERT INTO universidad.accion_oferta (accion_id, nombre) VALUES
+  (1,'Enviada'),
+  (2,'Pendiente'),
+  (3,'Aceptada'),
+  (4,'Rechazada'),
+  (5,'Cancelada');
+
+INSERT INTO universidad.motivo_desvinculacion (nombre) VALUES 
+	('Renuncia'),
+	('Despido'), 
+	('Otro');
+
+INSERT INTO universidad.rol_docente (rol_id, nombre) VALUES 
+	(1,'Profesor'), 
+	(2,'Asistente'), 
+	(3,'Profesor/Asistente');
+
+-- ========================================================================================
+-- Tablas con necesidad de CRUD
+-- ========================================================================================
+
+CREATE TABLE periodo (
+  periodo_id SERIAL PRIMARY KEY,
+  anio INT NOT NULL,
+  numero INT NOT NULL CHECK (numero BETWEEN 1 AND 3),
+  estado BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- ============================================
+-- Sección docentes
+-- ============================================
+
+CREATE TABLE persona (
+  persona_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  cedula TEXT UNIQUE NOT NULL,
+  genero_id INT REFERENCES genero(genero_id),
+  correo TEXT UNIQUE NOT NULL,
+  telefono TEXT,
+  atestado_id INT REFERENCES atestado(atestado_id),
+  provincia_id INT REFERENCES provincia(provincia_id),
+  canton_id INT REFERENCES canton(canton_id),
+  categoria_id INT REFERENCES categoria_docente(categoria_id),
+  rol_docente_id INT REFERENCES rol_docente(rol_id),
+  estado_persona_id INT REFERENCES estado_persona(estado_persona_id),
+  fecha_ingreso DATE,
+  tipo_contrato_id INT REFERENCES tipo_contrato(tipo_contrato_id),
+  motivo_desvinculacion_id INT REFERENCES motivo_desvinculacion(motivo_id),
+  periodo_desvinculacion_id INT REFERENCES periodo(periodo_id),
+  comentarios TEXT
+);
+
+ALTER TABLE universidad.persona
+  ALTER COLUMN estado_persona_id SET DEFAULT 1;
+  
+ALTER TABLE universidad.persona
+  ADD COLUMN IF NOT EXISTS en_linea BOOLEAN NOT NULL DEFAULT FALSE;
+  
+  
+-- ============================================
+-- Sección Académica
+-- ============================================
+
+CREATE TABLE carrera (
+  carrera_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,  
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE (nombre)
+);
+
+CREATE TABLE curso (
+  curso_id SERIAL PRIMARY KEY,
+  codigo TEXT NOT NULL,
+  nombre TEXT NOT NULL, 
+  carrera_id INT REFERENCES carrera(carrera_id),
+  grado_id INT REFERENCES grado(grado_id),
+  es_netcad BOOLEAN NOT NULL DEFAULT FALSE,
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE (codigo)
+);
+
+-- ============================================
+-- Sección de Coordinación
+-- ============================================
+
+CREATE TABLE coordinacion (
+  coordinacion_id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  carrera_id INT REFERENCES carrera(carrera_id),
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id),
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  comentarios TEXT
+);
+
+CREATE TABLE coordinacion_curso (
+  coordinacion_curso_id SERIAL PRIMARY KEY,
+  coordinacion_id INT NOT NULL REFERENCES universidad.coordinacion(coordinacion_id) ON DELETE CASCADE,
+  curso_id INT NOT NULL REFERENCES universidad.curso(curso_id),
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+  comentarios TEXT
+);
+
+-- ============================================
+-- Sección de Oferta Académica
+-- ============================================
+
+CREATE TABLE oferta (
+  oferta_id SERIAL UNIQUE PRIMARY KEY,
+  curso_id INT NOT NULL REFERENCES curso(curso_id),
+  sede_id INT NOT NULL REFERENCES sede(sede_id), --
+  modalidad_id INT NOT NULL REFERENCES modalidad(modalidad_id), --
+  horario_id INT NOT NULL REFERENCES horario(horario_id), --
+  periodo_id INT NOT NULL REFERENCES periodo(periodo_id), --
+  accion_id INT REFERENCES accion_oferta(accion_id), --
+  coordinador_id INT REFERENCES persona(persona_id), --
+  comentarios TEXT
+);
+
+CREATE TABLE grupo (
+  grupo_id SERIAL PRIMARY KEY,
+  oferta_id INT NOT NULL REFERENCES oferta(oferta_id) ON DELETE CASCADE,
+  numero INT NOT NULL,        
+  cupo INT,
+  matricula INT,
+  UNIQUE (oferta_id, numero)
+);
+
+CREATE TABLE grupo_asignacion (
+  grupo_asignacion_id SERIAL PRIMARY KEY,
+  grupo_id INT NOT NULL REFERENCES grupo(grupo_id) ON DELETE CASCADE,
+  persona_id INT NOT NULL REFERENCES persona(persona_id),
+  rol_id INT NOT NULL REFERENCES rol_docente(rol_id),
+  UNIQUE (grupo_id, persona_id, rol_id)
+);
+
+-- ============================================
+-- Sección de Usuario, Roles de Usuario y Permisos
+-- ============================================
+
+CREATE TABLE usuario (
+  usuario_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  correo TEXT UNIQUE NOT NULL,
+  contrasena TEXT NOT NULL,
+  activo BOOLEAN DEFAULT TRUE
+);
+
+-- 1. Contador de intentos fallidos (CRÍTICO: Para contar hasta 3)
+ALTER TABLE universidad.usuario ADD COLUMN "AccessFailedCount" INTEGER NOT NULL DEFAULT 0;
+
+-- 2. Fecha de fin de bloqueo (CRÍTICO: Para saber cuándo desbloquear)
+ALTER TABLE universidad.usuario ADD COLUMN "LockoutEnd" TIMESTAMPTZ NULL;
+
+-- 3. Habilitación de bloqueo (OPCIONAL: Para que el administrador lo gestione)
+ALTER TABLE universidad.usuario ADD COLUMN "LockoutEnabled" BOOLEAN NOT NULL DEFAULT TRUE;
+
+CREATE TABLE rol (
+  rol_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL,
+  isSystem boolean
+);
+
+CREATE TABLE permiso (
+  permiso_id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  clave TEXT UNIQUE NOT NULL,
+  ruta TEXT NOT NULL
+);
+
+CREATE TABLE usuario_rol ( -- RELACIÓN USUARIO - ROL (N:M)
+  usuario_id INT NOT NULL REFERENCES usuario(usuario_id) ON DELETE CASCADE,
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, rol_id)
+);
+
+CREATE TABLE rol_permiso ( -- RELACIÓN ROL - PERMISO (N:M)
+  rol_id INT NOT NULL REFERENCES rol(rol_id) ON DELETE CASCADE,
+  permiso_id INT NOT NULL REFERENCES permiso(permiso_id) ON DELETE CASCADE,
+  PRIMARY KEY (rol_id, permiso_id)
+);
+
+-- =====INSERTS NECESARIOS=====
+
+INSERT INTO rol (nombre,isSystem)VALUES 
+	('Administrador',true);
+
+INSERT INTO permiso (nombre, clave, ruta) VALUES
+	('Gestión de Usuarios', 'USUARIOS_VIEW', '/dashboard/usuarios'),
+	('Gestión de Roles', 'ROLES_VIEW', '/dashboard/roles'),
+	('Gestión de Docentes', 'DOCENTES_VIEW', '/dashboard/docentes'),
+	('Gestión de Ofertas', 'OFERTAS_VIEW', '/dashboard/ofertas'),
+	('Reportes', 'REPORTES_VIEW', '/dashboard/reportes'),
+	('Dashboard', 'DASHBOARD_VIEW', '/dashboard'),
+	('Perfil', 'PERFIL_VIEW', '/dashboard/perfil');
+
+INSERT INTO usuario (nombre, correo, contrasena, activo)VALUES 
+	('Admin Principal', 'admin@sigo.com', '$2b$12$vVHfy3HrXK/F3PuxYEK3N.L3WtbinB8bpzXyUaRg.m2bIVHSTI.YK', TRUE);
+	-- CONTRASEÑA: admin123
+
+INSERT INTO usuario_rol (usuario_id, rol_id)
+SELECT u.usuario_id, r.rol_id
+FROM usuario u, rol r
+WHERE u.correo = 'admin@sigo.com'
+  AND r.nombre = 'Administrador';
+
+INSERT INTO rol_permiso (rol_id, permiso_id)
+SELECT r.rol_id, p.permiso_id
+FROM rol r, permiso p
+WHERE r.nombre = 'Administrador';
+
+
+-- ========================================================================================
+-- A partir de este punto agregar los nuevos cambios y documentarlos con Fecha y hora del cambio
+-- ========================================================================================
+
+-- Configuración del Sistema - SMTP para el envío de correo electrónico
+-- Harlyn Luna Brenes - 25-10-2025
+CREATE TABLE universidad.conf_smtp (
+    id SERIAL PRIMARY KEY,
+    host VARCHAR(150) NOT NULL,
+    username VARCHAR(150) NOT NULL,
+    port INT NOT NULL,
+    enable_ssl BOOLEAN NOT NULL DEFAULT TRUE,
+    sender_name VARCHAR(150),
+    sender_email VARCHAR(150) NOT NULL,
+    password VARCHAR(300) NOT NULL,
+    use_default_credentials BOOLEAN NOT NULL DEFAULT FALSE,
+    last_updated TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Configuración del Sistema - Auditoria
+-- Harlyn Luna Brenes - 10-11-2025
+CREATE TABLE universidad.bitacora_auditoria (
+    id SERIAL PRIMARY KEY,
+    usuario VARCHAR(150),
+    tabla_afectada VARCHAR(100),
+    accion VARCHAR(20),
+    registro_id INTEGER,
+    valores_anteriores JSONB,
+    valores_nuevos JSONB,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_origen VARCHAR(50),
+    descripcion TEXT
+);
+
+
+
+---------------------------------------------------------------
+
+-- ========================================================================================
+-- DML SIGO: Periodos, Personas, Carreras, Cursos, Coordinaciones, Ofertas
+-- Requiere que exista el esquema y catálogos del archivo Script SIGODB.txt
+-- ========================================================================================
+
+BEGIN;
+
+SET search_path TO universidad;
+
+-- =========================================
+-- 1) PERIODOS (cuatrimestres: 1..3) 2022-2028
+-- =========================================
+-- Evita duplicados insertando solo los que no existan
+WITH y AS (
+  SELECT generate_series(2022, 2028) AS anio
+),
+q AS (
+  SELECT 1 AS numero UNION ALL SELECT 2 UNION ALL SELECT 3
+)
+INSERT INTO periodo (anio, numero, estado)
+SELECT y.anio, q.numero, TRUE
+FROM y CROSS JOIN q
+WHERE NOT EXISTS (
+  SELECT 1 FROM periodo p WHERE p.anio = y.anio AND p.numero = q.numero
+);
+
+-- =========================================
+-- 2) PERSONAS (5 docentes)
+--    Usa subconsultas por nombre para FKs (robusto ante IDs)
+-- =========================================
+-- Helper: función inline para obtener canton_id por provincia + canton
+-- (Se usa directamente en cada INSERT mediante subselects)
+
+-- Persona 1
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'José Ramírez', '101110001', g.genero_id, 'jose.ramirez@sigo.com', '8888-0001',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2023-02-15', tc.tipo_contrato_id,
+  NULL, NULL, 'Coordinador potencial de Sistemas'
+FROM genero g
+JOIN atestado a ON a.nombre='Licenciado(a)'
+JOIN provincia pr ON pr.nombre='San José'
+JOIN canton c ON c.nombre='Montes de Oca' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='101110001' OR p.correo='jose.ramirez@sigo.com');
+
+-- Persona 2
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Laura Fernández', '202220002', g.genero_id, 'laura.fernandez@sigo.com', '8888-0002',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2022-08-10', tc.tipo_contrato_id,
+  NULL, NULL, 'Experta en Bases de Datos'
+FROM genero g
+JOIN atestado a ON a.nombre='Máster'
+JOIN provincia pr ON pr.nombre='Alajuela'
+JOIN canton c ON c.nombre='San Ramón' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Académico con Permanencia'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Femenino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='202220002' OR p.correo='laura.fernandez@sigo.com');
+
+-- Persona 3
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Carlos Méndez', '303330003', g.genero_id, 'carlos.mendez@sigo.com', '8888-0003',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2024-01-05', tc.tipo_contrato_id,
+  NULL, NULL, 'Instructor de Redes (NetAcad)'
+FROM genero g
+JOIN atestado a ON a.nombre='Bachiller'
+JOIN provincia pr ON pr.nombre='Heredia'
+JOIN canton c ON c.nombre='Belén' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Facilitador'
+JOIN rol_docente rd ON rd.nombre='Profesor/Asistente'
+JOIN tipo_contrato tc ON tc.nombre='Honorarios'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='303330003' OR p.correo='carlos.mendez@sigo.com');
+
+-- Persona 4
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'María Rodríguez', '404440004', g.genero_id, 'maria.rodriguez@sigo.com', '8888-0004',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2023-05-22', tc.tipo_contrato_id,
+  NULL, NULL, 'Docente de Seguridad'
+FROM genero g
+JOIN atestado a ON a.nombre='Máster'
+JOIN provincia pr ON pr.nombre='Cartago'
+JOIN canton c ON c.nombre='Paraíso' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular Postgrados'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Planilla'
+WHERE g.nombre='Femenino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='404440004' OR p.correo='maria.rodriguez@sigo.com');
+
+-- Persona 5
+INSERT INTO persona
+  (nombre, cedula, genero_id, correo, telefono,
+   atestado_id, provincia_id, canton_id,
+   categoria_id, rol_docente_id, estado_persona_id,
+   fecha_ingreso, tipo_contrato_id,
+   motivo_desvinculacion_id, periodo_desvinculacion_id, comentarios)
+SELECT
+  'Andrés Salazar', '505550005', g.genero_id, 'andres.salazar@sigo.com', '8888-0005',
+  a.atestado_id, pr.provincia_id, c.canton_id,
+  cd.categoria_id, rd.rol_id, 1,
+  DATE '2024-03-11', tc.tipo_contrato_id,
+  NULL, NULL, 'Full-stack y DevOps'
+FROM genero g
+JOIN atestado a ON a.nombre='Licenciado(a)'
+JOIN provincia pr ON pr.nombre='Limón'
+JOIN canton c ON c.nombre='Pococí' AND c.provincia_id = pr.provincia_id
+JOIN categoria_docente cd ON cd.nombre='Docente Regular Educación Continua'
+JOIN rol_docente rd ON rd.nombre='Profesor'
+JOIN tipo_contrato tc ON tc.nombre='Honorarios'
+WHERE g.nombre='Masculino'
+  AND NOT EXISTS (SELECT 1 FROM persona p WHERE p.cedula='505550005' OR p.correo='andres.salazar@sigo.com');
+
+-- =========================================
+-- 3) CARRERAS (tecnologías)
+-- =========================================
+INSERT INTO carrera (nombre, estado)
+SELECT v.nombre, TRUE
+FROM (VALUES
+  ('Ingeniería en Sistemas'),
+  ('Ciberseguridad'),
+  ('Desarrollo de Software'),
+  ('Redes y Telecomunicaciones')
+) AS v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM carrera c WHERE c.nombre = v.nombre);
+
+-- =========================================
+-- 4) CURSOS (alineados a carreras)
+--    codigo UNIQUE; grado: 1=Diplomado, 2=Bachillerato, 3=Licenciatura, 4=Maestría
+-- =========================================
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'SIS-101', 'Fundamentos de Sistemas', c.carrera_id, 1, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ingeniería en Sistemas'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='SIS-101');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'DEV-201', 'Programación Web I', c.carrera_id, 2, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Desarrollo de Software'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='DEV-201');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'DB-210', 'Bases de Datos', c.carrera_id, 2, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ingeniería en Sistemas'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='DB-210');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'SEC-220', 'Seguridad Informática', c.carrera_id, 3, FALSE, TRUE
+FROM carrera c WHERE c.nombre='Ciberseguridad'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='SEC-220');
+
+INSERT INTO curso (codigo, nombre, carrera_id, grado_id, es_netcad, estado)
+SELECT 'NET-110', 'CCNA: Introducción a Redes', c.carrera_id, 2, TRUE, TRUE
+FROM carrera c WHERE c.nombre='Redes y Telecomunicaciones'
+  AND NOT EXISTS (SELECT 1 FROM curso x WHERE x.codigo='NET-110');
+
+-- =========================================
+-- 5) COORDINACION (persona + carrera + periodo actual)
+--    Usamos el periodo 2025-3 (sept-dic) por contexto de fecha actual
+-- =========================================
+-- Coord 1: José → Ingeniería en Sistemas
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación principal'
+FROM persona p
+JOIN carrera c ON c.nombre='Ingeniería en Sistemas'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='jose.ramirez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- Coord 2: Laura → Desarrollo de Software
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación desarrollo'
+FROM persona p
+JOIN carrera c ON c.nombre='Desarrollo de Software'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='laura.fernandez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- Coord 3: María → Ciberseguridad
+INSERT INTO coordinacion (persona_id, carrera_id, periodo_id, estado, comentarios)
+SELECT p.persona_id, c.carrera_id, pe.periodo_id, TRUE, 'Coordinación ciber'
+FROM persona p
+JOIN carrera c ON c.nombre='Ciberseguridad'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE p.correo='maria.rodriguez@sigo.com'
+  AND NOT EXISTS (
+    SELECT 1 FROM coordinacion co
+    WHERE co.persona_id = p.persona_id AND co.carrera_id = c.carrera_id AND co.periodo_id = pe.periodo_id
+  );
+
+-- =========================================
+-- 6) COORDINACION_CURSO (asignar cursos)
+-- =========================================
+-- José coordina SIS-101 y DB-210
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Plan base'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='jose.ramirez@sigo.com'
+JOIN curso cu ON cu.codigo IN ('SIS-101','DB-210')
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- Laura coordina DEV-201
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Front-end track'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='laura.fernandez@sigo.com'
+JOIN curso cu ON cu.codigo = 'DEV-201'
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- María coordina SEC-220
+INSERT INTO coordinacion_curso (coordinacion_id, curso_id, estado, comentarios)
+SELECT co.coordinacion_id, cu.curso_id, TRUE, 'Seguridad base'
+FROM coordinacion co
+JOIN persona p ON p.persona_id = co.persona_id AND p.correo='maria.rodriguez@sigo.com'
+JOIN curso cu ON cu.codigo = 'SEC-220'
+WHERE NOT EXISTS (
+  SELECT 1 FROM coordinacion_curso cc
+  WHERE cc.coordinacion_id = co.coordinacion_id AND cc.curso_id = cu.curso_id
+);
+
+-- Carlos (Redes) no es coordinador, pero su curso NET-110 ya quedó en carrera de Redes (lo ofertaremos abajo)
+
+-- =========================================
+-- 7) OFERTAS (todas con accion_id = 1 'Enviada')
+--    Campos: curso_id, sede_id (1..3), modalidad_id (1..3), horario_id, periodo_id, accion_id=1, coordinador_id
+-- =========================================
+-- Oferta 1: SIS-101 (coordinador José) - Presencial - Lunes 18:00-21:00 - Sede Heredia - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 1, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Grupo 1 nocturno'
+FROM curso cu
+JOIN persona p ON p.correo='jose.ramirez@sigo.com'
+JOIN horario h ON h.dia='Lunes' AND h.rango='18:00-21:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='SIS-101'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 2: DB-210 (coordinador José) - Virtual - Martes 14:00-17:00 - Campus Virtual - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 3, 2, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Virtual tarde'
+FROM curso cu
+JOIN persona p ON p.correo='jose.ramirez@sigo.com'
+JOIN horario h ON h.dia='Martes' AND h.rango='14:00-17:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='DB-210'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 3: DEV-201 (coordinador Laura) - Presencial - Miércoles 18:00-21:00 - Sede San Pedro - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 2, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Nocturno lab'
+FROM curso cu
+JOIN persona p ON p.correo='laura.fernandez@sigo.com'
+JOIN horario h ON h.dia='Miercoles' AND h.rango='18:00-21:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='DEV-201'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 4: SEC-220 (coordinador María) - En Línea - Jueves 14:00-17:00 - Campus Virtual - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 3, 3, h.horario_id, pe.periodo_id, 1, p.persona_id, 'Clase sincrónica'
+FROM curso cu
+JOIN persona p ON p.correo='maria.rodriguez@sigo.com'
+JOIN horario h ON h.dia='Jueves' AND h.rango='14:00-17:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='SEC-220'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+-- Oferta 5: NET-110 (asignar a Carlos como coordinador para la oferta, aunque no sea de 'coordinacion' formal)
+--           Presencial - Sábado 8:00-11:00 - Sede Heredia - 2025-3
+INSERT INTO oferta (curso_id, sede_id, modalidad_id, horario_id, periodo_id, accion_id, coordinador_id, comentarios)
+SELECT cu.curso_id, 1, 1, h.horario_id, pe.periodo_id, 1, p.persona_id, 'NetAcad sábado'
+FROM curso cu
+JOIN persona p ON p.correo='carlos.mendez@sigo.com'
+JOIN horario h ON h.dia='Sabado' AND h.rango='8:00-11:00'
+JOIN periodo pe ON pe.anio=2025 AND pe.numero=3
+WHERE cu.codigo='NET-110'
+  AND NOT EXISTS (
+    SELECT 1 FROM oferta o WHERE o.curso_id = cu.curso_id AND o.periodo_id = pe.periodo_id AND o.horario_id = h.horario_id
+  );
+
+
+-- Configuración del Sistema - SMTP para el envío de correo electrónico.
+-- Harlyn Luna Brenes - 25-10-2025
+INSERT INTO universidad.conf_smtp (host,username,port,enable_ssl,sender_name,sender_email,password,use_default_credentials,last_updated
+) VALUES (
+    'smtp.gmail.com',
+    'monitoring.hlb.notif@gmail.com',
+    587,
+    TRUE,
+    'Sistema SIGO Fidélitas',
+    'monitoring.hlb.notif@gmail.com',
+    'culv gqfv itgc sqbz',
+    TRUE,
+    '2025-10-25 10:40:34.981831'
+);
+
+COMMIT;
+
+
+
+---------------------------------------------
+---------------------------------------------
+SET search_path TO universidad;
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA ACCION_OFERTA ---------------------
+-- -------------------------------------------------------------
+
+UPDATE accion_oferta SET nombre = 'Abrir Curso'        WHERE accion_id = 1;
+UPDATE accion_oferta SET nombre = 'Asignar Profesor'   WHERE accion_id = 2;
+UPDATE accion_oferta SET nombre = 'Nombrado'           WHERE accion_id = 3;
+UPDATE accion_oferta SET nombre = 'Cambiar Profesor'   WHERE accion_id = 4;
+UPDATE accion_oferta SET nombre = 'Cerrar Curso'       WHERE accion_id = 5;
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (6, 'Reserva');
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (7, 'Suficiencia');
+
+INSERT INTO accion_oferta (accion_id, nombre) VALUES
+    (8, 'Cerrado');
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA PERSONA ---------------------
+-- -------------------------------------------------------------
+
+ALTER TABLE persona
+  ADD COLUMN IF NOT EXISTS primer_apellido varchar(100),
+  ADD COLUMN IF NOT EXISTS segundo_apellido varchar(100);
+
+
+-- -------------------------------------------------------------
+-- --------- CAMBIOS A TABLA PERIODO ---------------------
+-- -------------------------------------------------------------
+
+
+-- 1) Agregamos columna tipo (C/T/P), por defecto 'C' para no romper lo existente
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='periodo' AND column_name='tipo'
+  ) THEN
+    ALTER TABLE periodo ADD COLUMN tipo char(1) NOT NULL DEFAULT 'C';
+  END IF;
+END $$;
+
+-- 2) Generamos columna etiqueta para extraer la concatenacion de los datos
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='periodo' AND column_name='etiqueta'
+  ) THEN
+    ALTER TABLE periodo
+    ADD COLUMN etiqueta text GENERATED ALWAYS AS (
+      CASE tipo
+        WHEN 'C' THEN (numero::text || 'C, ' || anio::text)
+        WHEN 'T' THEN (numero::text || 'T, ' || anio::text)
+        WHEN 'P' THEN (numero::text || 'P, ' || anio::text)
+        ELSE (numero::text || ', ' || anio::text)
+      END
+    ) STORED;
+  END IF;
+END $$;
+
+-- 3) Checks de rango por tipo
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ck_periodo_rangos_por_tipo'
+  ) THEN
+    ALTER TABLE periodo ADD CONSTRAINT ck_periodo_rangos_por_tipo
+    CHECK (
+      (tipo = 'C' AND numero BETWEEN 1 AND 3) OR
+      (tipo = 'T' AND numero BETWEEN 1 AND 4) OR
+      (tipo = 'P' AND numero BETWEEN 1 AND 12)
+    );
+  END IF;
+END $$;
+
+-- 4) Índice único por (año, tipo, número)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE indexname = 'ux_periodo_anio_tipo_numero'
+  ) THEN
+    CREATE UNIQUE INDEX ux_periodo_anio_tipo_numero
+      ON periodo(anio, tipo, numero);
+  END IF;
+END $$;
+
+-- 5) Migrar periodos existentes a tipo 'C' explícitamente (si todavía hay NULLs residuales)
+UPDATE periodo SET tipo = 'C' WHERE tipo IS DISTINCT FROM 'C' AND tipo IS DISTINCT FROM 'T' AND tipo IS DISTINCT FROM 'P';
+
+-- -------------------------------------------------------------
+-- ----- CAMBIOS A TABLA PERSONA (Actualizacion Periodos) ------
+-- -------------------------------------------------------------
+
+-- 1) Nueva columna FK (transicional: NULL al inicio)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='universidad' AND table_name='persona' AND column_name='periodo_ingreso_id'
+  ) THEN
+    ALTER TABLE persona
+      ADD COLUMN periodo_ingreso_id integer NULL;
+  END IF;
+END $$;
+
+-- 2) FK a periodo(periodo_id)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_persona_periodo_ingreso'
+  ) THEN
+    ALTER TABLE persona
+      ADD CONSTRAINT fk_persona_periodo_ingreso
+      FOREIGN KEY (periodo_ingreso_id)
+      REFERENCES periodo(periodo_id)
+      ON DELETE RESTRICT;
+  END IF;
+END $$;
+
+CREATE FUNCTION universidad.migrate_persona_periodo_ingreso_cuatrimestre(
+  p_estado_default boolean DEFAULT true,               
+  p_overwrite_existing boolean DEFAULT true           
+)
+RETURNS integer
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  r                RECORD;
+  v_anio           int;
+  v_mes            int;
+  v_numero         int;    
+  v_periodo_id     int;
+  v_processed      int := 0;
+BEGIN
+  -- Itera por todas las personas con fecha_ingreso (y opcionalmente sin periodo asignado)
+  FOR r IN
+    SELECT
+      p.persona_id,                 
+      p.fecha_ingreso,
+      p.periodo_ingreso_id
+    FROM universidad.persona p
+    WHERE p.fecha_ingreso IS NOT NULL
+      AND (p_overwrite_existing OR p.periodo_ingreso_id IS NULL)
+  LOOP
+    v_anio := EXTRACT(YEAR FROM r.fecha_ingreso)::int;
+    v_mes  := EXTRACT(MONTH FROM r.fecha_ingreso)::int;
+
+    -- Mapear mes -> cuatrimestre
+    IF v_mes BETWEEN 1 AND 4 THEN
+      v_numero := 1;       
+    ELSIF v_mes BETWEEN 5 AND 8 THEN
+      v_numero := 2;        
+    ELSE
+      v_numero := 3;      
+    END IF;
+
+    -- Upsert del periodo (tipo 'C')
+    INSERT INTO universidad.periodo (anio, numero, tipo, estado)
+    VALUES (v_anio, v_numero, 'C', p_estado_default)
+    ON CONFLICT (anio, tipo, numero) DO UPDATE
+      SET estado = universidad.periodo.estado
+    RETURNING periodo_id INTO v_periodo_id;
+
+    -- Asignar al registro de persona
+    UPDATE universidad.persona
+       SET periodo_ingreso_id = v_periodo_id
+     WHERE persona_id = r.persona_id;
+
+    v_processed := v_processed + 1;
+  END LOOP;
+
+  RETURN v_processed;
+END;
+$$;
+
+-- EJECUTAR EL SIGUIENTE SELECT PARA APLICAR LOS CAMBIOS DE LA FUNCION --
+
+SELECT universidad.migrate_persona_periodo_ingreso_cuatrimestre(
+  p_estado_default := true,        
+  p_overwrite_existing := false     
+);
+
+-- -------------------------------------------------------------
+-- ----- CAMBIOS A TABLA PERSONA (Actualizacion Sedes) ------
+-- -------------------------------------------------------------
+
+ALTER TABLE universidad.persona
+  ADD COLUMN IF NOT EXISTS sede_id INT NULL;
+
+ALTER TABLE universidad.persona
+  ADD CONSTRAINT fk_persona_sede
+  FOREIGN KEY (sede_id) REFERENCES universidad.sede (sede_id);
+
+-- -------------------------------------------------------------
+-- --------------- CAMBIOS A TABLA OFERTA  ---------------------
+-- -------------------------------------------------------------
+
+CREATE TABLE universidad.estado_ofertas (
+  estado_oferta_id SERIAL PRIMARY KEY,
+  nombre TEXT UNIQUE NOT NULL
+);
+
+INSERT INTO universidad.estado_ofertas (estado_oferta_id, nombre) VALUES
+  (1,'Enviada'),
+  (2,'Pendiente'),
+  (3,'Aceptada'),
+  (4,'Rechazada'),
+  (5,'Cancelada');
+
+ALTER TABLE universidad.oferta ADD COLUMN IF NOT EXISTS estado_oferta_id INT NULL;
+
+ALTER TABLE universidad.oferta ADD CONSTRAINT fk_oferta_estado_oferta
+FOREIGN KEY (estado_oferta_id) REFERENCES universidad.estado_ofertas (estado_oferta_id);
+
+-- -------------------------------------------------------------
+-- ---------- CAMBIOS A TABLA OFERTA (15/11/2025)  -------------
+-- -------------------------------------------------------------  
+
+ALTER TABLE universidad.oferta
+    ADD COLUMN grupo        integer,
+    ADD COLUMN cupo         integer,
+    ADD COLUMN matriculados integer;
+
+WITH ranked AS (
+    SELECT 
+        oferta_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY curso_id, sede_id, modalidad_id, periodo_id
+            ORDER BY oferta_id
+        ) AS rn
+    FROM universidad.oferta
+)
+UPDATE universidad.oferta o
+SET grupo = r.rn
+FROM ranked r
+WHERE r.oferta_id = o.oferta_id;
+
+ALTER TABLE universidad.oferta
+    ALTER COLUMN grupo SET NOT NULL;
+
+ALTER TABLE universidad.oferta
+    ADD CONSTRAINT ux_oferta_curso_sede_modalidad_periodo_grupo
+    UNIQUE (curso_id, sede_id, modalidad_id, periodo_id, grupo);
+
+-- -------------------------------------------------------------
+-- -------- IMPLEMENTACIÓN SOLICITUDES (17/11/2025)  -----------
+-- ------------------------------------------------------------- 
+
+  
+CREATE TABLE universidad.solicitud_oferta (
+    solicitud_oferta_id  SERIAL PRIMARY KEY,
+
+    -- Oferta enviada al docente
+    oferta_id            INTEGER NOT NULL
+        REFERENCES universidad.oferta (oferta_id)
+        ON DELETE CASCADE,
+
+    -- Docente que recibirá la oferta
+    persona_id           INTEGER NOT NULL
+        REFERENCES universidad.persona (persona_id),
+
+    -- Se guarda el email enviado (por si el docente cambia correo luego)
+    destinatario_email   TEXT NOT NULL,
+
+    -- Copia del mensaje enviado (auditoría)
+    asunto               TEXT NOT NULL,
+    cuerpo               TEXT NOT NULL,
+
+    -- Estado de la solicitud:
+    -- 0 = Pendiente, 1 = Aceptada, 2 = Rechazada
+    estado_solicitud     SMALLINT NOT NULL DEFAULT 0
+        CHECK (estado_solicitud IN (0, 1, 2)),
+
+    fecha_envio          TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    fecha_respuesta      TIMESTAMP WITHOUT TIME ZONE,
+
+    -- Token para el enlace (lo genera backend con Guid.NewGuid().ToString())
+    token                TEXT NOT NULL,
+
+    -- Estado del envío de correo:
+    -- 0 = Pendiente, 1 = Enviado OK, 2 = Error
+    estado_envio         SMALLINT NOT NULL DEFAULT 0
+        CHECK (estado_envio IN (0, 1, 2)),
+
+    error_envio          TEXT
+);
+
+-- Validación del enlace al entrar al sistema
+CREATE UNIQUE INDEX ux_solicitud_oferta_token
+    ON universidad.solicitud_oferta (token);
+
+-- Histórico de solicitudes por persona y oferta
+CREATE INDEX ix_solicitud_oferta_oferta_persona
+    ON universidad.solicitud_oferta (oferta_id, persona_id);
+
+-- No permitir solicitudes pendientes duplicadas
+CREATE UNIQUE INDEX ux_solicitud_oferta_pendiente
+    ON universidad.solicitud_oferta (oferta_id, persona_id)
+    WHERE estado_solicitud = 0;

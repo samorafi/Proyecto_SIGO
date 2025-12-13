@@ -13,6 +13,9 @@ public class Persona
     public string Correo { get; set; } = string.Empty;
 
     public string? Telefono { get; set; }
+
+    //public DateTime? FechaIngreso { get; set; }
+
     public int? PeriodoIngresoId { get; set; }
     public string? Comentarios { get; set; }
 

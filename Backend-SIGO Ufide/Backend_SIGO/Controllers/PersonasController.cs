@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Application.Features.Docentes.Commands.ImportarDocentes; 
+using SIGO.Application.Features.Docentes.Dto; 
 using SIGO.Application.Features.Persona.Commands.Update;
 using SIGO.Application.Features.Persona.Queries.GetAll;
 using SIGO.Application.Features.Persona.Queries.GetById;
@@ -71,5 +73,24 @@ namespace SIGO.Api.Controllers
             var list = await _mediator.Send(new GetCoordinadoresQuery(soloActivas), ct);
             return Ok(list);
         }
+
+        [HttpPost("importar")]
+        [ProducesResponseType(typeof(ImportarDocentesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        // CAMBIO AQUÍ: Recibimos el Command directamente
+        public async Task<IActionResult> Importar([FromForm] ImportarDocentesCommand command)
+        {
+            // Ya no necesitas crear el 'new ImportarDocentesCommand' manualmente.
+            // ASP.NET Core llenará la propiedad 'ArchivoExcel' del command automáticamente
+            // usando el archivo que subas.
+
+            var response = await _mediator.Send(command);
+
+            return Ok(response);
+        }
+
+
+
+
     }
 }

@@ -1,10 +1,34 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
+  "WorkspaceRootPath": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|c:\\users\\portu\\source\\repos\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\docentes\\commands\\importardocentes\\importardocentescommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\docentes\\commands\\importardocentes\\importardocentesvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\periodo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\docentes\\commands\\importardocentes\\importardocentescommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\personascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\common\\utils\\stringutils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\docentes\\dto\\importardocentesresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\docentes\\dto\\docenteimportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,24 +38,120 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Periodo.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
+              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T19:38:14.101Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ImportarDocentesValidator.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:13:38.442Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ImportarDocentesCommand.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:13:07.986Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PersonasController.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PersonasController.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
+              "RelativeToolTip": "Controllers\\PersonasController.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAcwFkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-10T00:46:05.022Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "StringUtils.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:23:29.485Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "C:\\Users\\portu\\source\\repos\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-18T20:12:36.902Z",
+              "Title": "Persona.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
+              "RelativeToolTip": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABAAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-10T00:20:18.259Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ImportarDocentesCommandHandler.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
+              "ViewState": "AgIAAHQAAAAAAAAAAAAcwI8AAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:13:23.994Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ImportarDocentesResponseDto.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:11:19.047Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DocenteImportDto.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-09T22:10:48.855Z"
             }
           ]
         }
