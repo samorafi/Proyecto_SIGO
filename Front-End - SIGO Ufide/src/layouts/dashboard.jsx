@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import routes from "@/routes";
-import { Sidenav, Yellowbar, Footer } from "@/index";
+import { Sidenav, Footer } from "@/index";
 
 export default function Dashboard() {
   const [openSide, setOpenSide] = useState(false);
@@ -14,7 +14,6 @@ export default function Dashboard() {
         <Sidenav routes={routes} isOpen={openSide} onClose={() => setOpenSide(false)} />
 
         <div className="flex-1 p-4">
-          <Yellowbar onMenuClick={() => setOpenSide(true)} />
           <div className="mt-4">
             <Outlet />
           </div>

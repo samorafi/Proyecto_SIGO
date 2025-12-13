@@ -16,10 +16,6 @@ import Admin from "@/pages/admin";
 import AdmUsuarios from "@/pages/admin/admUsuarios";
 import AdmRolesPermisos from "@/pages/admin/admRolesPermisos";
 import Notificaciones from "@/pages/notificaciones";
-import Nomina from "@/pages/nomina";
-import OfertasIndex from "@/pages/ofertas";
-import OfertasPresencial from "@/pages/ofertas/presencial";
-import OfertasVirtual from "@/pages/ofertas/virtual";
 import Perfil from "@/pages/perfil";
 import SignIn from "@/pages/auth/sign-in";
 
@@ -37,6 +33,7 @@ import ConfiguracionCorreo from "@/pages/admin/admSMTP";
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
+import OfertasHistorico from "@/pages/ofertas/OfertasHistorico";
 
 export const routes = [
   {
@@ -50,6 +47,7 @@ export const routes = [
         pages: [
           { name: "100% Virtual", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea /> },
           { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
+          { name: "Histórico De Ofertas", path: "/ofertas/OfertasHistorico", element: <OfertasHistorico />}
         ],
       },
       { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes/DocentesPage", element: <Docentes /> },
@@ -58,8 +56,6 @@ export const routes = [
       { icon: <Cog6ToothIcon className="h-5 w-5" />, name: "Administración del sistema", path: "/admin", element: <Admin /> },
 
       // Vistas secundarias (Ocultas en el menú): Utilizadas para redirecciones desde otras vistas.
-      { name: "Ofertas Presencial", path: "/ofertas/presencial", element: <OfertasPresencial />, hidden: true },
-      { name: "Ofertas Virtual", path: "/ofertas/virtual", element: <OfertasVirtual />, hidden: true },
       { name: "Administrar Usuarios", path: "/admin/admUsuarios", element: <AdmUsuarios />, hidden: true },
       { name: "Administrar Roles", path: "/admin/admRolesPermisos", element: <AdmRolesPermisos />, hidden: true },
       { name: "Mi perfil", path: "/perfil", element: <Perfil />, hidden: true },
