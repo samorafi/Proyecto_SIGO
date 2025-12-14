@@ -1235,23 +1235,32 @@ BEGIN
 		persona_id
     )
     SELECT
-        curso_id,
-        sede_id,
-        modalidad_id,
-        horario_id,
-        p_periodo_destino,   -- Nuevo periodo
-        1,                   -- accion_id por defecto
-        coordinador_id,
-        '',                  -- comentarios vacíos
-        2,                   -- estado_oferta_id por defecto
-        grupo,
-        cupo,
-        0,                   -- matriculados reinicia
-        FALSE,                -- archivado siempre false
-		persona_id			 -- Para duplicar el profesor asignado
-    FROM universidad.oferta 
-    WHERE periodo_id = p_periodo_origen
-      AND modalidad_id = ANY(p_modalidades);
+        o.curso_id,
+        o.sede_id,
+        o.modalidad_id,
+        o.horario_id,
+        p_periodo_destino,   	-- Nuevo periodo
+        1,                   	-- accion_id por defecto
+        o.coordinador_id,
+        '',                  	-- comentarios vacíos
+        2,                   	-- estado_oferta_id por defecto
+      	COALESCE(g.max_grupo, 0) + 1 AS grupo,
+        o.cupo,
+        0,                   	-- matriculados reinicia
+        FALSE,                	-- archivado siempre false
+	o.persona_id		-- Para duplicar el profesor asignado
+	
+    FROM universidad.oferta o
+LEFT JOIN LATERAL (
+        SELECT MAX(grupo) AS max_grupo
+        FROM universidad.oferta x
+        WHERE x.curso_id     = o.curso_id
+          AND x.sede_id      = o.sede_id
+          AND x.modalidad_id = o.modalidad_id
+          AND x.periodo_id   = p_periodo_destino
+    ) g ON TRUE
+    WHERE o.periodo_id = p_periodo_origen
+      AND o.modalidad_id = ANY(p_modalidades);
 
     GET DIAGNOSTICS v_count = ROW_COUNT;
 
