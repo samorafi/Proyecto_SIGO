@@ -10,10 +10,14 @@ import PageTitle from "@/components/ui/Title/PageTitle";
 import DuplicarOfertasModal from "./modals/DuplicarOfertasModal";
 import ArchivarOfertasModal from "./modals/ArchivarOfertasModal";
 import FichaOfertaModal from "./modals/FichaOfertaModal";
+import RegistrarOfertaModal from "./modals/RegistrarOfertaModal";
 
 // Importar Funciones
 import { CatalogosNormalizados } from "@/pages/ofertas/functions/CatalogosNormalizados";
 import { OpenFichaOferta, CancelarOferta, GuardarOferta } from "@/pages/ofertas/functions";
+
+// Importar Componentes
+import ResumenEstadosChips from "@/pages/ofertas/Components/ResumenEstadosChips";
 import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAccionesChips";
 
 // Importar Hooks
@@ -154,6 +158,7 @@ export default function OfertasEnLinea() {
         setFilterEstado("");
         setFilterCoordinador("");
     };
+
     //----------------------------------------------------------------------------
     // Paginación
     //----------------------------------------------------------------------------
@@ -284,6 +289,7 @@ export default function OfertasEnLinea() {
     }, []);
 
 
+
     // ----------------------------------------------------------------------------
     //  Funcionalidad Completa (Abrir, Cerrar, Guardar cambios).
     //            Ficha de Oferta compartida (ver y editar).
@@ -296,7 +302,7 @@ export default function OfertasEnLinea() {
         (typeof fichaData?.estado === "string" &&
             fichaData.estado.toLowerCase().trim() === "cancelada");  // Respaldo en texto
 
-    // Funcionalidad Abrir Nueva Oferta
+    /* Funcionalidad Abrir Nueva Oferta
     const handleOpenNueva = () => {
         // Inicializar estados
         setIsNuevo(true);
@@ -315,7 +321,51 @@ export default function OfertasEnLinea() {
             modalidadId: 3,
             estadoOfertaId: 2 // Por defecto: Pendiente
         });
+    };*/
+
+    const handleOpenNueva = () => {
+        setForm({
+            cursoId: "",
+            sedeId: "",
+            horarioId: "",
+            periodoId: "",
+            tipoPeriodo: "",
+            coordinadorId: "",
+            comentarios: "",
+            grupo: "",
+            accionId: 1,
+            modalidadId: 3,
+            estadoOfertaId: 2,
+            cupo: null,
+            matriculados: null,
+        });
+
+        setOpenRegistrar(true);
     };
+
+    const handleCloseRegistrar = () => {
+        setOpenRegistrar(false);
+    };
+
+    // ---------------- REGISTRO DE OFERTA ----------------
+    const [openRegistrar, setOpenRegistrar] = useState(false);
+    const [registrarLoading, setRegistrarLoading] = useState(false);
+
+    const [form, setForm] = useState({
+        cursoId: "",
+        sedeId: "",
+        horarioId: "",
+        periodoId: "",
+        tipoPeriodo: "",
+        coordinadorId: "",
+        comentarios: "",
+        grupo: "",
+        accionId: 1,
+        modalidadId: 3,      // En línea
+        estadoOfertaId: 2,   // Pendiente
+        cupo: null,
+        matriculados: null,
+    });
 
     // Funcionalidad Abrir Ficha. -- FINALIZADO EN OPTIMIZACIÓN
     const handleOpenFicha = async (id, edit = false) => {
@@ -359,7 +409,7 @@ export default function OfertasEnLinea() {
         setFichaForm(null);
     };
 
-    // Registrar nueva oferta
+    /* Registrar nueva oferta
     const handleRegistrar = async () => {
         const result = await GuardarOferta(null, fichaForm);
 
@@ -370,6 +420,23 @@ export default function OfertasEnLinea() {
 
         alert("Oferta registrada correctamente.");
         handleCloseFicha();
+        fetchOfertas();
+    };*/
+
+    const handleRegistrar = async () => {
+        setRegistrarLoading(true);
+
+        const result = await GuardarOferta(null, form);
+
+        if (!result.ok) {
+            alert(result.error);
+            setRegistrarLoading(false);
+            return;
+        }
+
+        alert("Oferta registrada correctamente.");
+        setRegistrarLoading(false);
+        setOpenRegistrar(false);
         fetchOfertas();
     };
 
@@ -781,33 +848,7 @@ export default function OfertasEnLinea() {
 
             {/* Resumen de ofertas: Chips de Estados */}
             <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-[#2B338C]">
-                    TOTAL: {filtered.length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-amber-600">
-                    PENDIENTES: {filtered.filter(o => o.estado === "Pendiente").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-blue-600">
-                    ENVIADAS: {filtered.filter(o => o.estado === "Enviada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-green-600">
-                    ACEPTADAS: {filtered.filter(o => o.estado === "Aceptada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-red-600">
-                    RECHAZADAS: {filtered.filter(o => o.estado === "Rechazada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
-                    CANCELADAS: {filtered.filter(o => o.estado === "Cancelada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-teal-600">
-                    IMPORTADAS: {filtered.filter(o => o.estado === "Importada").length}
-                </span>
+                <ResumenEstadosChips ofertas={filtered} />
             </div>
 
             {/* Tabla de Ofertas */}
@@ -889,7 +930,7 @@ export default function OfertasEnLinea() {
                 </div>
             </Card >
 
-            {/* Modal compartido: Funciones de Ver/Editar/Registar */}
+            {/* Modal compartido: Funciones de Ver/Editar/Registar
             <FichaOfertaModal
                 open={openFicha}
                 onClose={handleCloseFicha}
@@ -905,6 +946,7 @@ export default function OfertasEnLinea() {
                 cursos={cursos}
                 sedes={sedes}
                 horarios={horario}
+                modalidades={modalidades}
                 tipoPeriodo={fichaForm?.tipoPeriodo || ""}
                 setTipoPeriodo={(v) => setFichaForm(prev => ({ ...prev, tipoPeriodo: v }))}
                 periodos={periodos}
@@ -917,7 +959,55 @@ export default function OfertasEnLinea() {
 
                 accionChips={accionChips}
                 estadoChips={estadoChips}
+            /> */}
+
+            <FichaOfertaModal
+                open={openFicha}
+                onClose={handleCloseFicha}
+                editMode={editMode}
+                OfertaCancelada={OfertaCancelada}
+                fichaLoading={fichaLoading}
+                fichaError={fichaError}
+                fichaData={fichaData}
+                fichaForm={fichaForm}
+
+                cursos={cursos}
+                sedes={sedes}
+                horarios={horario}
+                modalidades={modalidades}
+                periodos={periodos}
+                coordinadores={coordinadores}
+                estados={estados}
+
+                setFichaForm={setFichaForm}
+                onGuardar={handleGuardar}
+
+                accionChips={accionChips}
+                estadoChips={estadoChips}
             />
+
+            <RegistrarOfertaModal
+                open={openRegistrar}
+                onClose={handleCloseRegistrar}
+                loading={registrarLoading}
+
+                form={form}
+                setForm={setForm}
+                onRegistrar={handleRegistrar}
+
+                cursos={cursos}
+                sedes={sedes}
+                horarios={horario}
+                periodos={periodos}
+                coordinadores={coordinadores}
+                estados={estados}
+
+                modalidades={modalidades}
+                modalidadesPermitidas={[3]}
+                bloquearModalidad
+
+            />
+
 
             {/* Modal: Enviar oferta a docente */}
             <Dialog

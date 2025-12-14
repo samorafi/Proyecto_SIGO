@@ -18,7 +18,7 @@ public class CreateOfertaCommandHandler : IRequestHandler<CreateOfertaCommand, i
         var sedeId = ToNullIfZero(r.SedeId);
         var modalidadId = ToNullIfZero(r.ModalidadId);
         var periodoId = ToNullIfZero(r.PeriodoId);
-
+        /*
         var maxGrupo = await _db.Ofertas
             .Where(o =>
                 o.CursoId == cursoId &&
@@ -27,8 +27,8 @@ public class CreateOfertaCommandHandler : IRequestHandler<CreateOfertaCommand, i
                 o.PeriodoId == periodoId)
             .MaxAsync(o => (int?)o.Grupo, ct);
 
-        var nextGrupo = (maxGrupo ?? 0) + 1;
-
+         var nextGrupo = (maxGrupo ?? 0) + 1;
+        */
         var entity = new Oferta
         {
             CursoId = cursoId,
@@ -40,8 +40,7 @@ public class CreateOfertaCommandHandler : IRequestHandler<CreateOfertaCommand, i
             CoordinadorId = ToNullIfZero(r.CoordinadorId),
             Comentarios = r.Comentarios,
             EstadoOfertaId = ToNullIfZero(r.EstadoOfertaId),
-
-            Grupo = nextGrupo,
+            Grupo = r.Grupo,
             Cupo = r.Cupo,
             Matriculados = r.Matriculados,
             Archivados = r.Archivados,

@@ -103,34 +103,54 @@ export default function OfertasHistorico() {
     const [filterCurso, setFilterCurso] = useState("");
     const [filterSede, setFilterSede] = useState("");
     const [filterEstado, setFilterEstado] = useState("");
+    const [filterTipoPeriodo, setFilterTipoPeriodo] = useState("");
+    const [filterPeriodoId, setFilterPeriodoId] = useState("");
+    const periodosFiltrados = useMemo(() => {
+        if (!filterTipoPeriodo) return [];
+        return periodos.filter(p => p.tipo === filterTipoPeriodo);
+    }, [periodos, filterTipoPeriodo]);
+
 
     const filtered = useMemo(() => {
-        try {
-            return [...ofertas]
-                .sort((a, b) => b.ofertaId - a.ofertaId)
-                .filter((o) => {
-                    const matchCurso = filterCurso ? o.curso === filterCurso : true;
-                    const matchSede = filterSede ? o.sede === filterSede : true;
-                    const matchEstado = filterEstado ? o.estado === filterEstado : true;
+        return [...ofertas]
+            .sort((a, b) => b.ofertaId - a.ofertaId)
+            .filter(o => {
 
-                    // Texto libre
-                    const texto = `
-                        ${o.curso} ${o.sede} ${o.modalidad}
-                        ${getHorarioNombre(o.horarioId)}
-                        ${o.periodo} ${o.accion}
-                        ${getCoordinadorNombre(o.coordinadorId)}
-                        ${o.estado}
-                    `.toLowerCase();
+                if (filterCurso && o.curso !== filterCurso) return false;
+                if (filterSede && o.sede !== filterSede) return false;
+                if (filterEstado && o.estado !== filterEstado) return false;
 
-                    const termMatch = term ? texto.includes(term.toLowerCase()) : true;
+                if (
+                    filterTipoPeriodo &&
+                    (!o.periodo || !o.periodo.includes(filterTipoPeriodo))
+                ) {
+                    return false;
+                }
 
-                    return matchCurso && matchSede && matchEstado && termMatch;
-                });
-        } catch (err) {
-            console.error("Error filtrando histórico:", err);
-            return ofertas;
-        }
-    }, [ofertas, term, filterCurso, filterSede, filterEstado]);
+                const texto = `
+                ${o.curso}
+                ${o.sede}
+                ${o.modalidad}
+                ${o.periodo}
+                ${o.accion}
+                ${o.estado}
+            `.toLowerCase();
+
+                if (term && !texto.includes(term.toLowerCase())) {
+                    return false;
+                }
+
+                return true;
+            });
+    }, [
+        ofertas,
+        term,
+        filterCurso,
+        filterSede,
+        filterEstado,
+        filterTipoPeriodo
+    ]);
+
 
     // -------------------------------------------------------------------
     // Paginación
@@ -183,6 +203,10 @@ export default function OfertasHistorico() {
         setFichaForm(null);
     };
 
+
+
+
+
     // -------------------------------------------------------------------
     // Render principal
     // -------------------------------------------------------------------
@@ -204,56 +228,155 @@ export default function OfertasHistorico() {
 
             {/* Filtros */}
             <Card className="p-4 border border-gray-200 shadow-md bg-white relative z-[50]">
-                <div className="flex gap-3 items-end flex-wrap">
+                <div className="flex flex-wrap gap-3 items-end">
 
-                    <Input
-                        label="Buscar"
-                        icon={<MagnifyingGlassIcon className="h-5 w-5 text-[#2B338C]" />}
-                        value={term}
-                        onChange={(e) => setTerm(e.target.value)}
-                    />
+                    {/* Buscar */}
+                    <div className="flex-1 min-w-[250px]">
+                        <Input
+                            size="md"
+                            label="Buscar palabra clave"
+                            icon={<MagnifyingGlassIcon className="h-5 w-5 text-[#2B338C]" />}
+                            value={term}
+                            onChange={(e) => setTerm(e.target.value)}
+                        />
+                    </div>
 
-                    <Select
-                        label="Curso"
-                        value={filterCurso}
-                        onChange={(v) => setFilterCurso(v || "")}
-                    >
-                        <Option value="">Todos</Option>
-                        {Array.from(new Set(ofertas.map(o => o.curso))).map(c =>
-                            <Option key={c} value={c}>{c}</Option>
-                        )}
-                    </Select>
+                    {/* Tipo de período */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            size="md"
+                            label="Tipo de período"
+                            value={filterTipoPeriodo}
+                            onChange={(v) => {
+                                const tipo = v || "";
+                                setFilterTipoPeriodo(tipo);
+                                setFilterPeriodoId("");
+                            }}
+                            selected={() =>
+                                filterTipoPeriodo
+                                    ? filterTipoPeriodo === "C"
+                                        ? "Cuatrimestre"
+                                        : filterTipoPeriodo === "T"
+                                            ? "Trimestre"
+                                            : "Periodo"
+                                    : "Todos"
+                            }
+                            menuProps={{
+                                className:
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)]",
+                                placement: "bottom-start",
+                            }}
+                            containerProps={{ className: "relative z-[70]" }}
+                        >
+                            <Option value="">Todos</Option>
+                            <Option value="C">Cuatrimestre</Option>
+                            <Option value="T">Trimestre</Option>
+                            <Option value="P">Periodo</Option>
+                        </Select>
+                    </div>
 
-                    <Select
-                        label="Sede"
-                        value={filterSede}
-                        onChange={(v) => setFilterSede(v || "")}
-                    >
-                        <Option value="">Todas</Option>
-                        {Array.from(new Set(ofertas.map(o => o.sede))).map(s =>
-                            <Option key={s} value={s}>{s}</Option>
-                        )}
-                    </Select>
+                    {/* Período */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            label="Periodo"
+                            value={filterPeriodoId}
+                            disabled={!filterTipoPeriodo}
+                            onChange={(v) => setFilterPeriodoId(v || "")}
+                        >
+                            <Option value="">Todos</Option>
+                            {periodosFiltrados.map(p => (
+                                <Option key={p.periodoId} value={String(p.periodoId)}>
+                                    {`${p.numero}${p.tipo} - ${p.anio}`}
+                                </Option>
+                            ))}
+                        </Select>
 
-                    <Select
-                        label="Estado"
-                        value={filterEstado}
-                        onChange={(v) => setFilterEstado(v || "")}
-                    >
-                        <Option value="">Todos</Option>
-                        {Array.from(new Set(ofertas.map(o => o.estado))).map(es =>
-                            <Option key={es} value={es}>{es}</Option>
-                        )}
-                    </Select>
+                    </div>
 
-                    <Button
-                        variant="outlined"
-                        onClick={fetchHistorico}
-                        className="border-green-600 text-green-600 flex items-center gap-2"
-                    >
-                        <ArrowPathIcon className="h-4 w-4" />
-                        Refrescar
-                    </Button>
+
+                    {/* Curso */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            size="md"
+                            label="Curso"
+                            value={filterCurso}
+                            onChange={(v) => setFilterCurso(v || "")}
+                            selected={() => (filterCurso ? filterCurso : "Todos")}
+                            menuProps={{
+                                className:
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto",
+                                placement: "bottom-start",
+                            }}
+                            containerProps={{ className: "relative z-[70]" }}
+                        >
+                            <Option value="">Todos</Option>
+                            {Array.from(new Set(ofertas.map(o => o.curso))).map(c => (
+                                <Option key={c} value={c} className="bg-white">
+                                    {c}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/* Sede */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            size="md"
+                            label="Sede"
+                            value={filterSede}
+                            onChange={(v) => setFilterSede(v || "")}
+                            selected={() => (filterSede ? filterSede : "Todas")}
+                            menuProps={{
+                                className:
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto",
+                                placement: "bottom-start",
+                            }}
+                            containerProps={{ className: "relative z-[70]" }}
+                        >
+                            <Option value="">Todas</Option>
+                            {Array.from(new Set(ofertas.map(o => o.sede))).map(s => (
+                                <Option key={s} value={s} className="bg-white">
+                                    {s}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/* Estado */}
+                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
+                        <Select
+                            size="md"
+                            label="Estado"
+                            value={filterEstado}
+                            onChange={(v) => setFilterEstado(v || "")}
+                            selected={() => (filterEstado ? filterEstado : "Todos")}
+                            menuProps={{
+                                className:
+                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto",
+                                placement: "bottom-start",
+                            }}
+                            containerProps={{ className: "relative z-[70]" }}
+                        >
+                            <Option value="">Todos</Option>
+                            {Array.from(new Set(ofertas.map(o => o.estado))).map(es => (
+                                <Option key={es} value={es} className="bg-white">
+                                    {es}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/* Refrescar */}
+                    <div className="flex-shrink-0">
+                        <Button
+                            variant="outlined"
+                            onClick={fetchHistorico}
+                            className="border-green-600 text-green-700 flex items-center gap-2"
+                        >
+                            <ArrowPathIcon className="h-4 w-4" />
+                            Refrescar
+                        </Button>
+                    </div>
                 </div>
             </Card>
 

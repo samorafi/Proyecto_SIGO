@@ -1,6 +1,28 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Input, Select, Option, Chip } from "@material-tailwind/react";
-import { EyeIcon, PencilSquareIcon, PaperAirplaneIcon, XCircleIcon, ArrowUpTrayIcon, PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Input, Select, Option } from "@material-tailwind/react";
+import { PaperAirplaneIcon, XCircleIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+
+// Componentes Personalizados UI.
+import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton } from "@/components/ui/Buttons";
+import PageTitle from "@/components/ui/Title/PageTitle";
+
+// Importar Modals
+import DuplicarOfertasModal from "./modals/DuplicarOfertasModal";
+import ArchivarOfertasModal from "./modals/ArchivarOfertasModal";
+import FichaOfertaModal from "./modals/FichaOfertaModal";
+import RegistrarOfertaModal from "./modals/RegistrarOfertaModal";
+
+// Importar Funciones
+import { CatalogosNormalizados } from "@/pages/ofertas/functions/CatalogosNormalizados";
+import { OpenFichaOferta, CancelarOferta, GuardarOferta } from "@/pages/ofertas/functions";
+
+// Importar Componentes
+import ResumenEstadosChips from "@/pages/ofertas/Components/ResumenEstadosChips";
+import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAccionesChips";
+
+// Importar Hooks
+import { useArchivarPorModalidad } from "@/pages/ofertas/hooks/useArchivarPorModalidad";
+import { useDuplicarOfertas } from "@/pages/ofertas/hooks/useDuplicarOfertas";
 import { useCatalogosOfertas } from "@/pages/ofertas/hooks/useCatalogosOfertas";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
@@ -11,13 +33,14 @@ const URL = {
 const matches = (t, q) =>
     !q || String(t ?? "").toLowerCase().includes(String(q ?? "").toLowerCase());
 
+
 export default function OfertasPresencialesVirtuales() {
 
     // Estados de datos de ofertas
     const [ofertas, setOfertas] = useState([]);
 
     //----------------------------------------------------------------------------
-    // Cargar catálogos desde el hook.
+    // Cargar catálogos
     //----------------------------------------------------------------------------
     const {
         cursos,
@@ -34,101 +57,32 @@ export default function OfertasPresencialesVirtuales() {
     //----------------------------------------------------------------------------
     // Funciones de Normalización de los catalogos.
     //----------------------------------------------------------------------------
+    const normalizadores = CatalogosNormalizados({
+        cursos,
+        sedes,
+        modalidades,
+        horarios: horario,
+        periodos,
+        coordinadores,
+        estados
+    });
 
-    // Funciones de normalización (De texto a ID)
-
-    // Normalización: Cursos String a Id
-    const matchCursoId = (valor) => {
-        if (!valor) return "";
-        const hit = cursos.find(c => c.codigo === valor || c.nombre === valor);
-        return hit?.cursoId ?? "";
-    };
-
-    // Normalización: Sedes String a Id
-    const matchSedeId = (valor) => {
-        if (!valor) return "";
-        const hit = sedes.find(s => s.nombre === valor);
-        return hit?.sedeId ?? "";
-    };
-
-    // Normalización: Modalidad String a Id
-    const matchModalidadId = (valor) => {
-        if (!valor) return "";
-        const hit = modalidades.find(m => m.nombre === valor);
-
-        // Evitar Las Ofertas En Línea
-        if (hit?.modalidadId === 3 || valor.toLowerCase().includes("línea")) return "";
-
-        return hit?.modalidadId ?? "";
-    };
-
-
-
-    // Normalización: Horario String a Id
-    const matchHorarioId = (valorTexto, valorId) => {
-        if (valorId) return valorId;
-        if (!valorTexto) return "";
-        const hit = horario.find(h => `${h.dia} - ${h.rango}` === valorTexto || h.descripcion === valorTexto);
-        return hit?.horarioId ?? "";
-    };
-
-    // Normalización: Horario Id a String
-    const getHorarioNombre = useCallback(
-        (id) => {
-            const hora = horario.find((h) => h.horarioId === id);
-            return hora ? `${hora.dia} - ${hora.rango}` : id;
-        },
-        [horario]
-    );
-
-    // Normalización: Periodos String a Id
-    const matchPeriodoId = (valor) => {
-        if (!valor) return "";
-        // Soporta "2C, 2025" y "2Q - 2025"
-        const byLabel = periodos.find(p =>
-            [`${p.numero}C, ${p.anio}`, `${p.numero}Q - ${p.anio}`].includes(valor)
-        );
-        if (byLabel) return byLabel.periodoId;
-
-        // fallback por partes (Separar fechas)
-        const year = valor.match(/\d{4}/)?.[0];
-        const num = valor.match(/\d+/)?.[0];
-        const byParts = periodos.find(p => String(p.anio) === year && String(p.numero) === num);
-        return byParts?.periodoId ?? "";
-    };
-
-    // Normalización: Coordinador String a Id
-    const matchCoordinadorId = (valor) => {
-        if (!valor) return "";
-        const hit = coordinadores.find(c => c.nombre === valor);
-        return hit?.id ?? "";
-    };
-
-    // Normalización: Coordinador Id a String
-    const getCoordinadorNombre = useCallback(
-        (id) => coordinadores.find((c) => c.id === id)?.nombre ?? id,
-        [coordinadores]
-    );
-
-    // Normalización: Coordinador Id a String
-    const getCoordinadorPrimerApellido = useCallback(
-        (id) => coordinadores.find((c) => c.id === id)?.primerApellido ?? id,
-        [coordinadores]
-    );
-
-    // Normalización: Coordinador Id a String
-    const getCoordinadorSegundoApellido = useCallback(
-        (id) => coordinadores.find((c) => c.id === id)?.segundoApellido ?? id,
-        [coordinadores]
-    );
-
-    // Normalización: Acción / Estado String a Id
-    const matchAccionIdDesdeEstadoOAccion = (estado, accion) => {
-        const nombre = estado || accion;
-        if (!nombre) return 2; // Pendiente por defecto
-        const hit = estados.find(e => e.nombre === nombre);
-        return hit?.accionId ?? 2;
-    };
+    const {
+        matchCursoId,
+        matchSedeId,
+        matchModalidadId,
+        matchHorarioId,
+        getHorarioNombre,
+        getDiaNombre,
+        getHoraNombre,
+        matchPeriodoId,
+        matchCoordinadorId,
+        getCoordinadorNombre,
+        getCoordinadorPrimerApellido,
+        getCoordinadorSegundoApellido,
+        getCursoNombrePorCodigo,
+        matchAccionIdDesdeEstadoOAccion
+    } = normalizadores;
 
     const [loading, setLoading] = useState(true);
     const [setError] = useState(null);
@@ -141,6 +95,7 @@ export default function OfertasPresencialesVirtuales() {
     const [fichaError, setFichaError] = useState("");
     const [editMode, setEditMode] = useState(false);
     const [isNuevo, setIsNuevo] = useState(false);
+
     //----------------------------------------------------------------------------
     // Filtrado y busqueda
     //----------------------------------------------------------------------------
@@ -171,6 +126,7 @@ export default function OfertasPresencialesVirtuales() {
                     const texto = `
           ${o.curso} ${o.sede} ${o.modalidad}
           ${getHorarioNombre(o.horarioId)}
+          ${getCursoNombrePorCodigo(o.curso)}          
           ${o.periodo} ${o.accion}
           ${getCoordinadorNombre(o.coordinadorId)}
           ${o.estado}
@@ -201,7 +157,6 @@ export default function OfertasPresencialesVirtuales() {
         setFilterSede("");
         setFilterEstado("");
         setFilterCoordinador("");
-        if (onFilter) onFilter({ curso: "", sede: "", estado: "" });
     };
 
     //----------------------------------------------------------------------------
@@ -221,7 +176,6 @@ export default function OfertasPresencialesVirtuales() {
         const start = (page - 1) * rowsPerPage;
         return filtered.slice(start, start + rowsPerPage);
     }, [filtered, page, rowsPerPage]);
-
 
     const [openFicha, setOpenFicha] = useState(false);
 
@@ -264,7 +218,6 @@ export default function OfertasPresencialesVirtuales() {
     );
 
 
-
     //----------------------------------------------------------------------------
     // : Obtener listado de ofertas (Filtrado por modalidad en línea).
     //----------------------------------------------------------------------------
@@ -276,9 +229,11 @@ export default function OfertasPresencialesVirtuales() {
             const res = await fetch("/api/ofertas");
             const data = await res.json();
 
-            // Filtrar todo excepto las ofertas En Linea
-            const modalidadExcluir = 'En Línea';
-            const ofertasFiltradas = (data || []).filter((o) => o.modalidad !== modalidadExcluir);
+            // Filtrar solo modalidad en línea
+            const modalidadesFiltrar = ['Virtual', 'Presencial'];
+            const ofertasFiltradas = (data || []).filter((o) =>
+                modalidadesFiltrar.includes(o.modalidad) && o.archivados !== true
+            );
 
             // Almancenar ofertas.
             setOfertas(ofertasFiltradas);
@@ -333,86 +288,7 @@ export default function OfertasPresencialesVirtuales() {
         loadDocentes();
     }, []);
 
-    //----------------------------------------------------------------------------
-    //  Registro de nueva oferta.
-    //----------------------------------------------------------------------------
 
-    const handleNuevaOferta = async () => {
-        try {
-            // Validar campos obligatorios
-            const { cursoId, sedeId, modalidadId, horarioId, periodoId, coordinadorId } = fichaForm;
-
-            if (!cursoId || !sedeId || !modalidadId || !horarioId || !periodoId || !coordinadorId) {
-                alert("Todos los campos son obligatorios.");
-                return;
-            }
-
-            // Estructura del nuevo registro
-            const nuevaOfertaPayload = {
-                ...fichaForm,
-                estadoOfertaId: 2 // Estado "Pendiente" por defecto
-            };
-
-            // Llamada al endpoint
-            const response = await fetch("/api/ofertas", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(nuevaOfertaPayload),
-            });
-
-            // Manejo de errores. Temporal: Cambiar a SweetAlert.
-            if (!response.ok) throw new Error("Error al registrar la oferta");
-
-            // Mensaje de éxito. Temporal: Cambiar a SweetAlert.
-            alert("Oferta registrada correctamente.");
-
-            // Cerrar modal y limpiar formulario
-            handleCloseFicha();
-            setFichaForm({
-                cursoId: "",
-                sedeId: "",
-                modalidadId: "",
-                horarioId: "",
-                periodoId: "",
-                coordinadorId: "",
-                comentarios: "",
-                accionId: 2,
-                estadoOfertaId: 2,
-            });
-
-            // Refrescar lista
-            await fetchOfertas();
-
-        } catch (error) {
-
-            // Habilitar solamente para pruebas
-            // console.error(error);
-
-            // Manejo de error: Temporal: Cambiar a SweetAlert.
-            alert("No fue posible registrar la oferta.");
-        }
-    };
-
-    const handleOpenNueva = () => {
-
-        // Inicializar estados
-        setIsNuevo(true);
-        setEditMode(true);
-        setOpenFicha(true);
-
-        // Limpiar formulario 
-        setFichaForm({
-            cursoId: "",
-            sedeId: "",
-            horarioId: "",
-            periodoId: "",
-            coordinadorId: "",
-            comentarios: "",
-            accionId: 1, // Por defecto: Abrir Curso
-            modalidadId: "",
-            estadoOfertaId: 2 // Por defecto: Pendiente
-        });
-    };
 
     // ----------------------------------------------------------------------------
     //  Funcionalidad Completa (Abrir, Cerrar, Guardar cambios).
@@ -426,11 +302,52 @@ export default function OfertasPresencialesVirtuales() {
         (typeof fichaData?.estado === "string" &&
             fichaData.estado.toLowerCase().trim() === "cancelada");  // Respaldo en texto
 
+    const handleOpenNueva = () => {
+        setForm({
+            cursoId: "",
+            sedeId: "",
+            horarioId: "",
+            periodoId: "",
+            tipoPeriodo: "",
+            coordinadorId: "",
+            comentarios: "",
+            accionId: 1,
+            modalidadId: "",
+            estadoOfertaId: 2,
+            cupo: null,
+            matriculados: null,
+            grupo: ""
+        });
 
-    // Funcionalidad Abrir Ficha.
+        setOpenRegistrar(true);
+    };
+
+    const handleCloseRegistrar = () => {
+        setOpenRegistrar(false);
+    };
+
+    // ---------------- REGISTRO DE OFERTA ----------------
+    const [openRegistrar, setOpenRegistrar] = useState(false);
+    const [registrarLoading, setRegistrarLoading] = useState(false);
+
+    const [form, setForm] = useState({
+        cursoId: "",
+        sedeId: "",
+        horarioId: "",
+        periodoId: "",
+        tipoPeriodo: "",
+        coordinadorId: "",
+        comentarios: "",
+        accionId: 1,
+        modalidadId: "",
+        estadoOfertaId: 2,
+        cupo: null,
+        matriculados: null,
+        grupo: ""
+    });
+
+    // Funcionalidad Abrir Ficha. -- FINALIZADO EN OPTIMIZACIÓN
     const handleOpenFicha = async (id, edit = false) => {
-
-        // Inicializar estados
         setIsNuevo(false);
         setFichaId(id);
         setOpenFicha(true);
@@ -440,63 +357,26 @@ export default function OfertasPresencialesVirtuales() {
         setFichaData(null);
         setFichaForm(null);
 
-        try {
+        const result = await OpenFichaOferta(id, {
+            matchCursoId,
+            matchSedeId,
+            matchModalidadId,
+            matchHorarioId,
+            matchPeriodoId,
+            matchCoordinadorId,
+            matchAccionIdDesdeEstadoOAccion,
+            estadoOferta,
+        });
 
-            // Llamada al endpoint para obtener la oferta
-            const res = await fetch(`/api/ofertas/${id}`);
-
-            // Manejo de errores. Temporal: Cambiar a SweetAlert.
-            if (!res.ok) throw new Error("Error al cargar la oferta");
-            const data = await res.json();
-
-            // Guardamos los datos (Los datos estan sin normalizar, se manejan mediante ID)
-            setFichaData(data);
-
-            // Construimos un meotodo de normalización para la funcionalidad editable (Convertimos de ID a String)
-            const normalized = {
-                cursoId: matchCursoId(data.curso) || data.cursoId || "",
-                sedeId: matchSedeId(data.sede) || data.sedeId || "",
-                modalidadId: matchModalidadId(data.modalidad) || data.modalidadId || 3,
-                horarioId: matchHorarioId(data.horario, data.horarioId),
-                periodoId: matchPeriodoId(data.periodo) || data.periodoId || "",
-                coordinadorId: matchCoordinadorId(data.coordinador) || data.coordinadorId || "",
-                comentarios: data.comentarios ?? "",
-                accionId:
-                    typeof data.accionId === "number"
-                        ? data.accionId
-                        : matchAccionIdDesdeEstadoOAccion(data.estado, data.accion),
-                estadoOfertaId:
-                    typeof data.estadoOfertaId === "number"
-                        ? data.estadoOfertaId
-                        : (
-                            estadoOferta.find((e) => e.nombre === data.estado)?.estadoOfertaId
-                            ?? 2
-                        ),
-                cupo:
-                    typeof data.cupo === "number"
-                        ? data.cupo
-                        : (data.cupo ?? null),
-                matriculados:
-                    typeof data.matriculados === "number"
-                        ? data.matriculados
-                        : (data.matriculados ?? null),
-            };
-
-
-            // Guardamos los datos normalizados
-            setFichaForm(normalized);
-
-        } catch (error) {
-            // Habilitar solamente para pruebas
-            // console.error("Error al abrir ficha:", error);
-
-            // Manejo de errores. Temporal: Cambiar a SweetAlert.
-            setFichaError("No se pudo cargar la información de la oferta.");
-
-        } finally {
-            // Finalizamos la carga de la ficha
+        if (!result.ok) {
+            setFichaError(result.error);
             setFichaLoading(false);
+            return;
         }
+
+        setFichaData(result.data);
+        setFichaForm(result.fichaForm);
+        setFichaLoading(false);
     };
 
     // Cerrar ficha.
@@ -508,121 +388,72 @@ export default function OfertasPresencialesVirtuales() {
         setFichaForm(null);
     };
 
-    // Guardar cambios en la ficha.
-    const handleSaveChanges = async () => {
-        if (!fichaForm) return;
 
-        try {
+    const handleRegistrar = async () => {
+        setRegistrarLoading(true);
 
-            // Llamada al endpoint para guardar los cambios
-            const response = await fetch(`/api/ofertas/${fichaId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(fichaForm),
-            });
+        const result = await GuardarOferta(null, form);
 
-            // Manejo de errores. Temporal: Cambiar a SweetAlert.
-            if (!response.ok) throw new Error("Error al guardar cambios");
-
-            // Actualizar los datos localmente
-            await fetchOfertas();
-
-            // Cerrar el modal
-            handleCloseFicha();
-
-            // Notificación de éxito. Temporal: Cambiar a SweetAlert.
-            alert("Oferta actualizada correctamente");
-
-        } catch (error) {
-
-            // console.error(error); Habilitar solamente para pruebas
-            console.error("Error al guardar cambios:", error);
-
-            // Manejo de errores. Temporal: Cambiar a SweetAlert.
-            alert("No fue posible guardar los cambios.");
+        if (!result.ok) {
+            alert(result.error);
+            setRegistrarLoading(false);
+            return;
         }
+
+        alert("Oferta registrada correctamente.");
+        setRegistrarLoading(false);
+        setOpenRegistrar(false);
+        fetchOfertas();
     };
 
+    // Guardar cambios en oferta
+    const handleGuardar = async () => {
+        if (!fichaForm) return;
+
+        const result = await GuardarOferta(fichaId, fichaForm);
+
+        if (!result.ok) {
+            alert(result.error);
+            return;
+        }
+
+        alert("Oferta actualizada correctamente.");
+        handleCloseFicha();
+        fetchOfertas();
+    };
     //----------------------------------------------------------------------------
-    // Cancelar oferta.
+    // Cancelar oferta. --> FINALIZADO EN OPTIMIZACIÓN
     //----------------------------------------------------------------------------
 
     const handleCancelar = async (ofertaId) => {
-        try {
+        const confirmar = confirm("¿Seguro que deseas cancelar esta oferta?");
+        if (!confirmar) return;
 
-            // Confirmación de usuario para cancelar la oferta: Temporal: Cambiar a SweetAlert.
-            const confirmacion = confirm("¿Seguro que deseas cancelar esta oferta?");
-            if (!confirmacion) return;
+        const oferta = ofertas.find(o => o.ofertaId === ofertaId);
 
-            // Buscar la oferta en el estado actual
-            const oferta = ofertas.find((o) => o.ofertaId === ofertaId);
-            if (!oferta) {
+        const result = await CancelarOferta(oferta, {
+            matchCursoId,
+            matchSedeId,
+            matchModalidadId,
+            matchHorarioId,
+            matchPeriodoId,
+            matchCoordinadorId,
+            matchAccionIdDesdeEstadoOAccion,
+        });
 
-                // Manejo de error: Temporal: Cambiar a SweetAlert.
-                alert("No se encontró la oferta en el estado actual.");
-                return;
-            }
-
-            // Verificar si ya está cancelada
-            if (oferta.estadoOfertaId === 5 || oferta.estado === "Cancelada") {
-                alert("Esta oferta ya se encuentra cancelada.");
-                return;
-            }
-
-            // Construir payload (Fomato JSON ) con validaciones
-            const payload = {
-                cursoId: matchCursoId(oferta.curso) || oferta.cursoId,
-                sedeId: matchSedeId(oferta.sede) || oferta.sedeId,
-                modalidadId: matchModalidadId(oferta.modalidad) || oferta.modalidadId,
-                horarioId: matchHorarioId(oferta.horario, oferta.horarioId),
-                periodoId: matchPeriodoId(oferta.periodo) || oferta.periodoId,
-                accionId: matchAccionIdDesdeEstadoOAccion(oferta.estado, oferta.accion) || oferta.accionId,
-                coordinadorId:
-                    typeof oferta.coordinador === "object"
-                        ? oferta.coordinador?.id ?? oferta.coordinadorId
-                        : matchCoordinadorId(oferta.coordinador) || oferta.coordinadorId,
-                comentarios: oferta.comentarios ?? "",
-                estadoOfertaId: 5,
-            };
-
-            /*
-            Para pruebas: Muestra en consola el payload que se enviará al backend
-
-            console.group("Payload enviado al backend");
-            console.table(payload);
-            console.groupEnd();
-            */
-
-            // Llamada al endpoint para cancelar la oferta
-            const response = await fetch(`/api/ofertas/${ofertaId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            // Manejo de errores
-            if (!response.ok) {
-                const msg = await response.text();
-                console.error("Backend respondió error:", msg);
-                throw new Error("Error al cancelar la oferta");
-            }
-
-            // Actualizar estado localmente
-            setOfertas((prev) =>
-                prev.map((o) =>
-                    o.ofertaId === ofertaId
-                        ? { ...o, estado: "Cancelada", estadoOfertaId: 5 }
-                        : o
-                )
-            );
-
-            // Notificación de éxito. Temporal: Cambiar a SweetAlert.
-            alert("Oferta cancelada correctamente.");
-
-        } catch (error) {
-            // console.error("Error general:",error); Habilitar solamente para pruebas
-            alert("No fue posible cancelar la oferta.");
+        if (!result.ok) {
+            alert(result.error);
+            return;
         }
+
+        // Actualizar estado local
+        setOfertas(prev =>
+            prev.map(o =>
+                o.ofertaId === ofertaId ? result.updatedOferta : o
+            )
+        );
+
+        alert("Oferta cancelada correctamente.");
     };
 
     //----------------------------------------------------------------------------
@@ -688,6 +519,62 @@ export default function OfertasPresencialesVirtuales() {
     };
 
     //----------------------------------------------------------------------------
+    // Funcionalidad de archivar ofertas por periodo -- FINALIZADO EN OPTIMIZACIÓN
+    // ---------------------------------------------------------------------------
+
+    const {
+        openModal,
+        setOpenModal,
+        tipoPeriodo,
+        setTipoPeriodo,
+        selectedPeriodo,
+        setSelectedPeriodo,
+        selectedModalidad,
+        setSelectedModalidad,
+        periodosDisponibles,
+        archivarPorModalidad,
+        loadingArchivar,
+        mensajeArchivar,
+    } = useArchivarPorModalidad(periodos, fetchOfertas);
+
+    useEffect(() => {
+        if (openModal) {
+            setSelectedModalidad("");
+            setSelectedPeriodo("");
+        }
+    }, [openModal]);
+
+    //----------------------------------------------------------------------------
+    // Funcionalidad de duplicar ofertas por periodo -- FINALIZADO EN OPTIMIZACIÓN
+    //----------------------------------------------------------------------------
+
+    const {
+        openDuplicarModal,
+        setOpenDuplicarModal,
+        abrirModalDuplicar,
+
+        tipoPeriodo: tipoPeriodoDuplicar,
+        setTipoPeriodo: setTipoPeriodoDuplicar,
+
+        periodoOrigen,
+        setPeriodoOrigen,
+
+        periodoDestino,
+        setPeriodoDestino,
+
+        modalidad,
+        setModalidad,
+
+        loadingDuplicar,
+        mensajeDuplicar,
+
+        periodosOrigenFiltrados,
+        periodosDestinoFiltrados,
+
+        duplicarOfertas,
+    } = useDuplicarOfertas(periodos, fetchOfertas);
+
+    //----------------------------------------------------------------------------
     // Renderizado de datos
     //----------------------------------------------------------------------------
 
@@ -706,53 +593,6 @@ export default function OfertasPresencialesVirtuales() {
     // ---------------------------------------------------------------------------
     // Personalización:
     // ---------------------------------------------------------------------------
-
-    // Chips de colores:
-
-    // Colores para Acciones
-    const setAccionesColors = {
-        "Abrir Curso": { color: "green", label: "ABRIR CURSO" },
-        "Asignar Profesor": { color: "blue", label: "ASIGNAR PROFESOR" },
-        "Nombrado": { color: "teal", label: "NOMBRADO" },
-        "Cambiar Profesor": { color: "amber", label: "CAMBIAR PROFESOR" },
-        "Cerrar Curso": { color: "red", label: "CERRAR CURSO" },
-        "Reserva": { color: "purple", label: "RESERVA" },
-        "Suficiencia": { color: "cyan", label: "SUFICIENCIA" },
-        "Cerrado": { color: "gray", label: "CERRADO" },
-    };
-
-    // Función para renderizar
-    const getAccionesColors = (accion) => {
-        const conf = setAccionesColors[accion] || { color: "blue-gray", label: accion || "DESCONOCIDA" };
-        return (
-            <Chip
-                value={conf.label}
-                color={conf.color}
-                className="font-bold text-white rounded-full px-3 py-1 text-xs w-fit"
-            />
-        );
-    };
-
-    // Colores y etiquetas para Estados
-    const setEstadosColors = {
-        "Pendiente": { color: "amber", label: "PENDIENTE" },
-        "Enviada": { color: "blue", label: "ENVIADA" },
-        "Aceptada": { color: "green", label: "ACEPTADA" },
-        "Rechazada": { color: "red", label: "RECHAZADA" },
-        "Cancelada": { color: "gray", label: "CANCELADA" },
-    };
-
-    // Función para renderizar 
-    const getEstadoChip = (estado) => {
-        const conf = setEstadosColors[estado] || { color: "blue-gray", label: estado || "DESCONOCIDO" };
-        return (
-            <Chip
-                value={conf.label}
-                color={conf.color}
-                className="font-bold text-white rounded-full px-4 py-1 text-xs w-fit min-w-[90px] text-center"
-            />
-        );
-    };
 
     const renderDocenteOptions = () => {
         if (docentesLoading) {
@@ -778,40 +618,42 @@ export default function OfertasPresencialesVirtuales() {
         ));
     };
 
-
     return (
 
         <div className="p-4 space-y-4">
 
             {/* Tabla de registros e importar */}
-
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <Typography className="text-2xl font-extrabold text-[#2B338C]">Ofertas Presencial y En Línea</Typography>
+                    <PageTitle>Ofertas 100% Virtual</PageTitle>
                 </div>
 
                 <div className="flex items-center gap-2">
 
-                    <Button
-                        className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
-                        onClick={handleOpenNueva}
-                    >
-                        <PlusIcon className="h-5 w-5" /> Nueva oferta
-                    </Button>
+                    {/* Botón para registar una nueva oferta */}
+                    <FormButton onClick={handleOpenNueva}>Nueva oferta</FormButton>
 
+                    {/* Botón para archivar */}
+                    <ArchiveButton onClick={() => setOpenModal(true)}>
+                        Archivar Ofertas
+                    </ArchiveButton>
 
+                    {/* Botón para duplicar */}
+                    <DuplicateButton onClick={abrirModalDuplicar}>
+                        Duplicar ofertas del periodo
+                    </DuplicateButton>
 
                 </div>
             </div>
 
             {/* Filtros de busqueda */}
-            <Card className="p-4 border border-gray-200 shadow-sm bg-white relative z-[50]">
+            <Card className="p-4 border border-gray-200 shadow-md bg-white relative z-[50]">
                 <div className="flex flex-wrap gap-3 items-end">
 
                     {/*Búsqueda general */}
                     <div className="flex-1 min-w-[250px]">
                         <Input
-                            size="sm"
+                            size="md"
                             label="Buscar palabra clave"
                             icon={<MagnifyingGlassIcon className="h-5 w-5 text-[#2B338C]" />}
                             value={term}
@@ -822,7 +664,7 @@ export default function OfertasPresencialesVirtuales() {
                     {/*Curso */}
                     <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
-                            size="sm"
+                            size="md"
                             label="Curso"
                             value={filterCurso}
                             onChange={(v) => setFilterCurso(v || "")}
@@ -846,7 +688,7 @@ export default function OfertasPresencialesVirtuales() {
                     {/* Sede */}
                     <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
-                            size="sm"
+                            size="md"
                             label="Sede"
                             value={filterSede}
                             onChange={(v) => setFilterSede(v || "")}
@@ -870,7 +712,7 @@ export default function OfertasPresencialesVirtuales() {
                     {/*Estado */}
                     <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
-                            size="sm"
+                            size="md"
                             label="Estado"
                             value={filterEstado}
                             onChange={(v) => setFilterEstado(v || "")}
@@ -894,7 +736,7 @@ export default function OfertasPresencialesVirtuales() {
                     {/*Coordinador */}
                     <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
                         <Select
-                            size="sm"
+                            size="md"
                             label="Coordinador"
                             value={filterCoordinador}
                             onChange={(v) => setFilterCoordinador(v || "")}
@@ -922,7 +764,7 @@ export default function OfertasPresencialesVirtuales() {
                     {/*Paginación selector */}
                     <div className="min-w-[120px] flex-shrink-0">
                         <Select
-                            size="sm"
+                            size="md"
                             label="Filas"
                             value={String(rowsPerPage)}
                             onChange={(v) => {
@@ -949,10 +791,22 @@ export default function OfertasPresencialesVirtuales() {
                         <Button
                             variant="outlined"
                             onClick={limpiarFiltros}
-                            className="border-[#2B338C] text-[#2B338C] text-sm flex items-center gap-2 hover:bg-[#2B338C]/10 transition-all"
+                            className="border-[#2B338C] text-[#2B338C] text-md flex items-center gap-2 hover:bg-[#2B338C]/10 transition-all"
                         >
                             <XCircleIcon className="h-4 w-4" />
                             Limpiar
+                        </Button>
+                    </div>
+
+                    {/*Refrescar */}
+                    <div className="flex-shrink-0">
+                        <Button
+                            variant="outlined"
+                            onClick={fetchOfertas}
+                            className="border-green-600 text-green-700 flex items-center gap-2"
+                        >
+                            <ArrowPathIcon className="h-4 w-4" />
+                            Refrescar
                         </Button>
                     </div>
                 </div>
@@ -960,33 +814,7 @@ export default function OfertasPresencialesVirtuales() {
 
             {/* Resumen de ofertas: Chips de Estados */}
             <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-[#2B338C]">
-                    TOTAL: {filtered.length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-amber-600">
-                    PENDIENTES: {filtered.filter(o => o.estado === "Pendiente").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-blue-600">
-                    ENVIADAS: {filtered.filter(o => o.estado === "Enviada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-green-600">
-                    ACEPTADAS: {filtered.filter(o => o.estado === "Aceptada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-red-600">
-                    RECHAZADAS: {filtered.filter(o => o.estado === "Rechazada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
-                    CANCELADAS: {filtered.filter(o => o.estado === "Cancelada").length}
-                </span>
-
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-teal-600">
-                    IMPORTADAS: {filtered.filter(o => o.estado === "Importada").length}
-                </span>
+                <ResumenEstadosChips ofertas={filtered} />
             </div>
 
             {/* Tabla de Ofertas */}
@@ -995,13 +823,16 @@ export default function OfertasPresencialesVirtuales() {
                     <table className="min-w-[800px] w-full text-left">
                         <thead className="bg-blue-gray-50 text-blue-gray-700">
                             <tr>
-                                <th className="p-3">Curso</th>
                                 <th className="p-3">Sede</th>
-                                <th className="p-3">Modalidad</th>
+                                <th className="p-3">Código Curso</th>
+                                <th className="p-3">Nombre Curso</th>
+                                <th className="p-3">Grupo</th>
+                                <th className="p-3">Día</th>
                                 <th className="p-3">Horario</th>
                                 <th className="p-3">Periodo</th>
                                 <th className="p-3">Coordinador</th>
-                                <th className="p-3">Grupo</th>
+                                <th className="p-3">Modalidad</th>
+
                                 <th className="p-3">Acciones</th>
                                 <th className="p-3">Estado Oferta</th>
                                 <th className="p-3">Opciones</th>
@@ -1010,51 +841,53 @@ export default function OfertasPresencialesVirtuales() {
                         <tbody>
                             {currentData.map((o) => (
                                 <tr key={o.ofertaId} className="border-b">
-                                    <td className="p-3">{o.curso}</td>
                                     <td className="p-3">{o.sede}</td>
-                                    <td className="p-3">{o.modalidad}</td>
-                                    <td className="p-3">{getHorarioNombre(o.horarioId)}</td> {/* este sí sigue siendo ID */}
+                                    <td className="p-3">{o.curso}</td>
+                                    <td className="p-3">{getCursoNombrePorCodigo(o.curso)}</td>
+                                    <td className="p-3">{o.grupo}</td>
+                                    <td className="p-3">{getDiaNombre(o.horarioId)}</td>
+                                    <td className="p-3">{getHoraNombre(o.horarioId)}</td>
                                     <td className="p-3">{o.periodo}</td>
                                     <td className="p-3">{getCoordinadorNombre(o.coordinadorId)} {getCoordinadorPrimerApellido(o.coordinadorId)} {getCoordinadorSegundoApellido(o.coordinadorId)}</td>
-                                    <td className="p-3">{o.grupo}</td>
-                                    <td className="p-3">{getAccionesColors(o.accion)}</td>
-                                    <td className="p-3">{getEstadoChip(o.estado)}</td>
+                                    <td className="p-3">{o.modalidad}</td>
+                                    <td className="p-3">{accionChips(o.accion)}</td>
+                                    <td className="p-3">{estadoChips(o.estado)}</td>
                                     <td className="p-3">
                                         <div className="flex items-center gap-2">
                                             <Tooltip content="Ver detalle">
-                                                <Button size="sm" variant="outlined" onClick={() => handleOpenFicha(o.ofertaId, false)} className="border-[#2B338C] text-[#2B338C] p-2"><EyeIcon className="h-4 w-4" /></Button>
+                                                <ViewButton onClick={() => handleOpenFicha(o.ofertaId, false)} />
                                             </Tooltip>
+
                                             <Tooltip content="Editar oferta">
-                                                <Button size="sm" className="bg-[#FFDA00] text-[#2B338C] p-2" onClick={() => handleOpenFicha(o.ofertaId, true)}><PencilSquareIcon className="h-4 w-4" /></Button>
+                                                <EditButton onClick={() => handleOpenFicha(o.ofertaId, true)} />
                                             </Tooltip>
+
                                             <Tooltip content="Cancelar oferta">
-                                                <Button size="sm" variant="outlined" className="border-red-500 text-red-600 p-2" onClick={() => handleCancelar(o.ofertaId)}><XCircleIcon className="h-4 w-4" /></Button>
+                                                <CancelButton onClick={() => handleCancelar(o.ofertaId)} />
                                             </Tooltip>
+
                                             <Tooltip content="Enviar a docente">
-                                                <Button
-                                                    size="sm" variant="outlined" className="border-green-600 text-green-700 p-2" onClick={() => handleAbrirEnviar(o)}
-                                                >
-                                                    <PaperAirplaneIcon className="h-4 w-4" />
-                                                </Button>
+                                                <SendButton onClick={() => handleAbrirEnviar(o)} />
                                             </Tooltip>
                                         </div>
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>
                     </table>
 
                     {/* Paginación */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
-                        <span className="text-sm text-blue-gray-600">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3">
+                        <span className="text-md text-blue-gray-600">
                             Mostrando <b>{total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, total)}</b> de <b>{total}</b>
                         </span>
                         <div className="flex items-center gap-1">
-                            <Button variant="outlined" size="sm" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                            <Button variant="outlined" size="md" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
                                 <ChevronLeftIcon className="h-4 w-4" />
                             </Button>
-                            <span className="px-2 text-sm">Página <b>{page}</b> de <b>{totalPages}</b></span>
-                            <Button variant="outlined" size="sm" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                            <span className="px-2 text-md">Página <b>{page}</b> de <b>{totalPages}</b></span>
+                            <Button variant="outlined" size="md" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
                                 <ChevronRightIcon className="h-4 w-4" />
                             </Button>
                         </div>
@@ -1063,320 +896,88 @@ export default function OfertasPresencialesVirtuales() {
                 </div>
             </Card >
 
-            {/* Modal compartido: Funciones de Ver/Editar/Registar */}
-            <Dialog
+            {/* Modal compartido: Funciones de Ver/Editar/Registar
+            <FichaOfertaModal
                 open={openFicha}
-                handler={handleCloseFicha}
-                size="md"
-                className="rounded-xl shadow-xl bg-white"
-            >
-                {/* Header */}
-                <DialogHeader className="bg-[#2B338C] text-white font-semibold text-base px-6 py-3 rounded-t-xl flex items-center gap-2 shadow-md">
-                    <span className="w-2.5 h-2.5 bg-[#FFDA00] rounded-full"></span>
+                onClose={handleCloseFicha}
+                modo={modo}
+                isNuevo={isNuevo}
+                editMode={editMode}
+                OfertaCancelada={OfertaCancelada}
+                fichaLoading={fichaLoading}
+                fichaError={fichaError}
+                fichaData={fichaData}
+                fichaForm={fichaForm}
 
-                    {/* Título original */}
-                    <span>
-                        {modo === "nuevo"
-                            ? "Registrar Nueva Oferta"
-                            : modo === "editar"
-                                ? "Editar Ficha de Oferta"
-                                : `Ficha de Oferta ${fichaData?.curso
-                                    ? `- ${fichaData.curso} - ${fichaData.sede} - ${fichaData.periodo}`
-                                    : ""
-                                }`}
-                    </span>
+                cursos={cursos}
+                sedes={sedes}
+                horarios={horario}
+                modalidades={modalidades}
+                tipoPeriodo={fichaForm?.tipoPeriodo || ""}
+                setTipoPeriodo={(v) => setFichaForm(prev => ({ ...prev, tipoPeriodo: v }))}
+                periodos={periodos}
+                coordinadores={coordinadores}
+                estados={estados}
 
-                    {/* Grupo: se muestra siempre que exista en fichaData */}
-                    {fichaData?.grupo != null && (
-                        <span className="ml-2 text-white font-semibold text-base px-6 py-3 rounded-t-xl items-center gap-2 shadow-md">
-                            Grupo {fichaData.grupo}
-                        </span>
-                    )}
-                </DialogHeader>
+                setFichaForm={setFichaForm}
+                onGuardar={handleGuardar}
+                onRegistrar={handleRegistrar}
 
+                accionChips={accionChips}
+                estadoChips={estadoChips}
+            /> */}
 
-                {/* Cuerpo */}
-                <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200">
-                    {fichaLoading && (
-                        <Typography className="text-blue-gray-600 text-center py-4">
-                            Cargando información...
-                        </Typography>
-                    )}
+            <FichaOfertaModal
+                open={openFicha}
+                onClose={handleCloseFicha}
+                editMode={editMode}
+                OfertaCancelada={OfertaCancelada}
+                fichaLoading={fichaLoading}
+                fichaError={fichaError}
+                fichaData={fichaData}
+                fichaForm={fichaForm}
 
-                    {fichaError && (
-                        <Typography className="text-red-600 text-center py-4">
-                            {fichaError}
-                        </Typography>
-                    )}
+                cursos={cursos}
+                sedes={sedes}
+                horarios={horario}
+                modalidades={modalidades}
+                periodos={periodos}
+                coordinadores={coordinadores}
+                estados={estados}
 
-                    {!fichaLoading && (
-                        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-[15px] leading-tight">
-                            {/* Sección: Datos de la Ficha */}
-                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
-                                Datos de la Ficha
-                            </h2>
+                setFichaForm={setFichaForm}
+                onGuardar={handleGuardar}
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
-                                {/* Curso */}
-                                <Select
-                                    label="Curso"
-                                    value={fichaForm?.cursoId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, cursoId: Number(v) }))}
-                                >
-                                    {cursos.map((c) => (
-                                        <Option key={c.cursoId} value={c.cursoId}>
-                                            {c.nombre}
-                                        </Option>
-                                    ))}
-                                </Select>
+                accionChips={accionChips}
+                estadoChips={estadoChips}
+            />
 
-                                {/* Sede */}
-                                <Select
-                                    label="Sede"
-                                    value={fichaForm?.sedeId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) =>
-                                        setFichaForm((prev) => {
-                                            const sedeId = Number(v);
-                                            let modalidadId = prev.modalidadId;
+            <RegistrarOfertaModal
+                open={openRegistrar}
+                onClose={handleCloseRegistrar}
+                loading={registrarLoading}
 
-                                            if (sedeId === 3) {
-                                                modalidadId = 2; // Virtual
-                                            } else if (sedeId === 1 || sedeId === 2) {
-                                                modalidadId = 1; // Presencial
-                                            }
+                form={form}
+                setForm={setForm}
+                onRegistrar={handleRegistrar}
 
-                                            return {
-                                                ...prev,
-                                                sedeId,
-                                                modalidadId,
-                                            };
-                                        })
-                                    }
-                                >
-                                    {sedes.map((s) => (
-                                        <Option key={s.sedeId} value={s.sedeId}>
-                                            {s.nombre}
-                                        </Option>
-                                    ))}
-                                </Select>
+                cursos={cursos}
+                sedes={sedes}
+                horarios={horario}
+                periodos={periodos}
+                coordinadores={coordinadores}
+                estados={estados}
 
-                                {/* Horario */}
-                                <Select
-                                    label="Horario"
-                                    value={fichaForm?.horarioId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, horarioId: Number(v) }))}
-                                >
-                                    {horario.map((h) => (
-                                        <Option key={h.horarioId} value={h.horarioId}>
-                                            {`${h.dia} - ${h.rango}`}
-                                        </Option>
-                                    ))}
-                                </Select>
+                modalidades={modalidades}
+                modalidadesExcluidas={[3]}
+            />
 
-                                {/* Periodo */}
-                                <Select
-                                    label="Periodo"
-                                    value={fichaForm?.periodoId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, periodoId: Number(v) }))}
-                                >
-                                    {periodos.map((p) => (
-                                        <Option key={p.periodoId} value={p.periodoId}>
-                                            {`${p.numero}Q - ${p.anio}`}
-                                        </Option>
-                                    ))}
-                                </Select>
-
-                                {/* Coordinador */}
-                                <Select
-                                    label="Coordinador"
-                                    value={fichaForm?.coordinadorId || ""}
-                                    disabled={!editMode || OfertaCancelada}
-                                    onChange={(v) => setFichaForm((prev) => ({ ...prev, coordinadorId: Number(v) }))}
-                                >
-                                    {coordinadores.map((c) => (
-                                        <Option key={c.id} value={c.id}>
-                                            {c.nombre}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </div>
-
-                            {/* Cupo y Matriculados */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-4">
-                                {/* Cupo */}
-                                <div>
-                                    <p className="text-[#2B338C] font-bold text-sm mb-1">Cupo</p>
-                                    {editMode ? (
-                                        <Input
-                                            type="number"
-                                            label="Cupo"
-                                            value={fichaForm?.cupo ?? ""}
-                                            disabled={OfertaCancelada}
-                                            onChange={(e) =>
-                                                setFichaForm((prev) => ({
-                                                    ...prev,
-                                                    cupo:
-                                                        e.target.value === ""
-                                                            ? null
-                                                            : Number(e.target.value),
-                                                }))
-                                            }
-                                        />
-                                    ) : (
-                                        <p className="text-gray-700 text-sm">
-                                            {fichaData?.cupo ?? "No definido"}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Matriculados */}
-                                <div>
-                                    <p className="text-[#2B338C] font-bold text-sm mb-1">
-                                        Estudiantes matriculados
-                                    </p>
-                                    {editMode ? (
-                                        <Input
-                                            type="number"
-                                            label="Matriculados"
-                                            value={fichaForm?.matriculados ?? ""}
-                                            disabled={OfertaCancelada}
-                                            onChange={(e) =>
-                                                setFichaForm((prev) => ({
-                                                    ...prev,
-                                                    matriculados:
-                                                        e.target.value === ""
-                                                            ? null
-                                                            : Number(e.target.value),
-                                                }))
-                                            }
-                                        />
-                                    ) : (
-                                        <p className="text-gray-700 text-sm">
-                                            {fichaData?.matriculados ?? "No definido"}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Línea divisoria */}
-                            <hr className="my-4 border-gray-300" />
-
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-10 mt-2">
-                                {!editMode ? (
-                                    <>
-                                        <div>
-                                            <p className="text-[#2B338C] font-bold">Acción:</p>
-                                            {getAccionesColors(fichaData?.accion)}
-                                        </div>
-
-                                        <div>
-                                            <p className="text-[#2B338C] font-bold">Estado de la Oferta:</p>
-                                            {getEstadoChip(fichaData?.estado)}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <Select
-                                        label="Acción"
-                                        value={fichaForm?.accionId || ""}
-                                        disabled={OfertaCancelada}
-                                        onChange={(v) =>
-                                            setFichaForm((prev) => ({ ...prev, accionId: Number(v) }))
-                                        }
-                                    >
-                                        {estados.map((e) => (
-                                            <Option key={e.accionId} value={e.accionId}>
-                                                {e.nombre}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                )}
-                            </div>
-
-                            {/* Línea divisoria */}
-                            <hr className="my-4 border-gray-300" />
-
-                            {/* Sección: Comentarios */}
-                            <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
-                                Comentarios
-                            </h2>
-
-                            {!editMode ? (
-                                <p className="text-gray-700 text-sm leading-relaxed border border-gray-100 rounded-md p-3 bg-gray-50">
-                                    {fichaData?.comentarios || "No cuenta con comentarios."}
-                                </p>
-                            ) : (
-                                <Input
-                                    label="Comentarios"
-                                    value={fichaForm?.comentarios ?? ""}
-                                    disabled={OfertaCancelada}
-                                    onChange={(e) =>
-                                        setFichaForm((prev) => ({
-                                            ...prev,
-                                            comentarios: e.target.value,
-                                        }))
-                                    }
-                                />
-                            )}
-                        </div>
-                    )}
-                </DialogBody>
-
-                {/* Footer */}
-                <DialogFooter className="bg-gray-50 border-t border-gray-200 px-5 py-3 rounded-b-xl flex justify-end">
-                    {isNuevo ? (
-                        <>
-                            <Button
-                                variant="outlined"
-                                className="border-[#2B338C] text-[#2B338C] mr-2"
-                                onClick={handleCloseFicha}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                className="bg-[#FFDA00] text-[#2B338C] font-semibold"
-                                onClick={handleNuevaOferta}
-                            >
-                                Registrar
-                            </Button>
-                        </>
-                    ) : editMode ? (
-                        <>
-                            <Button
-                                variant="outlined"
-                                className="border-[#2B338C] text-[#2B338C] mr-2"
-                                onClick={handleCloseFicha}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                className="bg-[#FFDA00] text-[#2B338C] font-semibold"
-                                onClick={handleSaveChanges}
-                            >
-                                Guardar
-                            </Button>
-                        </>
-                    ) : (
-                        <Button
-                            className="bg-[#FFDA00] text-[#2B338C] text-sm font-semibold px-6 py-2 rounded-md shadow-sm hover:shadow-md hover:bg-[#FFD700] transition-all"
-                            onClick={handleCloseFicha}
-                        >
-                            Cerrar
-                        </Button>
-                    )}
-                </DialogFooter>
-
-            </Dialog>
 
             {/* Modal: Enviar oferta a docente */}
             <Dialog
                 open={openEnviar}
                 handler={handleCerrarEnviar}
-                size="sm"
+                size="md"
                 className="rounded-xl shadow-xl bg-white"
             >
                 <DialogHeader className="bg-[#2B338C] text-white font-semibold text-base px-6 py-3 rounded-t-xl flex items-center gap-2 shadow-md">
@@ -1386,7 +987,7 @@ export default function OfertasPresencialesVirtuales() {
 
                 <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200 space-y-4">
                     {!ofertaSeleccionada ? (
-                        <Typography className="text-sm text-blue-gray-700">
+                        <Typography className="text-md text-blue-gray-700">
                             No hay una oferta seleccionada.
                         </Typography>
                     ) : (
@@ -1418,10 +1019,10 @@ export default function OfertasPresencialesVirtuales() {
 
                             {/* Previsualización del correo */}
                             <div className="mt-4 border border-gray-200 rounded-lg bg-white p-4 max-h-80 overflow-auto">
-                                <Typography className="text-[#2B338C] font-bold text-sm mb-2">
+                                <Typography className="text-[#2B338C] font-bold text-md mb-2">
                                     Previsualización del correo
                                 </Typography>
-                                <pre className="whitespace-pre-wrap text-sm text-blue-gray-800 font-mono">
+                                <pre className="whitespace-pre-wrap text-md text-blue-gray-800 font-mono">
                                     {`Estimado(a) ${docenteId ? getNombreDocente(docenteId) : "Nombre del docente"},
 
                                     La Universidad Fidélitas le ofrece la siguiente carga:
@@ -1463,6 +1064,50 @@ export default function OfertasPresencialesVirtuales() {
                     </Button>
                 </DialogFooter>
             </Dialog>
+
+            {/* Modal: Archivar ofertas por periodo */}
+            <ArchivarOfertasModal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+
+                tipoPeriodo={tipoPeriodo}
+                setTipoPeriodo={setTipoPeriodo}
+
+                selectedPeriodo={selectedPeriodo}
+                setSelectedPeriodo={setSelectedPeriodo}
+
+                periodosDisponibles={periodosDisponibles}
+
+                loadingArchivar={loadingArchivar}
+
+                onArchivar={archivarPorModalidad}
+            />
+
+            {/* Modal: Duplicar ofertas */}
+            <DuplicarOfertasModal
+                open={openDuplicarModal}
+                onClose={() => setOpenDuplicarModal(false)}
+
+                modalidad={modalidad}
+                setModalidad={setModalidad}
+
+                tipoPeriodo={tipoPeriodoDuplicar}
+                setTipoPeriodo={setTipoPeriodoDuplicar}
+
+                periodoOrigen={periodoOrigen}
+                setPeriodoOrigen={setPeriodoOrigen}
+
+                periodoDestino={periodoDestino}
+                setPeriodoDestino={setPeriodoDestino}
+
+                periodosOrigenFiltrados={periodosOrigenFiltrados}
+                periodosDestinoFiltrados={periodosDestinoFiltrados}
+
+                loading={loadingDuplicar}
+                mensaje={mensajeDuplicar}
+
+                onDuplicar={duplicarOfertas}
+            />
 
         </div >
     );

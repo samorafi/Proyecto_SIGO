@@ -5,7 +5,10 @@ import {
     Typography,
     Button
 } from "@material-tailwind/react";
+
 import AppModal from "@/components/ui/Modals/AppModal";
+import { usePeriodos } from "@/hooks/usePeriodos";
+
 
 export default function FichaOfertaModal({
     open,
@@ -25,6 +28,7 @@ export default function FichaOfertaModal({
     periodos,
     coordinadores,
     estados,
+    modalidades = [1, 2, 3],
 
     setFichaForm,
     onGuardar,
@@ -33,6 +37,11 @@ export default function FichaOfertaModal({
     accionChips,
     estadoChips,
 }) {
+
+    const {
+        periodosOrdenados
+    } = usePeriodos(periodos, fichaForm?.tipoPeriodo);
+
     return (
         <AppModal
             open={open}
@@ -171,13 +180,11 @@ export default function FichaOfertaModal({
                                 setFichaForm((prev) => ({ ...prev, periodoId: Number(v) }))
                             }
                         >
-                            {periodos
-                                .filter((p) => p.tipo === fichaForm?.tipoPeriodo)
-                                .map((p) => (
-                                    <Option key={p.periodoId} value={p.periodoId}>
-                                        {`${p.numero}${p.tipo} - ${p.anio}`}
-                                    </Option>
-                                ))}
+                            {periodosOrdenados.map((p) => (
+                                <Option key={p.periodoId} value={p.periodoId}>
+                                    {`${p.numero}${p.tipo} - ${p.anio}`}
+                                </Option>
+                            ))}
                         </Select>
 
                         {/* Horario */}
@@ -207,11 +214,36 @@ export default function FichaOfertaModal({
                         >
                             {coordinadores.map((c) => (
                                 <Option key={c.id} value={c.id}>
-                                    {c.nombre}
+                                      {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`.trim()}
                                 </Option>
                             ))}
                         </Select>
                     </div>
+
+                    {/* Modalidad */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-4">
+                        <div>
+                            <p className="text-[#2B338C] font-bold text-md mb-1">Modalidad de Oferta</p>
+
+                            {/* Modalidad */}
+                            <Select
+                                label="Modalidad"
+                                value={fichaForm?.modalidadId || ""}
+                                disabled={true}
+                                onChange={(v) =>
+                                    setFichaForm((prev) => ({ ...prev, modalidadId: Number(v) }))
+                                }
+                            >
+                                {modalidades.map((m) => (
+                                    <Option key={m.modalidadId} value={m.modalidadId}>
+                                        {m.nombre}
+                                    </Option>
+                                ))}
+                            </Select>
+
+                        </div>
+                    </div>
+
 
                     {/* -------------------------- CUPO Y MATRICULADOS -------------------------- */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-4">
@@ -241,6 +273,32 @@ export default function FichaOfertaModal({
                             )}
                         </div>
 
+                        {/* Grupo */}
+                        <div>
+                            <p className="text-[#2B338C] font-bold text-md mb-1">
+                                Grupo
+                            </p>
+
+                            {editMode ? (
+                                <Input
+                                    type="number"
+                                    label="Grupo"
+                                    value={fichaForm?.grupo ?? ""}
+                                    disabled={OfertaCancelada}
+                                    onChange={(e) =>
+                                        setFichaForm((prev) => ({
+                                            ...prev,
+                                            grupo:
+                                                e.target.value === "" ? null : Number(e.target.value),
+                                        }))
+                                    }
+                                />
+                            ) : (
+                                <p className="text-gray-700 text-md">
+                                    {fichaData?.grupo ?? "No definido"}
+                                </p>
+                            )}
+                        </div>
                         {/* Matriculados */}
                         <div>
                             <p className="text-[#2B338C] font-bold text-md mb-1">

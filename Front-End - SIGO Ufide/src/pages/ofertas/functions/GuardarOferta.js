@@ -2,7 +2,7 @@
 
 export default async function GuardarOferta(ofertaId, payload) {
     try {
-        const isNew = ofertaId == null; // null o undefined = nueva oferta
+        const isNew = ofertaId == null;
 
         const url = isNew
             ? "/api/ofertas"
@@ -21,7 +21,8 @@ export default async function GuardarOferta(ofertaId, payload) {
             return { ok: false, error: msg || "No se pudo guardar la oferta." };
         }
 
-        const data = await res.json();
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : null;
 
         return { ok: true, data };
 

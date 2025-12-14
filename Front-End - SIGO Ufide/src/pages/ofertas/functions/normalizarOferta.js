@@ -31,6 +31,7 @@ export function normalizarOferta(data, helpers) {
 
         coordinadorId: matchCoordinadorId(data.coordinador) || data.coordinadorId || "",
         comentarios: data.comentarios ?? "",
+        grupo: data.grupo ?? null,
 
         accionId:
             typeof data.accionId === "number"

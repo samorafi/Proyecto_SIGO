@@ -36,6 +36,7 @@ public class UpdateOfertaCommandHandler : IRequestHandler<UpdateOfertaCommand, U
         entity.Matriculados = r.Matriculados;
         entity.Archivados = r.Archivados;
         entity.PersonaId = ToNullIfZero(r.PersonaId);
+        entity.Grupo = r.Grupo;
 
         var newCursoId = entity.CursoId;
         var newSedeId = entity.SedeId;
