@@ -3,6 +3,38 @@
   "WorkspaceRootPath": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\commands\\importarofertaspresenciales\\importarofertaspresencialescommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\backend_sigo\\controllers\\ofertascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE9BE06F-927F-4E60-8D48-4AE45ED94F81}|SIGO.Api (Proyecto ASP.NET Core Web API).csproj|solutionrelative:controllers\\ofertascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\import\\services\\excelvalidationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\commands\\importarofertaspresenciales\\importarofertaspresencialescommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\commands\\importarofertaspresenciales\\importarofertaspresencialesvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\import\\dto\\ofertaimportdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\dto\\ofertaresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\dto\\createofertarequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B63F109-E2FF-4A42-9EA7-78C5B3750D44}|..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.application (proyecto biblioteca de clases .net)\\features\\ofertas\\dto\\updateofertarequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{7AB90EE5-CABF-412E-BFBD-C9177805DFF5}|..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj|d:\\desktop\\fidelitas carreer\\proyecto-sigo\\proyecto_u\\proyecto_sigo\\backend-sigo ufide\\sigo.domain (proyecto biblioteca de clases .net)\\entities\\persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -38,11 +70,141 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-14T06:48:39.338Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "OfertasController.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\OfertasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\OfertasController.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\OfertasController.cs",
+              "RelativeToolTip": "Controllers\\OfertasController.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAuwHsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-14T06:26:30.802Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ImportarOfertasPresencialesCommandHandler.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommandHandler.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommandHandler.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommandHandler.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommandHandler.cs",
+              "ViewState": "AgIAAA0BAAAAAAAAAAAewDQBAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T22:26:52.171Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "ExcelValidationService.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Services\\ExcelValidationService.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Services\\ExcelValidationService.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Services\\ExcelValidationService.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Services\\ExcelValidationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-14T06:18:31.988Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ImportarOfertasPresencialesValidator.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesValidator.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesValidator.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesValidator.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-14T06:14:03.373Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ImportarOfertasPresencialesCommand.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommand.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommand.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommand.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Commands\\ImportarOfertasPresenciales\\ImportarOfertasPresencialesCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T22:26:36.945Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "OfertaImportDto.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Dto\\OfertaImportDto.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Dto\\OfertaImportDto.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Dto\\OfertaImportDto.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Import\\Dto\\OfertaImportDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-14T06:16:20.566Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "OfertaResponseDto.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\OfertaResponseDto.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\OfertaResponseDto.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\OfertaResponseDto.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\OfertaResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T21:44:14.292Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "UpdateOfertaRequest.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\UpdateOfertaRequest.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\UpdateOfertaRequest.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\UpdateOfertaRequest.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\UpdateOfertaRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T21:44:17.452Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CreateOfertaRequest.cs",
+              "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\CreateOfertaRequest.cs",
+              "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\CreateOfertaRequest.cs",
+              "ToolTip": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\CreateOfertaRequest.cs",
+              "RelativeToolTip": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Ofertas\\Dto\\CreateOfertaRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T21:44:11.916Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "Periodo.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Periodo.cs",
@@ -55,7 +217,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 12,
               "Title": "ImportarDocentesValidator.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesValidator.cs",
@@ -68,7 +230,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 14,
               "Title": "ImportarDocentesCommand.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommand.cs",
@@ -81,7 +243,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 15,
               "Title": "PersonasController.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\Backend_SIGO\\Controllers\\PersonasController.cs",
               "RelativeDocumentMoniker": "Controllers\\PersonasController.cs",
@@ -93,7 +255,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 16,
               "Title": "StringUtils.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Common\\Utils\\StringUtils.cs",
@@ -105,7 +267,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 10,
               "Title": "Persona.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\\Entities\\Persona.cs",
@@ -118,7 +280,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 11,
               "Title": "ImportarDocentesCommandHandler.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Commands\\ImportarDocentes\\ImportarDocentesCommandHandler.cs",
@@ -131,7 +293,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 17,
               "Title": "ImportarDocentesResponseDto.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\ImportarDocentesResponseDto.cs",
@@ -143,7 +305,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 18,
               "Title": "DocenteImportDto.cs",
               "DocumentMoniker": "D:\\Desktop\\FIDELITAS carreer\\Proyecto-SIGO\\Proyecto_U\\Proyecto_SIGO\\Backend-SIGO Ufide\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",
               "RelativeDocumentMoniker": "..\\SIGO.Application (Proyecto Biblioteca de Clases .NET)\\Features\\Docentes\\Dto\\DocenteImportDto.cs",

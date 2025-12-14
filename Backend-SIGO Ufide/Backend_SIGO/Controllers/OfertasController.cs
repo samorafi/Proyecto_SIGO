@@ -5,6 +5,7 @@ using SIGO.Application.Features.Ofertas.Commands.Archivar;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
+using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Queries;
@@ -100,6 +101,26 @@ public class OfertasController : ControllerBase
     {
         var result = await _mediator.Send(command);
         return Ok(result);
+    }
+
+    [HttpPost("importar-presencial")]
+    [AuditDisabled] // Opcional: Desactiva auditoría automática fila por fila para mejorar rendimiento
+    public async Task<IActionResult> ImportarPresencial([FromForm] ImportarOfertasPresencialesCommand command)
+    {
+        // El 'command' ya incluye el IFormFile ArchivoExcel
+        // El PeriodoId se calculará internamente en el Handler leyendo la columna "Oferta Cuatrimestre"
+        // Pero si decides enviarlo desde el front como backup, asegúrate de tener la propiedad en el Command.
+
+        var response = await _mediator.Send(command);
+
+        if (response.Errores.Any())
+        {
+            // Si hubo rebote (errores de validación), retornamos 400 Bad Request con la lista
+            return BadRequest(response);
+        }
+
+        // Si todo salió bien
+        return Ok(response);
     }
 
 }

@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Ofertas\Strategies\" />
     <Folder Include="Features\SolicitudesOferta\Dto\" />
     <Folder Include="Features\SolicitudesOferta\Queries\" />
   </ItemGroup>
