@@ -8,7 +8,7 @@ import {
   ChevronLeftIcon, ChevronRightIcon, PlusIcon,
 } from "@heroicons/react/24/outline";
 
-import {FormButton} from "@/components/ui/Buttons";
+import { FormButton } from "@/components/ui/Buttons";
 
 
 import {
@@ -367,14 +367,6 @@ function Docentes() {
           <Typography className="text-2xl font-extrabold text-[#2B338C]">Docentes</Typography>
           <Typography className="text-blue-gray-600">Vista general</Typography>
         </div>
-        <Button
-          size="sm"
-          className="bg-[#2B338C] text-white flex items-center gap-2 rounded-lg px-3 py-2"
-          onClick={() => setOpenAdd(true)}
-        >
-          <PlusIcon className="h-4 w-4" />
-          Agregar docente
-        </Button>
         <FormButton onClick={() => setOpenAdd(true)} >Agregar docente</FormButton>
       </div>
 
