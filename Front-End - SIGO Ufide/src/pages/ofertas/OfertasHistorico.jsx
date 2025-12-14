@@ -111,6 +111,16 @@ export default function OfertasHistorico() {
         return periodos.filter(p => p.tipo === filterTipoPeriodo);
     }, [periodos, filterTipoPeriodo]);
 
+    const getPeriodoLabel = useCallback(
+        (periodoId) => {
+            const p = periodos.find(
+                x => String(x.periodoId) === String(periodoId)
+            );
+            return p ? `${p.numero}${p.tipo}, ${p.anio}` : "";
+        },
+        [periodos]
+    );
+
 
     const filtered = useMemo(() => {
         return [...ofertas]
@@ -121,12 +131,21 @@ export default function OfertasHistorico() {
                 if (filterSede && o.sede !== filterSede) return false;
                 if (filterEstado && o.estado !== filterEstado) return false;
 
+
                 if (
                     filterTipoPeriodo &&
                     (!o.periodo || !o.periodo.includes(filterTipoPeriodo))
                 ) {
                     return false;
                 }
+
+                if (filterPeriodoId) {
+                    const label = getPeriodoLabel(filterPeriodoId);
+                    if (!o.periodo || o.periodo !== label) {
+                        return false;
+                    }
+                }
+
 
                 const texto = `
                 ${o.curso}
@@ -145,6 +164,7 @@ export default function OfertasHistorico() {
             });
     }, [
         ofertas,
+        filterPeriodoId,
         term,
         filterCurso,
         filterSede,
@@ -283,6 +303,15 @@ export default function OfertasHistorico() {
                             value={filterPeriodoId}
                             disabled={!filterTipoPeriodo}
                             onChange={(v) => setFilterPeriodoId(v || "")}
+                            selected={() => {
+                                if (!filterPeriodoId) return "Todos";
+
+                                const p = periodos.find(
+                                    x => String(x.periodoId) === String(filterPeriodoId)
+                                );
+
+                                return p ? `${p.numero}${p.tipo} - ${p.anio}` : "Periodo";
+                            }}
                         >
                             <Option value="">Todos</Option>
                             {periodosFiltrados.map(p => (

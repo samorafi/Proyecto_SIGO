@@ -22,13 +22,10 @@ export function normalizarOferta(data, helpers) {
         cursoId: matchCursoId(data.curso) || data.cursoId || "",
         sedeId: matchSedeId(data.sede) || data.sedeId || "",
         modalidadId: matchModalidadId(data.modalidad) || data.modalidadId || 3,
-
         horarioId: matchHorarioId(data.horario, data.horarioId),
         periodoId: matchPeriodoId(data.periodo) || data.periodoId || "",
-
-        // AHORA correcto:
         tipoPeriodo: data.tipo || data.tipoPeriodo || tipoExtraido || "",
-
+        personaId: data.personaId || data.personas || null,
         coordinadorId: matchCoordinadorId(data.coordinador) || data.coordinadorId || "",
         comentarios: data.comentarios ?? "",
         grupo: data.grupo ?? null,

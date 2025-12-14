@@ -118,18 +118,22 @@ export const CatalogosNormalizados = (catalogos) => {
 
     const matchProfesorId = (valor) => {
         if (!valor) return "";
-        const hit = personas.find(p => p.nombre === valor);
-        return hit?.id ?? "";
+        const hit = personas.find(
+            p =>
+                `${p.nombre} ${p.primerApellido} ${p.segundoApellido}`.trim() === valor
+        );
+        return hit?.personaId ?? "";
     };
 
     const getProfesorNombre = (id) =>
-        personas.find(p => p.id === id)?.nombre ?? id;
+        personas.find(p => p.personaId === id)?.nombre ?? id;
 
-    const getProfesorApellido = (id) =>
-        personas.find(p => p.id === id)?.apellido ?? id;
+    const getProfesorPrimerApellido = (id) =>
+        personas.find(p => p.personaId === id)?.primerApellido ?? id;
 
     const getProfesorSegundoApellido = (id) =>
-        personas.find(p => p.id === id)?.segundoApellido ?? id;
+        personas.find(p => p.personaId === id)?.segundoApellido ?? id;
+
 
     // ------------------ Estados / Acción ------------------
     const matchAccionIdDesdeEstadoOAccion = (estado, accion) => {
@@ -158,7 +162,7 @@ export const CatalogosNormalizados = (catalogos) => {
         getCoordinadorSegundoApellido,
         matchAccionIdDesdeEstadoOAccion,
         getProfesorNombre,
-        getProfesorApellido,
+        getProfesorPrimerApellido,
         getProfesorSegundoApellido,
         matchProfesorId
     };

@@ -120,7 +120,7 @@ export default function FichaOfertaModal({
                 <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md text-[15px] leading-tight">
 
                     {/* -------------------------- DATOS DE LA FICHA -------------------------- */}
-                    <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
+                    <h2 className="text-[#2B338C] font-bold mb-1 text-base mb-2 border-b border-gray-300 pb-1">
                         Datos de la Ficha
                     </h2>
 
@@ -204,43 +204,12 @@ export default function FichaOfertaModal({
                             ))}
                         </Select>
 
-                        {/* Coordinador */}
-                        <Select
-                            label="Coordinador"
-                            value={fichaForm?.coordinadorId || ""}
-                            disabled={!editMode || OfertaCancelada}
-                            onChange={(v) =>
-                                setFichaForm((prev) => ({ ...prev, coordinadorId: Number(v) }))
-                            }
-                        >
-                            {coordinadores.map((c) => (
-                                <Option key={c.id} value={c.id}>
-                                    {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`.trim()}
-                                </Option>
-                            ))}
-                        </Select>
-
-                        <Select
-                            label="Profesor"
-                            value={fichaForm?.profesorId || ""}
-                            disabled={!editMode || OfertaCancelada}
-                            onChange={(v) =>
-                                setFichaForm((prev) => ({ ...prev, profesorId: Number(v) }))
-                            }
-                        >
-                            {personas.map((p) => (
-                                <Option key={p.personaId} value={p.personaId}>
-                                    {`${p.nombre} ${p.primerApellido} ${p.segundoApellido}`.trim()}
-                                </Option>
-                            ))}
-                        </Select>
-
                     </div>
 
                     {/* Modalidad */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-4">
                         <div>
-                            <p className="text-[#2B338C] font-bold text-md mb-1">Modalidad de Oferta</p>
+                            <p className="text-[#2B338C] font-bold mb-1 text-md mb-1">Modalidad de Oferta</p>
 
                             {/* Modalidad */}
                             <Select
@@ -267,7 +236,7 @@ export default function FichaOfertaModal({
 
                         {/* Cupo */}
                         <div>
-                            <p className="text-[#2B338C] font-bold text-md mb-1">Cupo</p>
+                            <p className="text-[#2B338C] font-bold mb-1 text-md mb-1">Cupo</p>
 
                             {editMode ? (
                                 <Input
@@ -292,7 +261,7 @@ export default function FichaOfertaModal({
 
                         {/* Grupo */}
                         <div>
-                            <p className="text-[#2B338C] font-bold text-md mb-1">
+                            <p className="text-[#2B338C] font-bold mb-1 text-md mb-1">
                                 Grupo
                             </p>
 
@@ -318,7 +287,7 @@ export default function FichaOfertaModal({
                         </div>
                         {/* Matriculados */}
                         <div>
-                            <p className="text-[#2B338C] font-bold text-md mb-1">
+                            <p className="text-[#2B338C] font-bold mb-1 text-md mb-1">
                                 Estudiantes matriculados
                             </p>
 
@@ -346,17 +315,62 @@ export default function FichaOfertaModal({
 
                     <hr className="my-4 border-gray-300" />
 
+                    {/* -------------------------- RESPONZABLES -------------------------- */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+
+                        <div>
+                            <p className="text-[#2B338C] font-bold mb-1">Coordinador:</p>
+                            <Select
+                                label="Coordinador"
+                                value={fichaForm?.coordinadorId || ""}
+                                disabled={!editMode || OfertaCancelada}
+                                onChange={(v) =>
+                                    setFichaForm((prev) => ({ ...prev, coordinadorId: Number(v) }))
+                                }
+                            >
+                                {coordinadores.map((c) => (
+                                    <Option key={c.id} value={c.id}>
+                                        {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`.trim()}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </div>
+
+                        <div>
+                            <p className="text-[#2B338C] font-bold mb-1 mb-1">Profesor:</p>
+
+                            <Input
+                                label="Profesor"
+                                value={(() => {
+                                    if (!fichaForm?.personaId) return "Sin asignar";
+
+                                    const p = personas.find(
+                                        x => String(x.personaId) === String(fichaForm.personaId)
+                                    );
+
+                                    return p
+                                        ? `${p.nombre} ${p.primerApellido} ${p.segundoApellido}`.trim()
+                                        : "Sin asignar";
+                                })()}
+                                disabled
+                            />
+                        </div>
+
+                    </div>
+
+                    <hr className="my-4 border-gray-300" />
+
                     {/* -------------------------- ACCIÓN Y ESTADO -------------------------- */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
                         {!editMode ? (
                             <>
                                 <div>
-                                    <p className="text-[#2B338C] font-bold">Acción:</p>
+                                    <p className="text-[#2B338C] font-bold mb-1">Acción:</p>
                                     {accionChips(fichaData?.accion)}
                                 </div>
 
                                 <div>
-                                    <p className="text-[#2B338C] font-bold">Estado de la Oferta:</p>
+                                    <p className="text-[#2B338C] font-bold mb-1">Estado de la Oferta:</p>
                                     {estadoChips(fichaData?.estado)}
                                 </div>
                             </>
@@ -381,7 +395,7 @@ export default function FichaOfertaModal({
                     <hr className="my-4 border-gray-300" />
 
                     {/* -------------------------- COMENTARIOS -------------------------- */}
-                    <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
+                    <h2 className="text-[#2B338C] font-bold mb-1 text-base mb-2 border-b border-gray-300 pb-1">
                         Comentarios
                     </h2>
 
