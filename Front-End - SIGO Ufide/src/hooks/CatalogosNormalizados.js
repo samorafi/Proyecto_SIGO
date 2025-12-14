@@ -11,7 +11,8 @@ export const CatalogosNormalizados = (catalogos) => {
         horarios,
         periodos,
         coordinadores,
-        estados
+        estados,
+        personas
     } = catalogos;
 
     // ------------------ Cursos ------------------
@@ -113,6 +114,23 @@ export const CatalogosNormalizados = (catalogos) => {
     const getCoordinadorSegundoApellido = (id) =>
         coordinadores.find(c => c.id === id)?.segundoApellido ?? id;
 
+    // ------------------ Profesores ------------------
+
+    const matchProfesorId = (valor) => {
+        if (!valor) return "";
+        const hit = personas.find(p => p.nombre === valor);
+        return hit?.id ?? "";
+    };
+
+    const getProfesorNombre = (id) =>
+        personas.find(p => p.id === id)?.nombre ?? id;
+
+    const getProfesorApellido = (id) =>
+        personas.find(p => p.id === id)?.apellido ?? id;
+
+    const getProfesorSegundoApellido = (id) =>
+        personas.find(p => p.id === id)?.segundoApellido ?? id;
+
     // ------------------ Estados / Acción ------------------
     const matchAccionIdDesdeEstadoOAccion = (estado, accion) => {
         const nombre = estado || accion;
@@ -138,6 +156,10 @@ export const CatalogosNormalizados = (catalogos) => {
         getCoordinadorNombre,
         getCoordinadorPrimerApellido,
         getCoordinadorSegundoApellido,
-        matchAccionIdDesdeEstadoOAccion
+        matchAccionIdDesdeEstadoOAccion,
+        getProfesorNombre,
+        getProfesorApellido,
+        getProfesorSegundoApellido,
+        matchProfesorId
     };
 };

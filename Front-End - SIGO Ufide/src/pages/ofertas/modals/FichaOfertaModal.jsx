@@ -28,7 +28,9 @@ export default function FichaOfertaModal({
     periodos,
     coordinadores,
     estados,
+    personas,
     modalidades = [1, 2, 3],
+
 
     setFichaForm,
     onGuardar,
@@ -156,7 +158,6 @@ export default function FichaOfertaModal({
                             ))}
                         </Select>
 
-
                         {/* Tipo de periodo */}
                         <Select
                             label="Tipo de periodo"
@@ -214,10 +215,26 @@ export default function FichaOfertaModal({
                         >
                             {coordinadores.map((c) => (
                                 <Option key={c.id} value={c.id}>
-                                      {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`.trim()}
+                                    {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`.trim()}
                                 </Option>
                             ))}
                         </Select>
+
+                        <Select
+                            label="Profesor"
+                            value={fichaForm?.profesorId || ""}
+                            disabled={!editMode || OfertaCancelada}
+                            onChange={(v) =>
+                                setFichaForm((prev) => ({ ...prev, profesorId: Number(v) }))
+                            }
+                        >
+                            {personas.map((p) => (
+                                <Option key={p.personaId} value={p.personaId}>
+                                    {`${p.nombre} ${p.primerApellido} ${p.segundoApellido}`.trim()}
+                                </Option>
+                            ))}
+                        </Select>
+
                     </div>
 
                     {/* Modalidad */}

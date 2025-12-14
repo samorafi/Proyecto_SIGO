@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useCatalogosOfertas() {
+export function useCatalogos() {
   const [catalogos, setCatalogos] = useState({
     cursos: [],
     sedes: [],
@@ -10,6 +10,7 @@ export function useCatalogosOfertas() {
     coordinadores: [],
     estados: [],
     estadoOferta: [],
+    personas: [], // Corresponde a personas
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,6 +27,7 @@ export function useCatalogosOfertas() {
           coordinadoresRes,
           estadosRes,
           estadoOfertaRes,
+          personasRes,
         ] = await Promise.all([
           fetch("/api/cursos"),
           fetch("/api/sedes"),
@@ -35,6 +37,7 @@ export function useCatalogosOfertas() {
           fetch("/api/personas/coordinadores"),
           fetch("/api/acciones-oferta"),
           fetch("/api/estadoOfertas"),
+          fetch("/api/personas"),
         ]);
 
         const [
@@ -46,6 +49,7 @@ export function useCatalogosOfertas() {
           coordinadores,
           estados,
           estadoOferta,
+          personas,
         ] = await Promise.all([
           cursosRes.json(),
           sedesRes.json(),
@@ -55,6 +59,7 @@ export function useCatalogosOfertas() {
           coordinadoresRes.json(),
           estadosRes.json(),
           estadoOfertaRes.json(),
+          personasRes.json(),
         ]);
 
         setCatalogos({
@@ -66,6 +71,7 @@ export function useCatalogosOfertas() {
           coordinadores,
           estados,
           estadoOferta,
+          personas,
         });
       } catch (err) {
         console.error("Error al cargar catálogos:", err);

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Input, Select, Option, Chip } from "@material-tailwind/react";
 import { EyeIcon, PencilSquareIcon, PaperAirplaneIcon, XCircleIcon, ArrowUpTrayIcon, PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { useCatalogosOfertas } from "@/pages/ofertas/hooks/useCatalogosOfertas";
+import { useCatalogosOfertas } from "@/hooks/useCatalogos";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {

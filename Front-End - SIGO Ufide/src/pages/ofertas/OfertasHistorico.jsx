@@ -7,10 +7,10 @@ import PageTitle from "@/components/ui/Title/PageTitle";
 import FichaOfertaModal from "./modals/FichaOfertaModal";
 
 // Funciones reutilizadas
-import { CatalogosNormalizados } from "@/pages/ofertas/functions/CatalogosNormalizados";
+import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
 import { OpenFichaOferta } from "@/pages/ofertas/functions";
 
-import { useCatalogosOfertas } from "@/pages/ofertas/hooks/useCatalogosOfertas";
+import { useCatalogos } from "@/hooks/useCatalogos";
 
 // Chips reutilizables
 import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAccionesChips";
@@ -40,8 +40,9 @@ export default function OfertasHistorico() {
         coordinadores,
         estados,
         estadoOferta,
+        personas,
         loading: loadingCatalogos
-    } = useCatalogosOfertas();
+    } = useCatalogos();
 
     // Normalizadores reutilizados
     const normalizadores = CatalogosNormalizados({
@@ -477,6 +478,7 @@ export default function OfertasHistorico() {
                 periodos={periodos}
                 coordinadores={coordinadores}
                 estados={estados}
+                personas={personas}
 
                 setFichaForm={setFichaForm}
 

@@ -13,7 +13,7 @@ import FichaOfertaModal from "./modals/FichaOfertaModal";
 import RegistrarOfertaModal from "./modals/RegistrarOfertaModal";
 
 // Importar Funciones
-import { CatalogosNormalizados } from "@/pages/ofertas/functions/CatalogosNormalizados";
+import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
 import { OpenFichaOferta, CancelarOferta, GuardarOferta } from "@/pages/ofertas/functions";
 
 // Importar Componentes
@@ -23,7 +23,7 @@ import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAcci
 // Importar Hooks
 import { useArchivarPorModalidad } from "@/pages/ofertas/hooks/useArchivarPorModalidad";
 import { useDuplicarOfertas } from "@/pages/ofertas/hooks/useDuplicarOfertas";
-import { useCatalogosOfertas } from "@/pages/ofertas/hooks/useCatalogosOfertas";
+import { useCatalogos } from "@/hooks/useCatalogos";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -51,8 +51,9 @@ export default function OfertasPresencialesVirtuales() {
         coordinadores,
         estados,
         estadoOferta,
+        personas,
         loading: loadingCatalogos
-    } = useCatalogosOfertas();
+    } = useCatalogos();
 
     //----------------------------------------------------------------------------
     // Funciones de Normalización de los catalogos.
@@ -944,6 +945,7 @@ export default function OfertasPresencialesVirtuales() {
                 periodos={periodos}
                 coordinadores={coordinadores}
                 estados={estados}
+                personas={personas}
 
                 setFichaForm={setFichaForm}
                 onGuardar={handleGuardar}

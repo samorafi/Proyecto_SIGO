@@ -13,7 +13,7 @@ import FichaOfertaModal from "./modals/FichaOfertaModal";
 import RegistrarOfertaModal from "./modals/RegistrarOfertaModal";
 
 // Importar Funciones
-import { CatalogosNormalizados } from "@/pages/ofertas/functions/CatalogosNormalizados";
+import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
 import { OpenFichaOferta, CancelarOferta, GuardarOferta } from "@/pages/ofertas/functions";
 
 // Importar Componentes
@@ -23,7 +23,7 @@ import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAcci
 // Importar Hooks
 import { useArchivarPorModalidad } from "@/pages/ofertas/hooks/useArchivarPorModalidad";
 import { useDuplicarOfertas } from "@/pages/ofertas/hooks/useDuplicarOfertas";
-import { useCatalogosOfertas } from "@/pages/ofertas/hooks/useCatalogosOfertas";
+import { useCatalogosOfertas } from "@/hooks/useCatalogos";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -51,6 +51,7 @@ export default function OfertasEnLinea() {
         coordinadores,
         estados,
         estadoOferta,
+        personas,
         loading: loadingCatalogos
     } = useCatalogosOfertas();
 
@@ -64,7 +65,8 @@ export default function OfertasEnLinea() {
         horarios: horario,
         periodos,
         coordinadores,
-        estados
+        estados,
+        personas
     });
 
     const {
@@ -81,7 +83,11 @@ export default function OfertasEnLinea() {
         getCoordinadorPrimerApellido,
         getCoordinadorSegundoApellido,
         getCursoNombrePorCodigo,
-        matchAccionIdDesdeEstadoOAccion
+        matchAccionIdDesdeEstadoOAccion,
+        getProfesorNombre,
+        getProfesorApellido,
+        getProfesorSegundoApellido,
+
     } = normalizadores;
 
     const [loading, setLoading] = useState(true);
@@ -713,7 +719,7 @@ export default function OfertasEnLinea() {
                             <Option value="">Todos</Option>
                             {Array.from(new Set(ofertas.map(o => o.curso))).map((curso) => (
                                 <Option key={curso} value={curso} className="bg-white">
-                                    {curso}
+                                    {curso} - {getCursoNombrePorCodigo(curso)}
                                 </Option>
                             ))}
                         </Select>
@@ -789,7 +795,7 @@ export default function OfertasEnLinea() {
                             <Option value="">Todos</Option>
                             {coordinadores.map((c) => (
                                 <Option key={c.id} value={String(c.id)} className="bg-white">
-                                    {c.nombre}
+                                    {c.nombre} {c.primerApellido} {c.segundoApellido}
                                 </Option>
                             ))}
                         </Select>
@@ -978,6 +984,7 @@ export default function OfertasEnLinea() {
                 periodos={periodos}
                 coordinadores={coordinadores}
                 estados={estados}
+                personas={personas}
 
                 setFichaForm={setFichaForm}
                 onGuardar={handleGuardar}

@@ -1,5 +1,5 @@
 // /pages/ofertas/functions/OpenFichaOferta.js
-import { normalizarOferta } from "./normalizarOferta";
+import { normalizarOferta } from "../../../hooks/normalizarOferta";
 
 export default async function OpenFichaOferta(id, helpers) {
     try {
