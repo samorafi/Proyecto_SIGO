@@ -1231,7 +1231,8 @@ BEGIN
         grupo,
         cupo,
         matriculados,
-        archivado
+        archivado,
+		persona_id
     )
     SELECT
         curso_id,
@@ -1246,8 +1247,9 @@ BEGIN
         grupo,
         cupo,
         0,                   -- matriculados reinicia
-        FALSE                -- archivado siempre false
-    FROM universidad.oferta
+        FALSE,                -- archivado siempre false
+		persona_id			 -- Para duplicar el profesor asignado
+    FROM universidad.oferta 
     WHERE periodo_id = p_periodo_origen
       AND modalidad_id = ANY(p_modalidades);
 
@@ -1260,3 +1262,18 @@ BEGIN
 
 END;
 $$;
+
+-- ------------------------------------------------------------------
+-- CAMBIOS OFERTAS - SEBASTIAN MORA 7:03 PM 12/13/2025
+-- ------------------------------------------------------------------
+ 
+ALTER TABLE universidad.oferta
+ADD COLUMN IF NOT EXISTS persona_id INT;
+ 
+ALTER TABLE universidad.oferta
+ADD CONSTRAINT fk_persona_profesor
+      FOREIGN KEY (persona_id)
+      REFERENCES universidad.persona(persona_id);
+
+INSERT INTO universidad.estado_ofertas (estado_oferta_id, nombre) VALUES
+  (6,'Importada');

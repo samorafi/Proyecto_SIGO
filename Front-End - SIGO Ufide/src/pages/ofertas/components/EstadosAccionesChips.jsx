@@ -23,7 +23,7 @@ export const EstadoChips = {
     Aceptada: { color: "green", label: "ACEPTADA" },
     Rechazada: { color: "red", label: "RECHAZADA" },
     Cancelada: { color: "gray", label: "CANCELADA" },
-    Importado: { color: "teal", label: "IMPORTADO" },
+    Importada: { color: "teal", label: "IMPORTADA" },
     
 };
 

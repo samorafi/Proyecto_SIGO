@@ -30,7 +30,8 @@ public class GetAllOfertasQueryHandler : IRequestHandler<GetAllOfertasQuery, IRe
                 Grupo = o.Grupo,
                 Cupo = o.Cupo,
                 Matriculados = o.Matriculados,
-                Archivados = o.Archivados
+                Archivados = o.Archivados,
+                PersonaId = o.PersonaId
             })
             .ToListAsync(ct);
     }

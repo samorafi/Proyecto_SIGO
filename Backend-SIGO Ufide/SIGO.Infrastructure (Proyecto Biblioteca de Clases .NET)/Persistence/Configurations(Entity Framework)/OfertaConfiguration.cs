@@ -23,6 +23,7 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
         b.Property(x => x.Cupo).HasColumnName("cupo");
         b.Property(x => x.Matriculados).HasColumnName("matriculados");
         b.Property(x => x.Archivados).HasColumnName("archivado");
+        b.Property(x => x.PersonaId).HasColumnName("persona_id");
 
         b.HasIndex(x => new { x.CursoId, x.SedeId, x.ModalidadId, x.PeriodoId, x.Grupo })
             .IsUnique()
@@ -37,5 +38,6 @@ public class OfertaConfiguration : IEntityTypeConfiguration<Oferta>
         b.HasOne(o => o.Accion).WithMany().HasForeignKey(o => o.AccionId).HasConstraintName("fk_oferta_accion");
         b.HasOne(o => o.Coordinador).WithMany().HasForeignKey(o => o.CoordinadorId).HasConstraintName("fk_oferta_coordinador");
         b.HasOne(o => o.EstadoOferta).WithMany().HasForeignKey(o => o.EstadoOfertaId).HasConstraintName("fk_oferta_estado_oferta");
+        b.HasOne(o => o.Persona).WithMany().HasForeignKey(o => o.PersonaId).HasConstraintName("fk_oferta_persona");
     }
 }

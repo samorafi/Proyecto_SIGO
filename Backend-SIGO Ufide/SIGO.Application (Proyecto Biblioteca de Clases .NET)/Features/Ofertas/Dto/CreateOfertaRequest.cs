@@ -14,4 +14,5 @@ public class CreateOfertaRequest
     public int? Cupo { get; set; }
     public int? Matriculados { get; set; }
     public Boolean Archivados { get; set; }
+    public int? PersonaId { get; set; }
 }

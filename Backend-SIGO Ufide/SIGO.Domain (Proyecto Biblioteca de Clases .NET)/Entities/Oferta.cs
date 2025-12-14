@@ -17,6 +17,7 @@ public class Oferta
     public int? Cupo { get; set; }        
     public int? Matriculados { get; set; }  
     public Boolean Archivados { get; set; }
+    public int? PersonaId { get; set; }
 
     public virtual AccionOferta? Accion { get; set; }
     public virtual Persona? Coordinador { get; set; }
@@ -26,4 +27,5 @@ public class Oferta
     public virtual Horario? Horario { get; set; }
     public virtual Periodo? Periodo { get; set; }
     public virtual EstadoOferta EstadoOferta { get; set; }
+    public virtual Persona? Persona { get; set; }
 }

@@ -31,7 +31,8 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
                 Grupo = o.Grupo,
                 Cupo = o.Cupo,
                 Matriculados = o.Matriculados,
-                Archivados = o.Archivados
+                Archivados = o.Archivados,
+                PersonaId = o.PersonaId
 
             })
             .FirstOrDefaultAsync(ct);

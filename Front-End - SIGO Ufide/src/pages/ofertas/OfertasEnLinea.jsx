@@ -3,7 +3,7 @@ import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFoote
 import { PaperAirplaneIcon, XCircleIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 // Componentes Personalizados UI.
-import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton} from "@/components/ui/Buttons";
+import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton } from "@/components/ui/Buttons";
 import PageTitle from "@/components/ui/Title/PageTitle";
 
 // Importar Modals
@@ -429,7 +429,7 @@ export default function OfertasEnLinea() {
 
     const handleAbrirEnviar = (oferta) => {
         setOfertaSeleccionada(oferta);
-        setDocenteId("");
+        setDocenteId(oferta?.personaId ? String(oferta.personaId) : "");
         setOpenEnviar(true);
     };
 
@@ -803,6 +803,10 @@ export default function OfertasEnLinea() {
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
                     CANCELADAS: {filtered.filter(o => o.estado === "Cancelada").length}
+                </span>
+
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-teal-600">
+                    IMPORTADAS: {filtered.filter(o => o.estado === "Importada").length}
                 </span>
             </div>
 

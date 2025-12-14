@@ -61,7 +61,9 @@ public class EnviarSolicitudOfertaCommandHandler
         if (string.IsNullOrWhiteSpace(docente.Correo))
             throw new InvalidOperationException("El docente no tiene correo registrado.");
 
-        var emailDestino = docente.Correo;
+        var emailDestino = docente.Correo; 
+
+        oferta.PersonaId = docente.Id; // Sobrescribir el docente asignado en la oferta
 
         // Evitar solicitudes PENDIENTES duplicadas para la misma oferta/persona
         var existePendiente = await _db.SolicitudesOferta

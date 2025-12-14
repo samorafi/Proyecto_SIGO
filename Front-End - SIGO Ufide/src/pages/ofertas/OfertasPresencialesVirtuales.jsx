@@ -631,7 +631,7 @@ export default function OfertasPresencialesVirtuales() {
 
     const handleAbrirEnviar = (oferta) => {
         setOfertaSeleccionada(oferta);
-        setDocenteId("");
+        setDocenteId(oferta?.personaId ? String(oferta.personaId) : "");
         setOpenEnviar(true);
     };
 
@@ -982,6 +982,10 @@ export default function OfertasPresencialesVirtuales() {
 
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
                     CANCELADAS: {filtered.filter(o => o.estado === "Cancelada").length}
+                </span>
+
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-teal-600">
+                    IMPORTADAS: {filtered.filter(o => o.estado === "Importada").length}
                 </span>
             </div>
 
