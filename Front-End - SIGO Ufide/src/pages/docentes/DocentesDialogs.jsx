@@ -359,7 +359,7 @@ function FichaDocente({ open, onClose, id }) {
             <div className="md:col-span-2">
               <RowInfo label="Comentario" value={p.comentarios} />
             </div>
-            <RowInfo label="En línea" value={enLineaTxt} />
+            {/* RowInfo label="En línea" value={enLineaTxt} */}
           </div>
         )}
 
@@ -976,7 +976,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
           </Field>
         </div>
 
-        {/* En línea */}
+        {/* En línea 
         <div className="md:col-span-2 flex items-center gap-3">
           <Typography className="text-blue-gray-700 font-medium">
             ¿El docente imparte clases 100% en línea?
@@ -987,7 +987,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
             label={f.enLinea ? "Sí" : "No"}
             ripple={false}
           />
-        </div>
+        </div> */}
       </DialogBody>
 
       <DialogFooter className="gap-2">
@@ -1755,7 +1755,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
               </Field>
             </div>
 
-            {/* En línea */}
+            {/* En línea 
             <div className="md:col-span-2 flex items-center gap-3">
               <Typography className="text-blue-gray-700 font-medium">
                 ¿El docente imparte clases 100% en línea?
@@ -1768,7 +1768,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
                 label={f.enLinea ? "Sí" : "No"}
                 ripple={false}
               />
-            </div>
+            </div>*/}
           </>
         )}
       </DialogBody>

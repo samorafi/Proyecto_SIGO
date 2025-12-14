@@ -40,6 +40,12 @@ const tiles = [
     desc: "Plantillas y reglas de correo/alertas.",
     Icon: BellAlertIcon,
   },
+  {
+    to: "/dashboard/admin/importarDatos",
+    title: "Importación de datos",
+    desc: "Importar datos en tablas del sistema.",
+    Icon: InboxArrowDownIcon,
+  },
 ];
 
 function Tile({ to, title, desc, Icon }) {

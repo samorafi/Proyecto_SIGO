@@ -35,6 +35,9 @@ import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
 import OfertasHistorico from "@/pages/ofertas/OfertasHistorico";
 
+// Importación de datos
+import ImportarDatosPrincipal from "@/pages/importar/importarDatosPrincipal";
+
 export const routes = [
   {
     layout: "dashboard",
@@ -65,6 +68,7 @@ export const routes = [
       { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true },
       { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true },
       { name: "Bitácoras", path: "/bitacoras", element: <BitacoraAuditoria />, hidden: true },
+      { name: "Importar Datos", path: "/admin/importarDatos", element: <ImportarDatosPrincipal />, hidden: true },
     ],
   },
 

@@ -8,6 +8,9 @@ import {
   ChevronLeftIcon, ChevronRightIcon, PlusIcon,
 } from "@heroicons/react/24/outline";
 
+import {FormButton} from "@/components/ui/Buttons";
+
+
 import {
   FichaDocente,
   AgregarDocente,
@@ -372,6 +375,7 @@ function Docentes() {
           <PlusIcon className="h-4 w-4" />
           Agregar docente
         </Button>
+        <FormButton onClick={() => setOpenAdd(true)} >Agregar docente</FormButton>
       </div>
 
       {/* Filtros */}
