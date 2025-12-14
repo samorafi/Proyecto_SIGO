@@ -18,6 +18,7 @@ import AdmRolesPermisos from "@/pages/admin/admRolesPermisos";
 import Notificaciones from "@/pages/notificaciones";
 import Perfil from "@/pages/perfil";
 import SignIn from "@/pages/auth/sign-in";
+import Coordinadores from "@/pages/admin/admCoordinadores";
 
 // Administración del sistema.
 
@@ -69,6 +70,8 @@ export const routes = [
       { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true },
       { name: "Bitácoras", path: "/bitacoras", element: <BitacoraAuditoria />, hidden: true },
       { name: "Importar Datos", path: "/admin/importarDatos", element: <ImportarDatosPrincipal />, hidden: true },
+      { name: "Coordinadores", path: "/admin/admCoordinadores", element: <Coordinadores />, hidden: true },
+
     ],
   },
 

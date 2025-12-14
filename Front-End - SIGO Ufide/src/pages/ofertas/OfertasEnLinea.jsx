@@ -23,7 +23,7 @@ import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAcci
 // Importar Hooks
 import { useArchivarPorModalidad } from "@/pages/ofertas/hooks/useArchivarPorModalidad";
 import { useDuplicarOfertas } from "@/pages/ofertas/hooks/useDuplicarOfertas";
-import { useCatalogosOfertas } from "@/hooks/useCatalogos";
+import { useCatalogos } from "@/hooks/useCatalogos";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -53,7 +53,7 @@ export default function OfertasEnLinea() {
         estadoOferta,
         personas,
         loading: loadingCatalogos
-    } = useCatalogosOfertas();
+    } = useCatalogos();
 
     //----------------------------------------------------------------------------
     // Funciones de Normalización de los catalogos.

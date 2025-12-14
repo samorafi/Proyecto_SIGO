@@ -8,7 +8,12 @@ import {
   Cog6ToothIcon,
   DocumentMagnifyingGlassIcon,
   BellAlertIcon,
+  UserIcon,
+  BookmarkIcon,
+  CheckIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
+import { ArchiveBoxXMarkIcon, BookOpenIcon } from "@heroicons/react/24/solid";
 
 const tiles = [
   {
@@ -45,6 +50,12 @@ const tiles = [
     title: "Importación de datos",
     desc: "Importar datos en tablas del sistema.",
     Icon: InboxArrowDownIcon,
+  },
+  {
+    to: "/dashboard/admin/admCoordinadores",
+    title: "Gestión de Coordinadores",
+    desc: "Crea coordinadores y define sus carreras y cursos a cargo.",
+    Icon: PencilIcon,
   },
 ];
 
@@ -83,12 +94,6 @@ export default function Admin() {
             Panel central de configuración de <b>SIGO</b>. Desde aquí gestionás
             usuarios, roles, catálogos y parámetros generales. (UI maqueta)
           </Typography>
-        </div>
-
-        {/* Badges de ejemplo (mock) */}
-        <div className="flex items-center gap-2">
-          <Chip value="6 módulos" className="bg-[#2B338C] text-white" />
-          <Chip value="2 pendientes" className="bg-[#FFDA00] text-[#2B338C]" />
         </div>
       </div>
 

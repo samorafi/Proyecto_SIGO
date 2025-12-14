@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Input, Select, Option, Chip } from "@material-tailwind/react";
 import { EyeIcon, PencilSquareIcon, PaperAirplaneIcon, XCircleIcon, ArrowUpTrayIcon, PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { useCatalogosOfertas } from "@/hooks/useCatalogos";
+import { useCatalogos } from "@/hooks/useCatalogos";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -29,7 +29,7 @@ export default function OfertasPresencialesVirtuales() {
         estados,
         estadoOferta,
         loading: loadingCatalogos
-    } = useCatalogosOfertas();
+    } = useCatalogos();
 
     //----------------------------------------------------------------------------
     // Funciones de Normalización de los catalogos.
