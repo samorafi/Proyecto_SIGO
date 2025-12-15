@@ -99,7 +99,7 @@ namespace SIGO.Application.Features.Docentes.Commands.ImportarDocentes
 
                         ProcesarNombre(nombreCompleto, docente);
 
-                        // --- PERIODOS ---
+                        // --- PERIODOS (Ingreso)---
                         string ingresoRaw = row["Ingreso"]?.ToString()?.Trim();
                         if (!string.IsNullOrEmpty(ingresoRaw))
                         {
@@ -108,12 +108,23 @@ namespace SIGO.Application.Features.Docentes.Commands.ImportarDocentes
                             else response.Errores.Add($"Fila {filaIndex}: Periodo '{ingresoRaw}' inválido.");
                         }
 
+                        // --- PERIODOS (Desvinculación) ---
+                        string desvRaw = row["Cuatrimestre de desvinculación"]?.ToString()?.Trim();
+
+                        if (!string.IsNullOrEmpty(desvRaw))
+                        {
+                            int? periodoDesvId = await ObtenerOCrearPeriodoAsync(desvRaw, periodosCache, cancellationToken);
+                            if (periodoDesvId.HasValue) docente.PeriodoDesvinculacionId = periodoDesvId.Value; 
+                            else response.Errores.Add($"Fila {filaIndex}: Periodo de desvinculación '{desvRaw}' inválido.");
+                        }
+
                         // --- MAPEO DE CATALOGOS ---
                         if (generos.TryGetValue(row["Género"]?.ToString().NormalizarParaMatch(), out int genId)) docente.GeneroId = genId;
                         if (categorias.TryGetValue(row["Categoría"]?.ToString().NormalizarParaMatch(), out int catId)) docente.CategoriaId = catId;
                         if (estados.TryGetValue(row["Estado"]?.ToString().NormalizarParaMatch(), out int estId)) docente.EstadoPersonaId = estId;
                         if (contratos.TryGetValue(row["Contratación"]?.ToString().NormalizarParaMatch(), out int conId)) docente.TipoContratoId = conId;
                         if (atestados.TryGetValue(row["Atestados"]?.ToString().NormalizarParaMatch(), out int ateId)) docente.AtestadoId = ateId;
+                        if (motivos.TryGetValue(row["Motivo de Desvinculación"]?.ToString().NormalizarParaMatch(), out int motId)) docente.MotivoDesvinculacionId = motId;
 
                         // Aquí "Central" ya funcionará porque lo agregamos al diccionario 'sedes' arriba
                         if (sedes.TryGetValue(row["Sede"]?.ToString().NormalizarParaMatch(), out int sedeId)) docente.SedeId = sedeId;
@@ -144,7 +155,7 @@ namespace SIGO.Application.Features.Docentes.Commands.ImportarDocentes
                 await _context.SaveChangesAsync(cancellationToken);
             }
 
-            response.TotalProcesados = response.Errores.Count + nuevosDocentes.Count;
+            response.TotalProcesados = nuevosDocentes.Count;
             response.InsertadosCorrectamente = nuevosDocentes.Count;
 
             return response;

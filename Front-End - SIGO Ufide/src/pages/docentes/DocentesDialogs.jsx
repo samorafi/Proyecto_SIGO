@@ -4,7 +4,7 @@ import {
   Button, Input, Select, Option, Typography,
   Dialog, DialogHeader, DialogBody, DialogFooter, Switch,
 } from "@material-tailwind/react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 
 /* ===================== API CONFIG ===================== */
@@ -88,9 +88,9 @@ const buildPeriodoLabel = (x) => {
   const tipo = x.tipo ?? x.Tipo ?? "";
   const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
 
-  const numTipo = [numero, tipo].filter(Boolean).join(""); 
+  const numTipo = [numero, tipo].filter(Boolean).join("");
 
-  if (numTipo && anio) return `${numTipo}, ${anio}`; 
+  if (numTipo && anio) return `${numTipo}, ${anio}`;
   if (anio) return String(anio);
   if (numTipo) return numTipo;
 
@@ -126,7 +126,7 @@ async function fetchPeriodosOrdered() {
 
   return arr.map((x) => ({
     id: String(x.periodoId ?? x.id ?? x.Id ?? x.ID),
-    nombre: buildPeriodoLabel(x), 
+    nombre: buildPeriodoLabel(x),
     __raw: x,
   }));
 }
@@ -181,6 +181,8 @@ function FichaDocente({ open, onClose, id }) {
 
   const [periodoIngresoNombre, setPeriodoIngresoNombre] = useState("—");
   const [periodoDesvNombre, setPeriodoDesvNombre] = useState("—");
+  const [motivoNombre, setMotivoNombre] = useState("—");
+
 
   // pestañas internas
   const [activeTab, setActiveTab] = useState("ficha"); // "ficha" | "constelacion"
@@ -271,6 +273,36 @@ function FichaDocente({ open, onClose, id }) {
     };
   }, [p]);
 
+  useEffect(() => {
+    let live = true;
+
+    const loadMotivo = async () => {
+      if (!p) return;
+
+      const motivoId =
+        p?.motivoDesvinculacionId ??
+        p?.motivoDesvinculacion?.id ??
+        p?.motivoDesvinculacion?.motivoDesvinculacionId ??
+        null;
+
+      if (!motivoId) {
+        if (live) setMotivoNombre("—");
+        return;
+      }
+
+      try {
+        const lista = await fetchArray(URL.motivos);
+        const nombre = findLabel(lista, motivoId);
+        if (live) setMotivoNombre(nombre || "—");
+      } catch {
+        if (live) setMotivoNombre("—");
+      }
+    };
+
+    loadMotivo();
+    return () => { live = false; };
+  }, [p]);
+
   const provincia = p?.provincia?.nombre ?? p?.provincia;
   const canton = p?.canton?.nombre ?? p?.canton;
   const generoTxt = p?.genero?.nombre ?? p?.genero;
@@ -284,8 +316,7 @@ function FichaDocente({ open, onClose, id }) {
         : "Inactivo"
       : p?.estadoPersona?.nombre ?? p?.estado;
   const rolTxt = p?.rolDocente?.nombre ?? p?.rol ?? p?.rolDocente ?? "—";
-  const motivoTxt =
-    p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
+  const motivoTxt = p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
   const sedeTxt = p?.sede?.nombre ?? p?.sede ?? "—";
   const enLineaTxt = p?.enLinea ? "Sí" : "No";
 
@@ -303,18 +334,16 @@ function FichaDocente({ open, onClose, id }) {
         <div className="flex w-full rounded-2xl bg-blue-gray-50 p-1">
           <button
             type="button"
-            className={`${tabBase} ${
-              activeTab === "ficha" ? tabActive : tabInactive
-            }`}
+            className={`${tabBase} ${activeTab === "ficha" ? tabActive : tabInactive
+              }`}
             onClick={() => setActiveTab("ficha")}
           >
             Ficha docente
           </button>
           <button
             type="button"
-            className={`${tabBase} ${
-              activeTab === "constelacion" ? tabActive : tabInactive
-            }`}
+            className={`${tabBase} ${activeTab === "constelacion" ? tabActive : tabInactive
+              }`}
             onClick={() => setActiveTab("constelacion")}
           >
             Constelación docente
@@ -351,7 +380,7 @@ function FichaDocente({ open, onClose, id }) {
               value={<EstadoChip value={estadoTxt} />}
             />
             <RowInfo label="Tipo de contrato" value={contratoTxt} />
-            <RowInfo label="Motivo de desvinculación" value={motivoTxt} />
+            <RowInfo label="Motivo de desvinculación" value={motivoNombre} />
             <RowInfo
               label="Periodo de desvinculación"
               value={periodoDesvNombre}
@@ -371,7 +400,7 @@ function FichaDocente({ open, onClose, id }) {
               carga, etc.). Por el momento este espacio se deja reservado.
             </Typography>
 
-          
+
           </div>
         )}
       </DialogBody>
@@ -590,7 +619,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
             j?.id ?? j?.data?.id ?? j?.result?.id ??
             j?.personaId ?? j?.data?.personaId ?? null;
         }
-      } catch {}
+      } catch { }
       if (!newId) {
         const loc = r.headers.get("Location");
         if (loc) newId = loc.split("/").pop();
@@ -1261,8 +1290,8 @@ function EditarDocente({ open, onClose, id, onSaved }) {
           findIdByNombre(
             cat.motivos,
             x?.motivoDesvinculacion?.nombre ||
-              x?.motivoDesvinculacion ||
-              ""
+            x?.motivoDesvinculacion ||
+            ""
           );
 
         const periodoDesvinculacionLabel =

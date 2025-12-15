@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SIGO.Application.Common.Utils
 {
@@ -8,6 +9,9 @@ namespace SIGO.Application.Common.Utils
         public static string NormalizarParaMatch(this string texto)
         {
             if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+
+            texto = texto.Replace('\u00A0', ' ');
+            texto = Regex.Replace(texto, @"\s+", " ");
 
             var textoNormalizado = texto.Trim().ToUpper();
             var normalizedString = textoNormalizado.Normalize(NormalizationForm.FormD);

@@ -1286,3 +1286,16 @@ ADD CONSTRAINT fk_persona_profesor
 
 INSERT INTO universidad.estado_ofertas (estado_oferta_id, nombre) VALUES
   (6,'Importada');
+
+-- ------------------------------------------------------------------
+-- CAMBIOS A COORDINADORES Y PERSONAS - SEBASTIAN MORA 3:44 PM 12/14/2025
+-- ------------------------------------------------------------------
+
+UPDATE universidad.atestado 
+SET nombre = CASE 
+    WHEN nombre = 'Licenciado(a)' THEN 'Licenciatura'
+    WHEN nombre = 'Máster' THEN 'Maestría'
+	WHEN nombre = 'Doctor(a)' THEN 'Doctorado'
+    ELSE nombre
+END
+WHERE nombre IN ('Licenciado(a)', 'Máster', 'Doctor(a)');
