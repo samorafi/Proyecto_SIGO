@@ -58,28 +58,76 @@ public class ResponderSolicitudOfertaCommandHandler
         {
             solicitud.EstadoSolicitud = 1; // Aceptada
             if (solicitud.Oferta is not null)
-            {
                 solicitud.Oferta.EstadoOfertaId = ESTADO_OFERTA_ACEPTADA;
-            }
         }
-        else if (accion == "rechazar")
+        else // rechazar
         {
             solicitud.EstadoSolicitud = 2; // Rechazada
             if (solicitud.Oferta is not null)
-            {
                 solicitud.Oferta.EstadoOfertaId = ESTADO_OFERTA_RECHAZADA;
-            }
         }
 
-        solicitud.FechaRespuesta = DateTime.UtcNow;
+        // 3.5) Crear Notificación (automática)
+        var docenteNombre = $"{solicitud.Persona?.Nombre} {solicitud.Persona?.PrimerApellido}".Trim();
+        var oferta = solicitud.Oferta;
 
+        static string GetPropAsString(object? obj, params string[] names)
+        {
+            if (obj is null) return "";
+            var t = obj.GetType();
+            foreach (var n in names)
+            {
+                var p = t.GetProperty(n);
+                if (p is null) continue;
+                var v = p.GetValue(obj);
+                if (v is null) continue;
+                var s = v.ToString();
+                if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+            }
+            return "";
+        }
+
+        var codigo = GetPropAsString(oferta, "CodigoCurso", "Codigo", "CursoCodigo", "CodigoMateria");
+        var curso = GetPropAsString(oferta, "CursoNombre", "Curso", "NombreCurso", "NombreMateria");
+        var grupo = GetPropAsString(oferta, "Grupo");
+        var sede = GetPropAsString(oferta, "Sede");
+        var modalidad = GetPropAsString(oferta, "Modalidad");
+        var periodo = GetPropAsString(oferta, "PeriodoCodigo", "Periodo", "PeriodoNombre", "PeriodoId");
+
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(codigo)) parts.Add(codigo);
+        if (!string.IsNullOrWhiteSpace(curso)) parts.Add(curso);
+        if (!string.IsNullOrWhiteSpace(grupo)) parts.Add($"Grupo {grupo}");
+        if (!string.IsNullOrWhiteSpace(sede)) parts.Add(sede);
+        if (!string.IsNullOrWhiteSpace(modalidad)) parts.Add(modalidad);
+        if (!string.IsNullOrWhiteSpace(periodo)) parts.Add(periodo);
+
+        var asunto = parts.Count > 0
+            ? string.Join(" | ", parts)
+            : $"OfertaId: {solicitud.OfertaId}";
+
+        var notiMsg = accion == "aceptar"
+            ? $"Asunto: {asunto}. El docente {docenteNombre} ACEPTÓ la oferta."
+            : $"Asunto: {asunto}. El docente {docenteNombre} RECHAZÓ la oferta.";
+
+        _db.Notificaciones.Add(new Notificacion
+        {
+            PersonaId = solicitud.PersonaId,
+            OfertaId = solicitud.OfertaId,
+            SolicitudOfertaId = solicitud.SolicitudOfertaId,
+            Leido = false,
+            Mensaje = notiMsg,
+            FechaCreacion = DateTime.UtcNow,
+            FechaEvento = DateTime.UtcNow
+        });
+
+        solicitud.FechaRespuesta = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
 
         // 4) Mensaje de respuesta para el navegador del docente
-        var nombreDocente = $"{solicitud.Persona.Nombre} {solicitud.Persona.PrimerApellido}".Trim();
-
         return accion == "aceptar"
-            ? $"Gracias {nombreDocente}, su aceptación de la oferta ha sido registrada correctamente."
-            : $"Gracias {nombreDocente}, hemos registrado que ha rechazado la oferta.";
+            ? $"Gracias {docenteNombre}, su aceptación de la oferta ha sido registrada correctamente."
+            : $"Gracias {docenteNombre}, hemos registrado que ha rechazado la oferta.";
     }
+
 }

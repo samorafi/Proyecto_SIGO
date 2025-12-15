@@ -41,6 +41,8 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<ConfSmtp> ConfSmtps { get; set; }
 
         public DbSet<BitacoraAuditoria> BitacoraAuditorias { get; set; }
+        public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

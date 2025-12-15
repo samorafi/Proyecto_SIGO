@@ -1299,3 +1299,20 @@ SET nombre = CASE
     ELSE nombre
 END
 WHERE nombre IN ('Licenciado(a)', 'Máster', 'Doctor(a)');
+
+-- ------------------------------------------------------------------
+-- INTEGRACION MODULO DE NOTIFICACIONES - SEBASTIAN MORA 4:30 PM 12/15/2025
+-- ------------------------------------------------------------------
+
+CREATE TABLE notificaciones (
+  notificacion_id           SERIAL PRIMARY KEY,
+  persona_id   				INT NOT NULL,
+  oferta_id                 INT NOT NULL,
+  solicitud_oferta_id       INT NOT NULL,
+  leido						BOOLEAN DEFAULT FALSE,
+  mensaje                   TEXT NOT NULL,
+  fecha_creacion            TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  fecha_evento              TIMESTAMP WITHOUT TIME ZONE NULL,
+);
+
+

@@ -193,8 +193,27 @@ public class EnviarSolicitudOfertaCommandHandler
         {
             solicitud.EstadoEnvio = 2; // Error al enviar
             solicitud.ErrorEnvio = ex.Message;
-            // Nota: en caso de error NO cambiamos el estado de la oferta
         }
+
+        // =========================
+        // 6) Crear Notificación (automática)
+        // =========================
+        var docenteNombre = $"{docente.Nombre} {docente.PrimerApellido}".Trim();
+
+        var notiMsg = solicitud.EstadoEnvio == 1
+            ? $"Asunto: {asunto}. Se envió la oferta al docente {docenteNombre}."
+            : $"Asunto: {asunto}. Error al enviar la oferta al docente {docenteNombre}. Error: {solicitud.ErrorEnvio}";
+
+        _db.Notificaciones.Add(new Notificacion
+        {
+            PersonaId = docente.Id,
+            OfertaId = oferta.OfertaId,
+            SolicitudOfertaId = solicitud.SolicitudOfertaId,
+            Leido = false,
+            Mensaje = notiMsg,
+            FechaCreacion = DateTime.UtcNow,
+            FechaEvento = solicitud.FechaEnvio
+        });
 
         await _db.SaveChangesAsync(ct);
 
