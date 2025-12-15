@@ -11,6 +11,7 @@ export function useCatalogos() {
     estados: [],
     estadoOferta: [],
     personas: [], // Corresponde a personas
+    carreras: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +29,7 @@ export function useCatalogos() {
           estadosRes,
           estadoOfertaRes,
           personasRes,
+          carrerasRes,
         ] = await Promise.all([
           fetch("/api/cursos"),
           fetch("/api/sedes"),
@@ -38,6 +40,7 @@ export function useCatalogos() {
           fetch("/api/acciones-oferta"),
           fetch("/api/estadoOfertas"),
           fetch("/api/personas"),
+          fetch("/api/carreras"),
         ]);
 
         const [
@@ -50,6 +53,7 @@ export function useCatalogos() {
           estados,
           estadoOferta,
           personas,
+          carreras,
         ] = await Promise.all([
           cursosRes.json(),
           sedesRes.json(),
@@ -60,6 +64,7 @@ export function useCatalogos() {
           estadosRes.json(),
           estadoOfertaRes.json(),
           personasRes.json(),
+          carrerasRes.json(),
         ]);
 
         setCatalogos({
@@ -72,6 +77,7 @@ export function useCatalogos() {
           estados,
           estadoOferta,
           personas,
+          carreras,
         });
       } catch (err) {
         console.error("Error al cargar catálogos:", err);
