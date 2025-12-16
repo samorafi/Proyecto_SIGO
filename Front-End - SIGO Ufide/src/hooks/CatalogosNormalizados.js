@@ -62,10 +62,12 @@ export const CatalogosNormalizados = (catalogos) => {
         "Lunes": "L",
         "Martes": "K",
         "Miércoles": "M",
+        "Miercoles": "M",
         "Jueves": "J",
         "Viernes": "V",
         "Sábado": "S",
-        "Domingo": "D"
+        "Sabado": "S",
+        "Domingo": "D",
     };
 
     const getDiaNombre = (id) => {

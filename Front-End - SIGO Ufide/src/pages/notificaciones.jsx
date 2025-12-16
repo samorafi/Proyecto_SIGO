@@ -118,7 +118,7 @@ function NotiItem({ item, onAbrirOferta, onMarcarLeida, busy }) {
             <Chip variant="ghost" value={label} className={`${tone} h-6 text-[12px]`} />
 
             {!item.leido && (
-              <span className="text-[11px] px-2 py-0.5 rounded bg-[#2B338C] text-white">nuevo</span>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-[#2B338C] text-white">Nuevo!</span>
             )}
           </div>
 
@@ -127,8 +127,7 @@ function NotiItem({ item, onAbrirOferta, onMarcarLeida, busy }) {
           </Typography>
 
           <Typography className="text-xs text-blue-gray-400 mt-1">
-            {item.fecha || "—"} • OfertaId: {item.ofertaId ?? "—"} • SolicitudId:{" "}
-            {item.solicitudOfertaId ?? "—"}
+            {item.fecha || "—"}
           </Typography>
 
           <div className="mt-3 grid grid-cols-1 sm:flex sm:items-center sm:gap-2">
@@ -446,10 +445,6 @@ export default function Notificaciones() {
         <div>
           <Typography className="text-2xl font-extrabold text-[#2B338C]">Notificaciones</Typography>
 
-          <Typography className="text-blue-gray-600 max-w-2xl">
-            Notificaciones ligadas a solicitudes de oferta. El estado <b>leído</b> es global (lo ve todo el equipo).
-          </Typography>
-
           {(error || errorCatalogos) && (
             <Typography className="mt-2 text-sm text-red-600">
               {error || errorCatalogos}
@@ -603,17 +598,19 @@ export default function Notificaciones() {
         <Card className="p-4 h-fit">
           <Typography className="font-semibold mb-2">Accesos rápidos</Typography>
 
-          <Link to="/dashboard/ofertas">
+          <Link to="/dashboard/ofertas/OfertasEnLinea">
             <Button variant="outlined" className="w-full border-[#2B338C] text-[#2B338C]">
-              Ir a Ofertas
+              Ir a Ofertas 100% Virtuales
+            </Button>
+          </Link>
+          <Link to="/dashboard/ofertas/OfertasPresencialesVirtuales">
+            <Button variant="outlined" className="w-full border-[#2B338C] text-[#2B338C]">
+              Ir a Ofertas Presenciales y  En Línea
             </Button>
           </Link>
 
           <div className="h-px my-3 bg-blue-gray-50" />
 
-          <Typography className="text-xs text-blue-gray-500">
-            Tip: el “tipo” se deduce del mensaje (Enviada / Error / Aceptada / Rechazada).
-          </Typography>
         </Card>
       </div>
 

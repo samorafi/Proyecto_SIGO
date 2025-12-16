@@ -92,7 +92,7 @@ export default function Admin() {
           </Typography>
           <Typography className="text-blue-gray-600 max-w-2xl">
             Panel central de configuración de <b>SIGO</b>. Desde aquí gestionás
-            usuarios, roles, catálogos y parámetros generales. (UI maqueta)
+            usuarios, roles, catálogos y parámetros generales.
           </Typography>
         </div>
       </div>
