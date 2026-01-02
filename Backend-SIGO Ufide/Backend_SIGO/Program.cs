@@ -9,7 +9,10 @@ using SIGO.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+
+    /* Función de autenticación de seguridad en sesiones antigua.
+     * 
+     * .AddCookie(options =>
     {
         // Configuraciones de seguridad de cookies y sesiones
 
@@ -30,7 +33,56 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
         // Endpoint para la redirección 
         options.LoginPath = "/api/Autenticacion/unauthorized";
+    });*/
+
+    .AddCookie(options =>
+    {
+        // Configuraciones de seguridad de cookies y sesiones
+
+        // Path Controlador de autenticación.
+        options.LoginPath = "/api/Autenticacion/unauthorized";
+        options.AccessDeniedPath = "/api/Autenticacion/forbidden";
+
+        // Tiempo de Inactividad.
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+        options.SlidingExpiration = false;
+
+        // Protección Cookies 
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                // Caso API → 401, NO REDIRECT
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                }
+
+                // Caso MVC -> Redirección normal -> NO UTILIZAMOS MVC pero queda en dado caso.
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            },
+
+            OnRedirectToAccessDenied = context =>
+            {
+                // Caso API → 401, NO REDIRECT
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return Task.CompletedTask;
+                }
+
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 builder.Services.AddCors(options =>
 {
