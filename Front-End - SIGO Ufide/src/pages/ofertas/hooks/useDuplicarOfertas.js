@@ -28,6 +28,8 @@ export const useDuplicarOfertas = (periodos, fetchOfertas) => {
     // -------------------------------------------------------------------
     // Acción principal: DUPLICAR OFERTAS
     // -------------------------------------------------------------------
+
+    /*
     const duplicarOfertas = async () => {
         try {
             setLoadingDuplicar(true);
@@ -80,6 +82,59 @@ export const useDuplicarOfertas = (periodos, fetchOfertas) => {
             console.error(err);
             alert("Ocurrió un error al duplicar las ofertas.");
             setMensajeDuplicar("Error al duplicar ofertas.");
+        } finally {
+            setLoadingDuplicar(false);
+        }
+    };*/
+
+    const duplicarOfertas = async () => {
+        try {
+            setLoadingDuplicar(true);
+            setMensajeDuplicar("");
+
+            // Validaciones
+            if (!periodoOrigen) {
+                return { ok: false, error: "Seleccione un periodo de origen." };
+            }
+            if (!periodoDestino) {
+                return { ok: false, error: "Seleccione un periodo de destino." };
+            }
+            if (Number(periodoOrigen) === Number(periodoDestino)) {
+                return { ok: false, error: "El periodo de origen y destino no pueden ser iguales." };
+            }
+            if (!modalidad) {
+                return { ok: false, error: "Seleccione una modalidad." };
+            }
+
+            const payload = {
+                periodoOrigen: Number(periodoOrigen),
+                periodoDestino: Number(periodoDestino),
+                modalidades: [Number(modalidad)],
+            };
+
+            const res = await fetch("/api/Ofertas/duplicar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const msg = await res.text();
+                return { ok: false, error: msg || "Error al duplicar las ofertas." };
+            }
+
+            const result = await res.json();
+            const mensaje = result?.mensaje || "Duplicación realizada correctamente.";
+
+            setMensajeDuplicar(mensaje);
+            await fetchOfertas();
+
+            return { ok: true, mensaje, result };
+
+        } catch (err) {
+            console.error(err);
+            setMensajeDuplicar("Error al duplicar ofertas.");
+            return { ok: false, error: "Ocurrió un error al duplicar las ofertas." };
         } finally {
             setLoadingDuplicar(false);
         }

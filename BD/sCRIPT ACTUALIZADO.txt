@@ -1191,20 +1191,20 @@ $$ LANGUAGE plpgsql;
 
 -- SP universidad.duplicar_ofertas_por_periodo
 
-CREATE OR REPLACE FUNCTION universidad.duplicar_ofertas_por_periodo(
-    p_periodo_origen INT,
-    p_periodo_destino INT,
-    p_modalidades INT[]
-)
-RETURNS TABLE (
-    total_duplicadas INT,
-    mensaje TEXT
-)
-LANGUAGE plpgsql
-AS $$
 DECLARE
     v_count INT := 0;
+    v_etq_origen TEXT;
+    v_etq_destino TEXT;
 BEGIN
+    -- Traer etiquetas de periodos (para el mensaje)
+    SELECT p.etiqueta INTO v_etq_origen
+    FROM universidad.periodo p
+    WHERE p.periodo_id = p_periodo_origen;
+
+    SELECT p.etiqueta INTO v_etq_destino
+    FROM universidad.periodo p
+    WHERE p.periodo_id = p_periodo_destino;
+
     -- Validar si existen ofertas para duplicar
     SELECT COUNT(*) INTO v_count
     FROM universidad.oferta
@@ -1213,11 +1213,41 @@ BEGIN
 
     IF v_count = 0 THEN
         RETURN QUERY
-        SELECT 0, 'No existen ofertas para duplicar con los criterios indicados.';
+        SELECT 0,
+               'No existen ofertas para duplicar desde ' ||
+               COALESCE(v_etq_origen, ('periodo ' || p_periodo_origen)) ||
+               ' con los criterios indicados.';
         RETURN;
     END IF;
 
-    -- Insertar las ofertas duplicadas
+    -- Insertar las ofertas duplicadas con grupo incremental por combinación
+    WITH src AS (
+        SELECT
+            o.curso_id,
+            o.sede_id,
+            o.modalidad_id,
+            o.horario_id,
+            o.coordinador_id,
+            o.cupo,
+            o.persona_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY o.curso_id, o.sede_id, o.modalidad_id
+                ORDER BY o.oferta_id
+            ) AS rn
+        FROM universidad.oferta o
+        WHERE o.periodo_id = p_periodo_origen
+          AND o.modalidad_id = ANY(p_modalidades)
+    ),
+    base AS (
+        SELECT
+            x.curso_id,
+            x.sede_id,
+            x.modalidad_id,
+            COALESCE(MAX(x.grupo), 0) AS max_grupo
+        FROM universidad.oferta x
+        WHERE x.periodo_id = p_periodo_destino
+        GROUP BY x.curso_id, x.sede_id, x.modalidad_id
+    )
     INSERT INTO universidad.oferta (
         curso_id,
         sede_id,
@@ -1232,45 +1262,38 @@ BEGIN
         cupo,
         matriculados,
         archivado,
-		persona_id
+        persona_id
     )
     SELECT
-        o.curso_id,
-        o.sede_id,
-        o.modalidad_id,
-        o.horario_id,
-        p_periodo_destino,   	-- Nuevo periodo
-        1,                   	-- accion_id por defecto
-        o.coordinador_id,
-        '',                  	-- comentarios vacíos
-        2,                   	-- estado_oferta_id por defecto
-      	COALESCE(g.max_grupo, 0) + 1 AS grupo,
-        o.cupo,
-        0,                   	-- matriculados reinicia
-        FALSE,                	-- archivado siempre false
-	o.persona_id		-- Para duplicar el profesor asignado
-	
-    FROM universidad.oferta o
-LEFT JOIN LATERAL (
-        SELECT MAX(grupo) AS max_grupo
-        FROM universidad.oferta x
-        WHERE x.curso_id     = o.curso_id
-          AND x.sede_id      = o.sede_id
-          AND x.modalidad_id = o.modalidad_id
-          AND x.periodo_id   = p_periodo_destino
-    ) g ON TRUE
-    WHERE o.periodo_id = p_periodo_origen
-      AND o.modalidad_id = ANY(p_modalidades);
+        s.curso_id,
+        s.sede_id,
+        s.modalidad_id,
+        s.horario_id,
+        p_periodo_destino,
+        1,
+        s.coordinador_id,
+        '',
+        2,
+        COALESCE(b.max_grupo, 0) + s.rn,
+        s.cupo,
+        0,
+        FALSE,
+        s.persona_id
+    FROM src s
+    LEFT JOIN base b
+      ON b.curso_id = s.curso_id
+     AND b.sede_id = s.sede_id
+     AND b.modalidad_id = s.modalidad_id;
 
     GET DIAGNOSTICS v_count = ROW_COUNT;
 
     RETURN QUERY
     SELECT v_count,
-           'Se duplicaron ' || v_count || ' ofertas desde el periodo ' ||
-           p_periodo_origen || ' hacia el periodo ' || p_periodo_destino || '.';
-
+           'Se duplicaron ' || v_count || ' ofertas desde ' ||
+           COALESCE(v_etq_origen, ('periodo ' || p_periodo_origen)) ||
+           ' hacia ' ||
+           COALESCE(v_etq_destino, ('periodo ' || p_periodo_destino)) || '.';
 END;
-$$;
 
 -- ------------------------------------------------------------------
 -- CAMBIOS OFERTAS - SEBASTIAN MORA 7:03 PM 12/13/2025

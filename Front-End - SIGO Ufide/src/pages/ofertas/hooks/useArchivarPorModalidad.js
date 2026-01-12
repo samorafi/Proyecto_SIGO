@@ -23,23 +23,21 @@ export const useArchivarPorModalidad = (periodos, fetchOfertas) => {
     const { periodosPasados: periodosDisponibles } =
         usePeriodos(periodos, tipoPeriodo);
 
-
     // -------------------------------------------------------------------------
     // Acción principal: Archivar por modalidad
     // -------------------------------------------------------------------------
+
     const archivarPorModalidad = async () => {
         try {
             setLoadingArchivar(true);
             setMensajeArchivar("");
 
             if (!selectedPeriodo) {
-                alert("Seleccione un periodo.");
-                return;
+                return { ok: false, error: "Seleccione un periodo." };
             }
 
             if (!selectedModalidad) {
-                alert("Seleccione una modalidad.");
-                return;
+                return { ok: false, error: "Seleccione una modalidad." };
             }
 
             const payload = {
@@ -54,22 +52,24 @@ export const useArchivarPorModalidad = (periodos, fetchOfertas) => {
             });
 
             if (!res.ok) {
-                throw new Error("Error en la operación de archivado.");
+                const msg = await res.text();
+                return { ok: false, error: msg || "Error en la operación de archivado." };
             }
 
             const result = await res.json();
-            setMensajeArchivar(result.mensaje || "Operación completada.");
+            const mensaje = result?.mensaje || "Operación completada.";
 
-            alert(result.mensaje || "Archivado realizado correctamente.");
+            setMensajeArchivar(mensaje);
 
             await fetchOfertas();
 
-            setOpenModal(false);
+            // setOpenModal(false);
 
+            return { ok: true, mensaje, result };
         } catch (err) {
             console.error(err);
-            alert("Error al archivar las ofertas.");
             setMensajeArchivar("Ocurrió un error al archivar.");
+            return { ok: false, error: "Error al archivar las ofertas." };
         } finally {
             setLoadingArchivar(false);
         }

@@ -3,8 +3,9 @@ import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFoote
 import { PaperAirplaneIcon, XCircleIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 // Componentes Personalizados UI.
-import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton } from "@/components/ui/Buttons";
+import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton, ClearFiltersButton, RefreshButton } from "@/components/ui/Buttons";
 import PageTitle from "@/components/ui/Title/PageTitle";
+import AppPagination from "@/components/ui/pagination/AppPagination";
 
 // Importar Modals
 import DuplicarOfertasModal from "./modals/DuplicarOfertasModal";
@@ -12,9 +13,18 @@ import ArchivarOfertasModal from "./modals/ArchivarOfertasModal";
 import FichaOfertaModal from "./modals/FichaOfertaModal";
 import RegistrarOfertaModal from "./modals/RegistrarOfertaModal";
 
+// Importar Filtros
+import { useOfertasFilters } from "@/pages/ofertas/hooks/useOfertasFilters";
+import OfertasFiltersBar from "@/pages/ofertas/components/OfertasFiltersBar";
+import { useFilteredOfertas } from "@/pages/ofertas/hooks/useFilteredOfertas";
+
 // Importar Funciones
 import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
 import { OpenFichaOferta, CancelarOferta, GuardarOferta } from "@/pages/ofertas/functions";
+
+//Importar Servicios
+import { alertService } from "@/services/alert.service";
+import { entityConfirm } from "@/services/entityConfirm.service";
 
 // Importar Componentes
 import ResumenEstadosChips from "@/pages/ofertas/Components/ResumenEstadosChips";
@@ -87,7 +97,6 @@ export default function OfertasEnLinea() {
         getProfesorNombre,
         getProfesorApellido,
         getProfesorSegundoApellido,
-
     } = normalizadores;
 
     const [loading, setLoading] = useState(true);
@@ -106,64 +115,31 @@ export default function OfertasEnLinea() {
     // Filtrado y busqueda
     //----------------------------------------------------------------------------
 
-    // Filtros de campos
-    const [term, setTerm] = useState("");
-    const [filterCurso, setFilterCurso] = useState("");
-    const [filterSede, setFilterSede] = useState("");
-    const [filterEstado, setFilterEstado] = useState("");
-    const [filterCoordinador, setFilterCoordinador] = useState("");
+    const {
+        term, setTerm,
+        filterCurso, setFilterCurso,
+        filterSede, setFilterSede,
+        filterEstado, setFilterEstado,
+        filterCoordinador, setFilterCoordinador,
+        limpiarFiltros,
+    } = useOfertasFilters();
 
     // Filtrado por lo campos
-    // Cuenta con el ordenamiento por Id (Registros mas nuevos de primero)
-    const filtered = useMemo(() => {
-        try {
-            return [...ofertas]
-                .sort((a, b) => b.ofertaId - a.ofertaId)
-                .filter((o) => {
-                    // Comparaciones directas por string
-                    const matchCurso = filterCurso ? o.curso === filterCurso : true;
-                    const matchSede = filterSede ? o.sede === filterSede : true;
-                    const matchEstado = filterEstado ? o.estado === filterEstado : true;
-                    const matchCoordinador = filterCoordinador
-                        ? o.coordinadorId === Number(filterCoordinador)
-                        : true;
-
-                    // Búsqueda libre
-                    const texto = `
-          ${o.curso} ${o.sede} ${o.modalidad}
-          ${getHorarioNombre(o.horarioId)}
-          ${getCursoNombrePorCodigo(o.curso)}          
-          ${o.periodo} ${o.accion}
-          ${getCoordinadorNombre(o.coordinadorId)}
-          ${o.estado}
-        `.toLowerCase();
-
-                    const termMatch = term ? texto.includes(term.toLowerCase()) : true;
-
-                    return matchCurso && matchSede && matchEstado && matchCoordinador && termMatch;
-                });
-        } catch (err) {
-            console.error("Error al aplicar filtros:", err);
-            return ofertas;
-        }
-    }, [
+    const filtered = useFilteredOfertas({
         ofertas,
+        term,
         filterCurso,
         filterSede,
         filterEstado,
         filterCoordinador,
-        term,
         getHorarioNombre,
+        getCursoNombrePorCodigo,
         getCoordinadorNombre,
-    ]);
+    });
 
-    // Limpieza de filtros
-    const limpiarFiltros = () => {
-        setFilterCurso("");
-        setFilterSede("");
-        setFilterEstado("");
-        setFilterCoordinador("");
-    };
+    useEffect(() => {
+        setPage(1);
+    }, [term, filterCurso, filterSede, filterEstado, filterCoordinador]);
 
     //----------------------------------------------------------------------------
     // Paginación
@@ -175,7 +151,6 @@ export default function OfertasEnLinea() {
 
     // Cálculo de totales y páginas disponibles
     const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
 
     //  Segmentación de datos a mostrar
     const currentData = useMemo(() => {
@@ -184,8 +159,6 @@ export default function OfertasEnLinea() {
     }, [filtered, page, rowsPerPage]);
 
     const [openFicha, setOpenFicha] = useState(false);
-
-    const [modo, setModo] = useState("ver");
 
     const [openEnviar, setOpenEnviar] = useState(false);
     const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
@@ -222,7 +195,6 @@ export default function OfertasEnLinea() {
         },
         [docentes]
     );
-
 
     //----------------------------------------------------------------------------
     // : Obtener listado de ofertas (Filtrado por modalidad en línea).
@@ -294,8 +266,6 @@ export default function OfertasEnLinea() {
         loadDocentes();
     }, []);
 
-
-
     // ----------------------------------------------------------------------------
     //  Funcionalidad Completa (Abrir, Cerrar, Guardar cambios).
     //            Ficha de Oferta compartida (ver y editar).
@@ -308,27 +278,6 @@ export default function OfertasEnLinea() {
         (typeof fichaData?.estado === "string" &&
             fichaData.estado.toLowerCase().trim() === "cancelada");  // Respaldo en texto
 
-    /* Funcionalidad Abrir Nueva Oferta
-    const handleOpenNueva = () => {
-        // Inicializar estados
-        setIsNuevo(true);
-        setEditMode(true);
-        setOpenFicha(true);
-
-        // Limpiar formulario 
-        setFichaForm({
-            cursoId: "",
-            sedeId: "",
-            horarioId: "",
-            periodoId: "",
-            coordinadorId: "",
-            comentarios: "",
-            accionId: 1, // Por defecto: Abrir Curso
-            modalidadId: 3,
-            estadoOfertaId: 2 // Por defecto: Pendiente
-        });
-    };*/
-
     const handleOpenNueva = () => {
         setForm({
             cursoId: "",
@@ -338,12 +287,12 @@ export default function OfertasEnLinea() {
             tipoPeriodo: "",
             coordinadorId: "",
             comentarios: "",
-            grupo: "",
             accionId: 1,
             modalidadId: 3,
             estadoOfertaId: 2,
             cupo: null,
             matriculados: null,
+            grupo: ""
         });
 
         setOpenRegistrar(true);
@@ -365,12 +314,12 @@ export default function OfertasEnLinea() {
         tipoPeriodo: "",
         coordinadorId: "",
         comentarios: "",
-        grupo: "",
         accionId: 1,
         modalidadId: 3,      // En línea
         estadoOfertaId: 2,   // Pendiente
         cupo: null,
         matriculados: null,
+        grupo: "",
     });
 
     // Funcionalidad Abrir Ficha. -- FINALIZADO EN OPTIMIZACIÓN
@@ -415,32 +364,19 @@ export default function OfertasEnLinea() {
         setFichaForm(null);
     };
 
-    /* Registrar nueva oferta
-    const handleRegistrar = async () => {
-        const result = await GuardarOferta(null, fichaForm);
-
-        if (!result.ok) {
-            alert(result.error);
-            return;
-        }
-
-        alert("Oferta registrada correctamente.");
-        handleCloseFicha();
-        fetchOfertas();
-    };*/
-
+    // Registrar nueva oferta
     const handleRegistrar = async () => {
         setRegistrarLoading(true);
 
         const result = await GuardarOferta(null, form);
 
         if (!result.ok) {
-            alert(result.error);
+            alertService.error("Error al registrar", result.error);
             setRegistrarLoading(false);
             return;
         }
 
-        alert("Oferta registrada correctamente.");
+        alertService.toastSuccess("Oferta registrada correctamente");
         setRegistrarLoading(false);
         setOpenRegistrar(false);
         fetchOfertas();
@@ -450,23 +386,36 @@ export default function OfertasEnLinea() {
     const handleGuardar = async () => {
         if (!fichaForm) return;
 
-        const result = await GuardarOferta(fichaId, fichaForm);
+        const ok = await entityConfirm.update("la oferta");
+        if (!ok) return;
 
-        if (!result.ok) {
-            alert(result.error);
-            return;
+        try {
+            alertService.loading("Actualizando oferta...");
+            const result = await GuardarOferta(fichaId, fichaForm);
+            alertService.close();
+
+            if (!result.ok) return alertService.error("Error", result.error);
+
+            alertService.toastSuccess("Oferta actualizada");
+            handleCloseFicha();
+            fetchOfertas();
+        } catch (err) {
+            alertService.close();
+            alertService.apiError(err, "No se pudo actualizar la oferta");
         }
-
-        alert("Oferta actualizada correctamente.");
-        handleCloseFicha();
-        fetchOfertas();
     };
+
     //----------------------------------------------------------------------------
     // Cancelar oferta. --> FINALIZADO EN OPTIMIZACIÓN
     //----------------------------------------------------------------------------
 
     const handleCancelar = async (ofertaId) => {
-        const confirmar = confirm("¿Seguro que deseas cancelar esta oferta?");
+        const confirmar = await alertService.confirm({
+            title: "¿Cancelar oferta?",
+            text: "La oferta quedará cancelada y no podrá usarse.",
+            confirmText: "Sí, cancelar",
+        });
+
         if (!confirmar) return;
 
         const oferta = ofertas.find(o => o.ofertaId === ofertaId);
@@ -482,7 +431,7 @@ export default function OfertasEnLinea() {
         });
 
         if (!result.ok) {
-            alert(result.error);
+            alertService.error("No se pudo cancelar", result.error);
             return;
         }
 
@@ -493,7 +442,8 @@ export default function OfertasEnLinea() {
             )
         );
 
-        alert("Oferta cancelada correctamente.");
+        alertService.toastSuccess("Oferta cancelada correctamente");
+
     };
 
     //----------------------------------------------------------------------------
@@ -512,6 +462,7 @@ export default function OfertasEnLinea() {
         setDocenteId("");
     };
 
+    // PENDIENTE DE MODIFICAR CON SWEETALERT
     const handleEnviarOferta = async () => {
         if (!ofertaSeleccionada) {
             alert("No hay una oferta seleccionada.");
@@ -633,7 +584,7 @@ export default function OfertasEnLinea() {
     // ---------------------------------------------------------------------------
     // Personalización:
     // ---------------------------------------------------------------------------
-
+    
     const renderDocenteOptions = () => {
         if (docentesLoading) {
             return (
@@ -687,170 +638,33 @@ export default function OfertasEnLinea() {
             </div>
 
             {/* Filtros de busqueda */}
-            <Card className="p-4 border border-gray-200 shadow-md bg-white relative z-[50]">
-                <div className="flex flex-wrap gap-3 items-end">
+            <OfertasFiltersBar
+                ofertas={ofertas}
+                coordinadores={coordinadores}
+                getCursoNombrePorCodigo={getCursoNombrePorCodigo}
 
-                    {/*Búsqueda general */}
-                    <div className="flex-1 min-w-[250px]">
-                        <Input
-                            size="md"
-                            label="Buscar palabra clave"
-                            icon={<MagnifyingGlassIcon className="h-5 w-5 text-[#2B338C]" />}
-                            value={term}
-                            onChange={(e) => setTerm(e.target.value)}
-                        />
-                    </div>
+                term={term}
+                setTerm={setTerm}
 
-                    {/*Curso */}
-                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
-                        <Select
-                            size="md"
-                            label="Curso"
-                            value={filterCurso}
-                            onChange={(v) => setFilterCurso(v || "")}
-                            selected={() => (filterCurso ? filterCurso : "Todos")}
-                            menuProps={{
-                                className:
-                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-[70]" }}
-                        >
-                            <Option value="">Todos</Option>
-                            {Array.from(new Set(ofertas.map(o => o.curso))).map((curso) => (
-                                <Option key={curso} value={curso} className="bg-white">
-                                    {curso} - {getCursoNombrePorCodigo(curso)}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
+                filterCurso={filterCurso}
+                setFilterCurso={setFilterCurso}
 
-                    {/* Sede */}
-                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
-                        <Select
-                            size="md"
-                            label="Sede"
-                            value={filterSede}
-                            onChange={(v) => setFilterSede(v || "")}
-                            selected={() => (filterSede ? filterSede : "Todas")}
-                            menuProps={{
-                                className:
-                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-[70]" }}
-                        >
-                            <Option value="">Todas</Option>
-                            {Array.from(new Set(ofertas.map(o => o.sede))).map((sede) => (
-                                <Option key={sede} value={sede} className="bg-white">
-                                    {sede}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
+                filterSede={filterSede}
+                setFilterSede={setFilterSede}
 
-                    {/*Estado */}
-                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
-                        <Select
-                            size="md"
-                            label="Estado"
-                            value={filterEstado}
-                            onChange={(v) => setFilterEstado(v || "")}
-                            selected={() => (filterEstado ? filterEstado : "Todos")}
-                            menuProps={{
-                                className:
-                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-[70]" }}
-                        >
-                            <Option value="">Todos</Option>
-                            {Array.from(new Set(ofertas.map(o => o.estado))).map((estado) => (
-                                <Option key={estado} value={estado} className="bg-white">
-                                    {estado}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
+                filterEstado={filterEstado}
+                setFilterEstado={setFilterEstado}
 
-                    {/*Coordinador */}
-                    <div className="min-w-[220px] flex-shrink-0 relative z-[60]">
-                        <Select
-                            size="md"
-                            label="Coordinador"
-                            value={filterCoordinador}
-                            onChange={(v) => setFilterCoordinador(v || "")}
-                            selected={() =>
-                                filterCoordinador
-                                    ? getCoordinadorNombre(Number(filterCoordinador))
-                                    : "Todos"
-                            }
-                            menuProps={{
-                                className:
-                                    "z-[100] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-80 overflow-auto min-w-[220px]",
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-[70]" }}
-                        >
-                            <Option value="">Todos</Option>
-                            {coordinadores.map((c) => (
-                                <Option key={c.id} value={String(c.id)} className="bg-white">
-                                    {c.nombre} {c.primerApellido} {c.segundoApellido}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
+                filterCoordinador={filterCoordinador}
+                setFilterCoordinador={setFilterCoordinador}
 
-                    {/*Paginación selector */}
-                    <div className="min-w-[120px] flex-shrink-0">
-                        <Select
-                            size="md"
-                            label="Filas"
-                            value={String(rowsPerPage)}
-                            onChange={(v) => {
-                                setRowsPerPage(Number(v || 10));
-                                setPage(1);
-                            }}
-                            selected={() => String(rowsPerPage)}
-                            menuProps={{
-                                className:
-                                    "z-[2147483647] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)]",
-                                keepMounted: true,
-                                placement: "bottom-start",
-                            }}
-                            containerProps={{ className: "relative z-0" }}
-                        >
-                            <Option value="10">10</Option>
-                            <Option value="20">20</Option>
-                            <Option value="50">50</Option>
-                        </Select>
-                    </div>
+                rowsPerPage={rowsPerPage}
+                setRowsPerPage={setRowsPerPage}
+                setPage={setPage}
 
-                    {/*Limpiar */}
-                    <div className="flex-shrink-0 relative z-[50]">
-                        <Button
-                            variant="outlined"
-                            onClick={limpiarFiltros}
-                            className="border-[#2B338C] text-[#2B338C] text-md flex items-center gap-2 hover:bg-[#2B338C]/10 transition-all"
-                        >
-                            <XCircleIcon className="h-4 w-4" />
-                            Limpiar
-                        </Button>
-                    </div>
-
-                    {/*Refrescar */}
-                    <div className="flex-shrink-0">
-                        <Button
-                            variant="outlined"
-                            onClick={fetchOfertas}
-                            className="border-green-600 text-green-700 flex items-center gap-2"
-                        >
-                            <ArrowPathIcon className="h-4 w-4" />
-                            Refrescar
-                        </Button>
-                    </div>
-                </div>
-            </Card>
+                onClear={limpiarFiltros}
+                onRefresh={fetchOfertas}
+            />
 
             {/* Resumen de ofertas: Chips de Estados */}
             <div className="flex flex-wrap gap-2">
@@ -872,7 +686,6 @@ export default function OfertasEnLinea() {
                                 <th className="p-3">Periodo</th>
                                 <th className="p-3">Coordinador</th>
                                 <th className="p-3">Modalidad</th>
-
                                 <th className="p-3">Acciones</th>
                                 <th className="p-3">Estado Oferta</th>
                                 <th className="p-3">Opciones</th>
@@ -911,62 +724,22 @@ export default function OfertasEnLinea() {
                                             </Tooltip>
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
                     </table>
 
-                    {/* Paginación */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3">
-                        <span className="text-md text-blue-gray-600">
-                            Mostrando <b>{total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, total)}</b> de <b>{total}</b>
-                        </span>
-                        <div className="flex items-center gap-1">
-                            <Button variant="outlined" size="md" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                                <ChevronLeftIcon className="h-4 w-4" />
-                            </Button>
-                            <span className="px-2 text-md">Página <b>{page}</b> de <b>{totalPages}</b></span>
-                            <Button variant="outlined" size="md" className="border-[#2B338C] text-[#2B338C] px-3" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
-                                <ChevronRightIcon className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-
+                    {/* Paginación*/}
+                    <AppPagination
+                        page={page}
+                        setPage={setPage}
+                        rowsPerPage={rowsPerPage}
+                        total={total}
+                    />
                 </div>
             </Card >
 
-            {/* Modal compartido: Funciones de Ver/Editar/Registar
-            <FichaOfertaModal
-                open={openFicha}
-                onClose={handleCloseFicha}
-                modo={modo}
-                isNuevo={isNuevo}
-                editMode={editMode}
-                OfertaCancelada={OfertaCancelada}
-                fichaLoading={fichaLoading}
-                fichaError={fichaError}
-                fichaData={fichaData}
-                fichaForm={fichaForm}
-
-                cursos={cursos}
-                sedes={sedes}
-                horarios={horario}
-                modalidades={modalidades}
-                tipoPeriodo={fichaForm?.tipoPeriodo || ""}
-                setTipoPeriodo={(v) => setFichaForm(prev => ({ ...prev, tipoPeriodo: v }))}
-                periodos={periodos}
-                coordinadores={coordinadores}
-                estados={estados}
-
-                setFichaForm={setFichaForm}
-                onGuardar={handleGuardar}
-                onRegistrar={handleRegistrar}
-
-                accionChips={accionChips}
-                estadoChips={estadoChips}
-            /> */}
-
+            {/* Modales */}
             <FichaOfertaModal
                 open={openFicha}
                 onClose={handleCloseFicha}
@@ -1012,9 +785,7 @@ export default function OfertasEnLinea() {
                 modalidades={modalidades}
                 modalidadesPermitidas={[3]}
                 bloquearModalidad
-
             />
-
 
             {/* Modal: Enviar oferta a docente */}
             <Dialog
@@ -1108,7 +879,7 @@ export default function OfertasEnLinea() {
                 </DialogFooter>
             </Dialog>
 
-            {/* Modal: Archivar ofertas por periodo */}
+            {/* Modal: Archivar ofertas por modalidad */}
             <ArchivarOfertasModal
                 open={openModal}
                 onClose={() => setOpenModal(false)}
@@ -1119,11 +890,19 @@ export default function OfertasEnLinea() {
                 selectedPeriodo={selectedPeriodo}
                 setSelectedPeriodo={setSelectedPeriodo}
 
+                selectedModalidad={selectedModalidad}
+                setSelectedModalidad={setSelectedModalidad}
+
                 periodosDisponibles={periodosDisponibles}
+                modalidades={modalidades}
+                modalidadesPermitidas={[3]}
+                bloquearModalidad
 
                 loadingArchivar={loadingArchivar}
-
                 onArchivar={archivarPorModalidad}
+
+                entityLabel="las ofertas"
+                successMessage="Ofertas archivadas correctamente"
             />
 
             {/* Modal: Duplicar ofertas */}
@@ -1145,6 +924,10 @@ export default function OfertasEnLinea() {
 
                 periodosOrigenFiltrados={periodosOrigenFiltrados}
                 periodosDestinoFiltrados={periodosDestinoFiltrados}
+
+                modalidades={modalidades}
+                modalidadesPermitidas={[3]}
+                bloquearModalidad
 
                 loading={loadingDuplicar}
                 mensaje={mensajeDuplicar}

@@ -5,6 +5,7 @@ import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon }
 // Reutilizamos tus componentes
 import PageTitle from "@/components/ui/Title/PageTitle";
 import FichaOfertaModal from "./modals/FichaOfertaModal";
+import { ViewButton,} from "@/components/ui/Buttons";
 
 // Funciones reutilizadas
 import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
@@ -438,19 +439,14 @@ export default function OfertasHistorico() {
                                     <td className="p-3">{getDiaNombre(o.horarioId)}</td>
                                     <td className="p-3">{getHoraNombre(o.horarioId)}</td>
                                     <td className="p-3">{o.periodo}</td>
-                                    <td className="p-3">{getCoordinadorNombre(o.coordinadorId)} {getCoordinadorPrimerApellido(o.coordinadorId)}</td>
+                                    <td className="p-3">{getCoordinadorNombre(o.coordinadorId)} {getCoordinadorPrimerApellido(o.coordinadorId)} {getCoordinadorSegundoApellido(o.coordinadorId)}</td>
                                     <td className="p-3">{accionChips(o.accion)}</td>
                                     <td className="p-3">{estadoChips(o.estado)}</td>
                                     <td className="p-3">
                                         <Tooltip content="Ver Ficha">
-                                            <Button
-                                                size="sm"
-                                                variant="outlined"
-                                                className="border-[#2B338C] text-[#2B338C]"
-                                                onClick={() => handleOpenFicha(o.ofertaId)}
-                                            >
-                                                Ver
-                                            </Button>
+                                            <Tooltip content="Ver detalle">
+                                                <ViewButton onClick={() => handleOpenFicha(o.ofertaId, false)} />
+                                            </Tooltip>
                                         </Tooltip>
                                     </td>
                                 </tr>
