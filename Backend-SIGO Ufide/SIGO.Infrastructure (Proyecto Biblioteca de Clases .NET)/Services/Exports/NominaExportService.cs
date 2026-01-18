@@ -19,7 +19,7 @@ namespace SIGO.Infrastructure.Services.Exports
             using var wb = new XLWorkbook();
             var ws = wb.Worksheets.Add("Nomina");
 
-            // Ajuste columnas (similar a tu tabla)
+            
             ws.Column(1).Width = 45; // Nombre
             ws.Column(2).Width = 18; // Ingreso
             ws.Column(3).Width = 22; // Desv

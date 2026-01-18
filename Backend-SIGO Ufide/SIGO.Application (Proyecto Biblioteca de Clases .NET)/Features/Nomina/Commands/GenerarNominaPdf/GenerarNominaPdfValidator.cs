@@ -15,7 +15,7 @@ namespace SIGO.Application.Features.Nomina.Commands.GenerarNominaExcel
                 r.RuleFor(x => x.NombreCompleto).NotEmpty();
             });
 
-            // Evita exportar el ejemplo de Swagger: 1 fila con "string"
+            
             RuleFor(x => x).Must(NoEsEjemploSwagger)
                 .WithMessage("Estás enviando el ejemplo 'string' en lugar de la nómina real.");
         }

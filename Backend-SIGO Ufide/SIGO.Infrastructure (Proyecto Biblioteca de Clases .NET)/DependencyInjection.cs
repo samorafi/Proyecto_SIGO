@@ -9,6 +9,10 @@ namespace SIGO.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
             services.AddScoped<INominaExportService, NominaExportService>();
+
+           
+            services.AddScoped<IPermanencia4ExportService, Permanencia4ExportService>();
+
             return services;
         }
     }
