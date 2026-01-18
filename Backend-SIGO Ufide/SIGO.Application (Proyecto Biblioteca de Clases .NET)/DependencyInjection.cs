@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
+
 namespace SIGO.Application
 {
     public static class DependencyInjection

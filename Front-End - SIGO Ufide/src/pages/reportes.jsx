@@ -28,6 +28,8 @@ const API_URL = {
   coordinaciones: `${API}/api/coordinaciones`,
   periodos: `${API}/api/periodos`,
   motivos: `${API}/api/motivosdesvinculacion`,
+  nominaExcel: `${API}/api/nomina/docentes/excel`,
+  nominaPdf: `${API}/api/nomina/docentes/pdf`,
 };
 
 const COLORS = ["#2B338C", "#FFDA00", "#F97316", "#0EA5E9", "#22C55E"];
@@ -45,10 +47,16 @@ const matches = (t, q) =>
 const isBlankOrSinDato = (v) => {
   const s = String(v ?? "").trim().toLowerCase();
   if (!s) return true;
-  if (s === "sin dato" || s === "s/d" || s === "sd" || s === "n/a" || s === "na") return true;
+  if (
+    s === "sin dato" ||
+    s === "s/d" ||
+    s === "sd" ||
+    s === "n/a" ||
+    s === "na"
+  )
+    return true;
   return false;
 };
-
 
 function getYearFromEtiqueta(etq) {
   if (!etq) return null;
@@ -62,9 +70,7 @@ function parsePeriodoEtiqueta(etq) {
 
   const year = getYearFromEtiqueta(upper);
 
-  // Detecta "1C", "2C", "3C", "4C"
   let ciclo = null;
-
   let m = /(\d)\s*C\b/.exec(upper);
   if (m) ciclo = Number(m[1]);
 
@@ -73,12 +79,10 @@ function parsePeriodoEtiqueta(etq) {
     if (m) ciclo = Number(m[1]);
   }
 
-  // Si no encontró ciclo, lo mandamos al final dentro del mismo año
   if (ciclo == null) ciclo = 99;
 
   return { year: year ?? 9999, ciclo, label: s };
 }
-
 
 const buildPeriodoLabel = (x) => {
   if (!x) return "";
@@ -107,6 +111,48 @@ const buildPeriodoLabel = (x) => {
 
   return "";
 };
+function getFilenameFromContentDisposition(cd) {
+  if (!cd) return null;
+
+  // Caso 1: filename*=UTF-8''...
+  let m = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cd);
+  if (m?.[1]) return decodeURIComponent(m[1].trim());
+
+  // Caso 2: filename="..."
+  m = /filename\s*=\s*"([^"]+)"/i.exec(cd);
+  if (m?.[1]) return m[1].trim();
+
+  // Caso 3: filename=... (sin comillas) -> corta en ;
+  m = /filename\s*=\s*([^;]+)/i.exec(cd);
+  if (m?.[1]) return m[1].trim();
+
+  return null;
+};
+
+async function postAndDownload(url, payload) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Export failed: ${res.status} ${txt}`);
+  }
+
+  const blob = await res.blob();
+
+  const cd = res.headers.get("content-disposition") || "";
+  const filename = getFilenameFromContentDisposition(cd) || fallbackName;
+
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(blobUrl);
+}
 
 export default function Reportes() {
   const [loading, setLoading] = useState(true);
@@ -120,9 +166,34 @@ export default function Reportes() {
   const [motivoMap, setMotivoMap] = useState({});
 
   // =============== FILTROS / SLICERS =================
-  const [qSearch, setQSearch] = useState(""); // barra de búsqueda general
+  const [qSearch, setQSearch] = useState("");
   const [fProvincia, setFProvincia] = useState("Todas");
   const [fSede, setFSede] = useState("Todas");
+
+  // ================== NÓMINA: CAMPOS DE ENCABEZADO ==================
+  const [showNomina, setShowNomina] = useState(false);
+  const [showPermanencia, setShowPermanencia] = useState(false);
+
+  const [nomEscuela, setNomEscuela] = useState("");
+  const [nomDireccion, setNomDireccion] = useState("");
+  const [nomSubdireccion, setNomSubdireccion] = useState("");
+  const [nomCoordinacion, setNomCoordinacion] = useState(""); // <-- INPUT (no dropdown)
+  const [nomSede, setNomSede] = useState("Todas"); // <-- DROPDOWN filtrable (solo Nómina)
+  const [nomPeriodoId, setNomPeriodoId] = useState(""); // <-- DROPDOWN NO filtrable
+
+  // Si abrís Nómina, sugerimos copiar la sede global si el usuario ya filtró arriba
+  useEffect(() => {
+    if (!showNomina) return;
+    setNomSede((prev) => {
+      if (prev && prev !== "Todas") return prev;
+      return fSede || "Todas";
+    });
+  }, [showNomina, fSede]);
+
+  const periodoTexto = useMemo(() => {
+    if (!nomPeriodoId) return "";
+    return periodoMap[String(nomPeriodoId)] ?? "";
+  }, [nomPeriodoId, periodoMap]);
 
   const loadData = async () => {
     setLoading(true);
@@ -176,6 +247,7 @@ export default function Reportes() {
       });
       perList.sort((a, b) => a.nombre.localeCompare(b.nombre));
       setPeriodosCat(perList);
+
       const pMap = {};
       perList.forEach((p) => {
         pMap[String(p.id)] = p.nombre;
@@ -185,12 +257,8 @@ export default function Reportes() {
       // catálogo de motivos
       const mMap = {};
       (Array.isArray(arrMot) ? arrMot : []).forEach((m) => {
-        const id = String(
-          m.motivoDesvinculacionId ?? m.id ?? m.Id ?? m.ID
-        );
-        const nombre = String(
-          m.motivo ?? m.nombre ?? m.descripcion ?? ""
-        );
+        const id = String(m.motivoDesvinculacionId ?? m.id ?? m.Id ?? m.ID);
+        const nombre = String(m.motivo ?? m.nombre ?? m.descripcion ?? "");
         if (id) mMap[id] = nombre;
       });
       setMotivoMap(mMap);
@@ -208,7 +276,6 @@ export default function Reportes() {
 
   // =================== CATÁLOGOS PARA DROPDOWNS ===================
 
-  // Provincias
   const provincias = useMemo(() => {
     const set = new Set();
     personas.forEach((p) => {
@@ -224,7 +291,6 @@ export default function Reportes() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [personas]);
 
-  // Sedes
   const sedes = useMemo(() => {
     const set = new Set();
     personas.forEach((p) => {
@@ -238,17 +304,13 @@ export default function Reportes() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [personas, ofertas]);
 
-
-  const selectedSedeTexto = fSede === "Todas" ? "" : fSede;
-
-  // ================== PERSONAS FILTRADAS ==================
-
+  // ================== PERSONAS FILTRADAS (REPORTES) ==================
   const filteredPersonas = useMemo(() => {
     return personas.filter((p) => {
-      const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""
-        } ${p.nombre ?? ""}`
+      const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`
         .replace(/\s+/g, " ")
         .trim();
+
       const ced = String(p.cedula ?? "").trim();
 
       const prov =
@@ -267,7 +329,6 @@ export default function Reportes() {
         "";
       const periodoIngTrim = String(periodoIng).trim();
 
-
       const textoBusqueda = [
         nombreCompleto,
         ced,
@@ -283,18 +344,14 @@ export default function Reportes() {
         .join(" ");
 
       if (!matches(textoBusqueda, qSearch)) return false;
-      if (fProvincia !== "Todas" && String(prov).trim() !== fProvincia)
-        return false;
+      if (fProvincia !== "Todas" && String(prov).trim() !== fProvincia) return false;
       if (fSede !== "Todas" && sedePersona !== fSede) return false;
-
-
 
       return true;
     });
   }, [personas, qSearch, fProvincia, fSede]);
 
-  // ================== AGREGADOS GENERALES ==================
-
+  // ================== AGREGADOS GENERALES (REPORTES) ==================
   const totalDocentes = filteredPersonas.length;
 
   const activos = useMemo(
@@ -321,7 +378,7 @@ export default function Reportes() {
     [activos, inactivos]
   );
 
-  // Reporte por periodo de ingreso (Nómina)
+  // Reporte por periodo de ingreso (Reportes)
   const periodoNominaData = useMemo(() => {
     const mapa = new Map();
 
@@ -348,7 +405,6 @@ export default function Reportes() {
         if (pa.year !== pb.year) return pa.year - pb.year;
         if (pa.ciclo !== pb.ciclo) return pa.ciclo - pb.ciclo;
 
-        // desempate estable
         return a.name.localeCompare(b.name);
       });
   }, [filteredPersonas]);
@@ -376,7 +432,6 @@ export default function Reportes() {
       .filter((x) => !isBlankOrSinDato(x.name) && x.value > 0);
   }, [filteredPersonas]);
 
-
   // Género
   const generoData = useMemo(() => {
     const mapa = new Map();
@@ -393,7 +448,6 @@ export default function Reportes() {
       .map(([name, value]) => ({ name, value: Number(value ?? 0) }))
       .filter((x) => !isBlankOrSinDato(x.name) && x.value > 0);
   }, [filteredPersonas]);
-
 
   // Planilla vs Honorarios
   const contratoData = useMemo(() => {
@@ -423,6 +477,7 @@ export default function Reportes() {
         p.periodoIngresoNombre ??
         p.periodoIngreso ??
         "";
+
       const etqDesv =
         p.periodoDesvinculacionEtiqueta ??
         p.periodoDesvinculacionNombre ??
@@ -437,9 +492,11 @@ export default function Reportes() {
 
       if (!yIng) return;
       const diff = (yDesv ?? currentYear) - yIng;
+
       if (diff >= 4) {
-        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""
-          } ${p.nombre ?? ""}`.replace(/\s+/g, " ").trim();
+        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`
+          .replace(/\s+/g, " ")
+          .trim();
 
         rows.push({
           personaId: p.personaId ?? p.id,
@@ -455,17 +512,11 @@ export default function Reportes() {
     return rows;
   }, [filteredPersonas, periodoMap]);
 
-  // ================== NÓMINA (vista tipo Excel) ==================
-
-  const [showNomina, setShowNomina] = useState(false);
-  const [showPermanencia, setShowPermanencia] = useState(false);
-
-
+  // ================== NÓMINA (rows base) ==================
   const nominaRows = useMemo(() => {
     return filteredPersonas
       .map((p) => {
-        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""
-          } ${p.nombre ?? ""}`
+        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`
           .replace(/\s+/g, " ")
           .trim();
 
@@ -499,6 +550,8 @@ export default function Reportes() {
               : "Inactivo"
             : p.estado ?? p.estadoPersona ?? "";
 
+        const sedeTxt = String(p.sede ?? p.Sede ?? "").trim();
+
         return {
           id: p.personaId ?? p.id,
           nombre: nombreCompleto || p.nombre || "",
@@ -506,6 +559,7 @@ export default function Reportes() {
           salida,
           estado: estadoTxt,
           motivo,
+          sede: sedeTxt,
         };
       })
       .sort((a, b) => {
@@ -524,41 +578,67 @@ export default function Reportes() {
       });
   }, [filteredPersonas, periodoMap, motivoMap]);
 
-  // ====== EXPORTAR EXCEL (CSV con BOM UTF-8) ======
-  const handleExportExcel = () => {
-    const sedeTexto = selectedSedeTexto;
+  // ====== NÓMINA filtrada SOLO por SEDE del header (nomSede) ======
+  const nominaDisplayRows = useMemo(() => {
+    if (!nomSede || nomSede === "Todas") return nominaRows;
+    return nominaRows.filter((r) => String(r.sede ?? "").trim() === String(nomSede).trim());
+  }, [nominaRows, nomSede]);
 
-    const lines = [];
-    lines.push("NÓMINA DOCENTE");
-    lines.push("Escuela: Sistemas de Computación;");
-    lines.push(`Dirección:;Sede: ${sedeTexto};`);
-    lines.push(`Subdirección:;Cant. Docentes activos: ${activos};`);
-    lines.push(`Cant. Docentes inactivos: ${inactivos};`);
-    lines.push("");
-    lines.push(
-      "Nombre del docente;Periodo de ingreso;Periodo de desvinculación;Estado actual;Motivo de desvinculación"
-    );
+  // Cantidades (para encabezado / export) basadas en la SEDE seleccionada en Nómina
+  const nominaActivos = useMemo(
+    () => nominaDisplayRows.filter((r) => String(r.estado ?? "").toLowerCase() === "activo").length,
+    [nominaDisplayRows]
+  );
+  const nominaInactivos = useMemo(
+    () => nominaDisplayRows.filter((r) => String(r.estado ?? "").toLowerCase() === "inactivo").length,
+    [nominaDisplayRows]
+  );
 
-    nominaRows.forEach((r) => {
-      lines.push(`${r.nombre};${r.ingreso};${r.salida};${r.estado};${r.motivo}`);
-    });
-
-    const csv = "\uFEFF" + lines.join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-
-    const blobUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = "NominaDocente.csv";
-    a.click();
-    window.URL.revokeObjectURL(blobUrl);
+  // ================== EXPORT NÓMINA via BACKEND (Excel/PDF reales) ==================
+  const buildNominaPayload = () => {
+    return {
+      meta: {
+        escuela: nomEscuela,
+        direccion: nomDireccion,
+        subdireccion: nomSubdireccion,
+        coordinacion: nomCoordinacion, // INPUT
+        sede: nomSede, // filtrable
+        periodo: periodoTexto, // dropdown NO filtrable
+        cantActivos: nominaActivos,
+        cantInactivos: nominaInactivos,
+      },
+      rows: nominaDisplayRows.map((r) => ({
+        nombreCompleto: r.nombre,
+        periodoIngreso: r.ingreso ?? "",
+        periodoDesvinculacion: r.salida ?? "",
+        estado: r.estado ?? "",
+        motivoDesvinculacion: r.motivo ?? "",
+      })),
+    };
   };
 
+  const handleExportExcel = async () => {
+    try {
+      const payload = buildNominaPayload();
+      await postAndDownload(API_URL.nominaExcel, payload);
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo exportar Excel.");
+    }
+  };
 
-  // ====== EXPORTAR EXCEL (CSV con BOM UTF-8) – Permanencia +4 ======
+  const handleExportPdf = async () => {
+    try {
+      const payload = buildNominaPayload();
+      await postAndDownload(API_URL.nominaPdf, payload);
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo exportar PDF.");
+    }
+  };
+
+  // ====== EXPORTAR EXCEL (CSV con BOM UTF-8) – Permanencia +4 (SIN CAMBIOS) ======
   const handleExportPermanenciaExcel = () => {
-    const sedeTexto = selectedSedeTexto;
-
     const lines = [];
     lines.push("DOCENTES CON MÁS DE 4 AÑOS DE PERMANENCIA");
     lines.push("Escuela: Sistemas de Computación;");
@@ -581,7 +661,7 @@ export default function Reportes() {
     window.URL.revokeObjectURL(blobUrl);
   };
 
-  // ====== EXPORTAR PDF (vista permanencia +4) ======
+  // ====== EXPORTAR PDF (vista permanencia +4) (SIN CAMBIOS) ======
   const handleExportPermanenciaPdf = () => {
     const el = document.getElementById("permanencia-print-area");
     if (!el) {
@@ -619,82 +699,7 @@ export default function Reportes() {
     }, 300);
   };
 
-  // ====== EXPORTAR PDF (vista nómina) ======
-  const handleExportPdf = () => {
-    const el = document.getElementById("nomina-print-area");
-    if (!el) {
-      alert("No se encontró la sección de nómina para imprimir.");
-      return;
-    }
-
-    const w = window.open("", "_blank");
-    if (!w) return;
-
-    w.document.write(`
-  <html>
-    <head>
-      <meta charset="utf-8" />
-      <title>Nómina Docente</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 16px; }
-        h1 { text-align: center; font-size: 20px; margin-bottom: 8px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 8px; }
-        th, td { border: 1px solid #000; padding: 4px 6px; font-size: 12px; }
-        .row { display:flex; justify-content:space-between; font-size: 12px; margin-bottom: 2px; }
-        .header-box { border:1px solid #000; padding:8px; margin-bottom:8px; }
-
-       
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .items-center { align-items: center; }
-        .text-center { text-align: center; }
-        .text-xs { font-size: 12px; }
-        .text-base { font-size: 16px; }
-        .font-bold { font-weight: 700; }
-        .space-y-1 > * + * { margin-top: 4px; }
-        /* ===== Layout del header de Nómina en PDF (2 columnas) ===== */
-        .pdf-title {
-        text-align: center;
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 8px;}
-
-        .pdf-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          font-size: 12px;
-        }
-
-        .pdf-left, .pdf-right {
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .pdf-right {
-          text-align: right;
-          align-items: flex-end;
-        }
-
-              </style>
-            </head>
-            <body>
-              ${el.innerHTML}
-            </body>
-          </html>
-        `);
-
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 300);
-  };
-
   // ======================= RENDER =======================
-
   return (
     <div className="p-2 md:p-6 space-y-4">
       {/* Encabezado */}
@@ -757,7 +762,7 @@ export default function Reportes() {
             </Select>
           </div>
 
-          {/* Sede */}
+          {/* Sede (filtro global de reportes) */}
           <div className="min-w-[160px]">
             <Select
               label="Sede"
@@ -1064,11 +1069,7 @@ export default function Reportes() {
           </div>
         </div>
 
-        {!showPermanencia ? (
-          <Typography className="text-xs text-blue-gray-500">
-
-          </Typography>
-        ) : permanenciaMayor4.length === 0 ? (
+        {!showPermanencia ? null : permanenciaMayor4.length === 0 ? (
           <div className="text-blue-gray-400 text-sm">
             No hay docentes con más de 4 años según los periodos de ingreso / desvinculación.
           </div>
@@ -1089,7 +1090,6 @@ export default function Reportes() {
               <div className="row">
                 <span>Total registros: {permanenciaMayor4.length}</span>
               </div>
-
             </div>
 
             <div className="mt-3 overflow-x-auto">
@@ -1133,7 +1133,10 @@ export default function Reportes() {
             <Button
               size="md"
               className="bg-[#2B338C] text-white"
-              onClick={() => setShowNomina((v) => !v)}
+              onClick={async () => {
+                if (!showNomina) await loadData(); // refresca al abrir
+                setShowNomina((v) => !v);
+              }}
             >
               {showNomina ? "Ocultar Nómina" : "Ver Nómina"}
             </Button>
@@ -1162,71 +1165,147 @@ export default function Reportes() {
         </div>
 
         {showNomina && (
-          <div
-            id="nomina-print-area"
-            className="border border-blue-gray-200 rounded-md p-4 space-y-3 bg-white"
-          >
-            {/* Encabezado tipo planilla */}
-            <div className="text-xs">
-              <Typography className="text-center font-bold text-base">
-                NÓMINA DOCENTE
-              </Typography>
+          <>
+            {/* ====== CONTROLES DE ENCABEZADO (inputs + dropdowns) ====== */}
+            <Card className="p-3 border border-blue-gray-200 overflow-visible">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Input
+                  label="Escuela"
+                  value={nomEscuela}
+                  onChange={(e) => setNomEscuela(e.target.value)}
+                  crossOrigin=""
+                />
+                <Input
+                  label="Dirección"
+                  value={nomDireccion}
+                  onChange={(e) => setNomDireccion(e.target.value)}
+                  crossOrigin=""
+                />
+                <Input
+                  label="Subdirección"
+                  value={nomSubdireccion}
+                  onChange={(e) => setNomSubdireccion(e.target.value)}
+                  crossOrigin=""
+                />
 
-              <div className="pdf-grid mt-2 grid grid-cols-2 gap-x-6 gap-y-1">
-                {/* IZQUIERDA */}
-                <div className="pdf-left space-y-1">
-                  <div>Escuela: Sistemas de Computación</div>
-                  <div>Dirección:</div>
-                  <div>Subdirección:</div>
-                  <div>Coordinación:</div>
-                </div>
+                {/* Coordinación como INPUT (no dropdown) */}
+                <Input
+                  label="Coordinación"
+                  value={nomCoordinacion}
+                  onChange={(e) => setNomCoordinacion(e.target.value)}
+                  crossOrigin=""
+                />
 
-                {/* DERECHA */}
-                <div className="pdf-right space-y-1 text-right">
-                  <div>Sede: {fSede === "Todas" ? "Todas" : fSede}</div>
-                  <div>Periodo:</div>
-                  <div>Cant. Docentes activos: {activos}</div>
-                  <div>Cant. Docentes inactivos: {inactivos}</div>
+                {/* Sede dropdown (FILTRABLE) */}
+                <Select
+                  label="Sede"
+                  value={nomSede}
+                  onChange={(v) => setNomSede(v || "Todas")}
+                  selected={() => (nomSede || "Todas")}
+                  menuProps={{
+                    className: MENU_CLS,
+                    keepMounted: true,
+                    placement: "bottom-start",
+                  }}
+                  containerProps={{ className: CONT_CLS }}
+                >
+                  <Option value="Todas">Todas</Option>
+                  {sedes.map((s) => (
+                    <Option key={s} value={s} className="bg-white">
+                      {s}
+                    </Option>
+                  ))}
+                </Select>
+
+                {/* Periodo dropdown (NO FILTRABLE) */}
+                <Select
+                  label="Periodo"
+                  value={nomPeriodoId}
+                  onChange={(v) => setNomPeriodoId(v || "")}
+                  selected={() => (periodoTexto || "Seleccione")}
+                  menuProps={{
+                    className: MENU_CLS,
+                    keepMounted: true,
+                    placement: "bottom-start",
+                  }}
+                  containerProps={{ className: CONT_CLS }}
+                >
+                  <Option value="">Seleccione</Option>
+                  {periodosCat.map((p) => (
+                    <Option key={p.id} value={p.id} className="bg-white">
+                      {p.nombre}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </Card>
+
+            {/* ====== ÁREA DE VISTA (lo que ves) ====== */}
+            <div
+              id="nomina-print-area"
+              className="border border-blue-gray-200 rounded-md p-4 space-y-3 bg-white"
+            >
+              <div className="text-xs">
+                <Typography className="text-center font-bold text-base">
+                  NÓMINA DOCENTE
+                </Typography>
+
+                <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1">
+                  {/* IZQUIERDA */}
+                  <div className="space-y-1">
+                    <div>Escuela: {nomEscuela || "—"}</div>
+                    <div>Dirección: {nomDireccion || "—"}</div>
+                    <div>Subdirección: {nomSubdireccion || "—"}</div>
+                    <div>Coordinación: {nomCoordinacion || "—"}</div>
+                  </div>
+
+                  {/* DERECHA */}
+                  <div className="space-y-1 text-right">
+                    <div>Sede: {nomSede || "Todas"}</div>
+                    <div>Periodo: {periodoTexto || "—"}</div>
+                    <div>Cant. Docentes activos: {nominaActivos}</div>
+                    <div>Cant. Docentes inactivos: {nominaInactivos}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-3 overflow-x-auto">
-              <table className="min-w-[700px] w-full text-left text-xs border border-blue-gray-200">
-                <thead>
-                  <tr className="bg-[#2B338C] text-white">
-                    <th className="border border-blue-gray-200 p-2">Nombre del docente</th>
-                    <th className="border border-blue-gray-200 p-2">Periodo de ingreso</th>
-                    <th className="border border-blue-gray-200 p-2">Periodo de desvinculación</th>
-                    <th className="border border-blue-gray-200 p-2">Estado actual</th>
-                    <th className="border border-blue-gray-200 p-2">Motivo de desvinculación</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {nominaRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="border border-blue-gray-200 p-2 text-center">
-                        Sin registros.
-                      </td>
+              <div className="mt-3 overflow-x-auto">
+                <table className="min-w-[700px] w-full text-left text-xs border border-blue-gray-200">
+                  <thead>
+                    <tr className="bg-[#2B338C] text-white">
+                      <th className="border border-blue-gray-200 p-2">Nombre del docente</th>
+                      <th className="border border-blue-gray-200 p-2">Periodo de ingreso</th>
+                      <th className="border border-blue-gray-200 p-2">Periodo de desvinculación</th>
+                      <th className="border border-blue-gray-200 p-2">Estado actual</th>
+                      <th className="border border-blue-gray-200 p-2">Motivo de desvinculación</th>
                     </tr>
-                  ) : (
-                    nominaRows.map((r, idx) => (
-                      <tr
-                        key={r.id}
-                        className={idx % 2 === 0 ? "bg-white" : "bg-blue-gray-50"}
-                      >
-                        <td className="border border-blue-gray-200 p-2">{r.nombre}</td>
-                        <td className="border border-blue-gray-200 p-2">{r.ingreso}</td>
-                        <td className="border border-blue-gray-200 p-2">{r.salida || "—"}</td>
-                        <td className="border border-blue-gray-200 p-2">{r.estado}</td>
-                        <td className="border border-blue-gray-200 p-2">{r.motivo || "—"}</td>
+                  </thead>
+                  <tbody>
+                    {nominaDisplayRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="border border-blue-gray-200 p-2 text-center">
+                          Sin registros.
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      nominaDisplayRows.map((r, idx) => (
+                        <tr
+                          key={r.id}
+                          className={idx % 2 === 0 ? "bg-white" : "bg-blue-gray-50"}
+                        >
+                          <td className="border border-blue-gray-200 p-2">{r.nombre}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.ingreso}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.salida || "—"}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.estado}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.motivo || "—"}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </Card>
     </div>

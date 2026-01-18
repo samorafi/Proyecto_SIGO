@@ -5,6 +5,9 @@ using SIGO.Api.Filters;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Services;
 using SIGO.Infrastructure.Persistence;
+using SIGO.Infrastructure;
+using SIGO.Application;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -130,6 +133,15 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = "redis_host:6379"; 
     options.InstanceName = "SIGO_Session_";
 });
+
+
+// --------------------------------------------------------------------
+//EXPORTAR EXCEL Y PDF
+builder.Services.AddApplication();
+
+builder.Services.AddInfrastructure();
+
+// --------------------------------------------------------------------
 
 var app = builder.Build();
 
