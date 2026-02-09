@@ -33,11 +33,13 @@ import ConfiguracionCorreo from "@/pages/admin/admSMTP";
 
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
+import OfertasEnLineaV2 from "@/pages/ofertas/OfertasEnLineaV2";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
+import OfertasPresencialesVirtualesV2 from "@/pages/ofertas/OfertasPresencialesVirtualesV2";
 import OfertasHistorico from "@/pages/ofertas/OfertasHistorico";
 
 // Importación de datos
-import ImportarDatosPrincipal from "@/pages/importar/importarDatosPrincipal";
+import ImportarDatosPrincipal from "@/pages/admin/admImportarDatos/importarDatosPrincipal";
 
 export const routes = [
   {
@@ -51,7 +53,9 @@ export const routes = [
         pages: [
           { name: "100% Virtual", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea /> },
           { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales /> },
-          { name: "Histórico De Ofertas", path: "/ofertas/OfertasHistorico", element: <OfertasHistorico />}
+          { name: "Histórico De Ofertas", path: "/ofertas/OfertasHistorico", element: <OfertasHistorico />},
+          { name: "100% Virtual V2", path: "/ofertas/OfertasEnLineaV2", element: <OfertasEnLineaV2 /> },
+          { name: "Presencial Y En Línea V2", path: "/ofertas/OfertasPresencialesVirtualesV2", element: <OfertasPresencialesVirtualesV2 /> },
         ],
       },
       { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes/DocentesPage", element: <Docentes /> },

@@ -1,46 +1,45 @@
 // --------------------------------------------------------------
 // ResumenEstadosChips.jsx
-// Muestra resumen de ofertas por estado
+// Muestra resumen global de ofertas por estado (si no existe, muestra 0)
 // --------------------------------------------------------------
 
-export default function ResumenEstadosChips({ ofertas }) {
+const ESTADOS = [
+  { key: "Pendiente", label: "PENDIENTES", color: "bg-amber-600" },
+  { key: "Enviada", label: "ENVIADAS", color: "bg-blue-600" },
+  { key: "Aceptada", label: "ACEPTADAS", color: "bg-green-600" },
+  { key: "Rechazada", label: "RECHAZADAS", color: "bg-red-600" },
+  { key: "Cancelada", label: "CANCELADAS", color: "bg-gray-600" },
+  { key: "Importada", label: "IMPORTADAS", color: "bg-teal-600" },
+];
 
-    const total = ofertas.length;
+export default function ResumenEstadosChips({ data }) {
 
-    const contar = (estado) =>
-        ofertas.filter(o => o.estado === estado).length;
+  if (!data) return null;
 
-    return (
-        <div className="flex flex-wrap gap-2">
+  // Convertimos porEstado a un mapa para acceso rápido
+  const map = {};
+  data.porEstado.forEach(e => {
+    map[e.estado] = e.count;
+  });
 
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-[#2B338C]">
-                TOTAL: {total}
-            </span>
+  return (
+    <div className="flex flex-wrap gap-2 mb-3">
 
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-amber-600">
-                PENDIENTES: {contar("Pendiente")}
-            </span>
+      {/* TOTAL */}
+      <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-[#2B338C]">
+        TOTAL: {data.total}
+      </span>
 
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-blue-600">
-                ENVIADAS: {contar("Enviada")}
-            </span>
+      {/* ESTADOS */}
+      {ESTADOS.map(e => (
+        <span
+          key={e.key}
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white ${e.color}`}
+        >
+          {e.label}: {map[e.key] ?? 0}
+        </span>
+      ))}
 
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-green-600">
-                ACEPTADAS: {contar("Aceptada")}
-            </span>
-
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-red-600">
-                RECHAZADAS: {contar("Rechazada")}
-            </span>
-
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-gray-600">
-                CANCELADAS: {contar("Cancelada")}
-            </span>
-
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white bg-teal-600">
-                IMPORTADAS: {contar("Importada")}
-            </span>
-
-        </div>
-    );
+    </div>
+  );
 }

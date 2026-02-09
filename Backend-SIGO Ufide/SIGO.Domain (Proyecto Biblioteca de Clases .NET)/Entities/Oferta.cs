@@ -8,7 +8,6 @@ public class Oferta
     public int? ModalidadId { get; set; }
     public int HorarioId { get; set; }
     public int? PeriodoId { get; set; }
-
     public int? AccionId { get; set; }
     public int? CoordinadorId { get; set; }
     public string? Comentarios { get; set; }
@@ -18,7 +17,6 @@ public class Oferta
     public int? Matriculados { get; set; }  
     public Boolean Archivados { get; set; }
     public int? PersonaId { get; set; }
-
     public virtual AccionOferta? Accion { get; set; }
     public virtual Persona? Coordinador { get; set; }
     public virtual Curso? Curso { get; set; }

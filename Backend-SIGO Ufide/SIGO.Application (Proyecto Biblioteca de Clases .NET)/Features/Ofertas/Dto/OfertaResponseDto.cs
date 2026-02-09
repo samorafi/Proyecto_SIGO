@@ -17,6 +17,10 @@ public class OfertaResponseDto
     public int? Matriculados { get; set; }
     public Boolean? Archivados { get; set; }
     public int? PersonaId { get; set; }
+    public string? HorarioDia { get; set; }
+    public string? HorarioHora { get; set; }
+    public string? Coordinador { get; set; }
+    public string? Cursoid { get; internal set; }
 
     public static OfertaResponseDto FromEntity(SIGO.Domain.Entities.Oferta o) => new()
     {
@@ -35,6 +39,5 @@ public class OfertaResponseDto
         Matriculados = o.Matriculados,
         Archivados = o.Archivados,
         PersonaId = o.PersonaId
-
     };
 }

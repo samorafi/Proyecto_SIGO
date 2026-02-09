@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
+using SIGO.Application.Common.Pagination;
 using SIGO.Application.Features.Ofertas.Commands.Archivar;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
 using SIGO.Application.Features.Ofertas.Commands.Create;
@@ -8,6 +9,7 @@ using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
+using SIGO.Application.Features.Ofertas.Enums;
 using SIGO.Application.Features.Ofertas.Queries;
 using SIGO.Application.Services;
 using System.Text.Json;
@@ -26,9 +28,55 @@ public class OfertasController : ControllerBase
         _auditService = auditService;
     }
 
+    // API ANTIGUA
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<OfertaResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetAllOfertasQuery(), ct));
+    
+
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<OfertaResponseDto>>> GetPaged(
+        [FromQuery] OfertaCategory category,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+
+        [FromQuery] string? buscar = null,
+        [FromQuery] int? sedeId = null,
+        [FromQuery] int? modalidadId = null,
+        [FromQuery] int? periodoId = null,
+        [FromQuery] string? dia = null,
+        [FromQuery] int? horarioId = null,
+        [FromQuery] int? accionId = null,
+        [FromQuery] int? estadoOfertaId = null,
+
+
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(
+            new GetOfertasPagedQuery(category, page, pageSize)
+            {
+                Buscar = buscar,
+                SedeId = sedeId,
+                ModalidadId = modalidadId,
+                PeriodoId = periodoId,
+                Dia = dia,
+                HorarioId = horarioId,
+                AccionId = accionId,
+                EstadoOfertaId = estadoOfertaId,
+            }, ct);
+        return Ok(result);
+    }
+
+    // Resumen de estados de las ofertas
+    [HttpGet("summary")]
+    public async Task<ActionResult<OfertasSummaryDto>> GetSummary(
+    [FromQuery] OfertaCategory category,
+    CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetOfertasSummaryQuery(category), ct);
+        return Ok(result);
+    }
+
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<OfertaResponseDto>> GetById(int id, CancellationToken ct)

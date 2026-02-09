@@ -46,4 +46,5 @@ public class Persona
     public virtual Periodo? PeriodoDesvinculacion { get; set; }
     public virtual Periodo? PeriodoIngreso { get; set; }
     public virtual Sede? Sede { get; set; }
+
 }
