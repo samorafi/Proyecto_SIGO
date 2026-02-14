@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Api.Filters;
-using SIGO.Application.Abstractions;
-using SIGO.Application.Services;
-using SIGO.Infrastructure.Persistence;
-using SIGO.Infrastructure;
 using SIGO.Application;
+using SIGO.Application.Abstractions;
+using SIGO.Application.Common.Security;
+using SIGO.Application.Services;
+using SIGO.Infrastructure;
+using SIGO.Infrastructure.Persistence;
+using SIGO.Infrastructure.Security;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -121,6 +123,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuditActionFilter>();
 builder.Services.AddControllers(options =>
 {

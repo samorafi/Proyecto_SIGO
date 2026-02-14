@@ -8,6 +8,7 @@ using SIGO.Application.Features.Roles.Commands.Update;
 using SIGO.Application.Features.Roles.Queries.GetAllRoles;
 using SIGO.Application.Features.Roles.Queries.GetRolById;
 using SIGO.Application.Features.Roles.Queries.GetRolesPermisos;
+using SIGO.Application.Features.Roles.Queries.GetUsuariosAsignadosARol;
 
 
 namespace SIGO.Api.Controllers
@@ -120,6 +121,13 @@ namespace SIGO.Api.Controllers
             if (!success) return NotFound(new { Message = "La relación Usuario-Rol no existe." });
 
             return Ok(new { Message = "Rol removido correctamente del usuario." });
+        }
+
+        [HttpGet("{id:int}/usuarios")]
+        public async Task<IActionResult> GetUsuariosDelRol(int id)
+        {
+            var usuarios = await _mediator.Send(new GetUsuariosAsignadosARolQuery(id));
+            return Ok(usuarios);
         }
     }
 }

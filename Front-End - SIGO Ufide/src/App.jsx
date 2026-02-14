@@ -2,6 +2,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import routes from "@/routes";
 import { Dashboard, Auth } from "@/layouts";
 import ProtectedLayout from "@/components/ProtectedLayout";
+import RequirePermission from "@/guards/RequirePermission";
+
+function wrapWithPermission(element, permiso) {
+  if (!permiso) return element;
+  return <RequirePermission permiso={permiso}>{element}</RequirePermission>;
+}
 
 export default function App() {
   const dash = routes.find((r) => r.layout === "dashboard") ?? { pages: [] };
@@ -9,7 +15,6 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Layout del dashboard protegido */}
       <Route
         path="/dashboard/*"
         element={
@@ -19,46 +24,39 @@ export default function App() {
         }
       >
         {dash.pages.flatMap((page) => {
-          // Si tiene subpáginas (caso: Ofertas)
           if (page.pages) {
             return page.pages.map((sub) => (
               <Route
                 key={sub.path}
                 path={sub.path.replace(/^\//, "")}
-                element={sub.element}
+                element={wrapWithPermission(sub.element, sub.permiso ?? page.permiso)}
               />
             ));
           }
 
-          // Si es una página normal (no requiere subpáginas)
           return (
             <Route
               key={page.path}
               path={page.path.replace(/^\//, "")}
-              element={page.element}
+              element={wrapWithPermission(page.element, page.permiso)}
             />
           );
         })}
 
-
-        {/* /dashboard => /dashboard/ofertas */}
         <Route index element={<Navigate to="ofertas" replace />} />
       </Route>
 
-      {/* Layout de auth (sin sidenav) */}
       <Route path="/auth/*" element={<Auth />}>
         {auth.pages.map(({ path, element }) => (
           <Route key={path} path={path.replace(/^\//, "")} element={element} />
         ))}
-
-        {/* /auth => /auth/sign-in */}
         <Route index element={<Navigate to="sign-in" replace />} />
-
       </Route>
 
-      {/* fallback global: Pagina principal al iniciar el programa */}
-      <Route path="*" element={<Navigate to="/auth/sign-in" replace />} />
+      {/* Ruta de no autorizado */}
+      <Route path="/403" element={<div className="p-10">No autorizado (403)</div>} />
 
+      <Route path="*" element={<Navigate to="/auth/sign-in" replace />} />
     </Routes>
   );
 }

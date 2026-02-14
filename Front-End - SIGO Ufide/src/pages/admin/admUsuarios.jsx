@@ -75,6 +75,7 @@ export default function AdmUsuarios() {
       alert(data.message);
       setFormData({ nombre: "", correo: "", contrasena: "" });
       setOpenModal(false);
+      fetchUsuarios();
 
     } catch (err) {
       alert("Error de conexión con el servidor: " + err.message);

@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-    Card, Input, Button, Typography,
-    Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip,
-    Checkbox, Select, Option
-} from "@material-tailwind/react";
-import {
-    PlusIcon, PencilSquareIcon, ShieldCheckIcon,
-    ChevronLeftIcon, ChevronRightIcon, TrashIcon
-} from "@heroicons/react/24/outline";
-
+import { Card, Input, Button, Typography, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Checkbox, Select, Option, } from "@material-tailwind/react";
+import { PlusIcon, PencilSquareIcon, ShieldCheckIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
 export default function AdmRolesPermisos() {
     //***************************************************************************
@@ -25,6 +17,12 @@ export default function AdmRolesPermisos() {
     const [openEditModal, setOpenEditModal] = useState(false); // editar rol
     const [openPermisosModal, setOpenPermisosModal] = useState(false); // asignar permisos
 
+    // Modal: Confirmar eliminación con usuarios afectados
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [deleteRol, setDeleteRol] = useState(null); // { rolId, nombre }
+    const [deleteUsuarios, setDeleteUsuarios] = useState([]); // [{ usuarioId, nombre, correo }]
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     // Formularios
     const [formRol, setFormRol] = useState({ nombre: "" });
     const [editRol, setEditRol] = useState(null);
@@ -37,6 +35,8 @@ export default function AdmRolesPermisos() {
     // FETCH ROLES
     //***************************************************************************
     const fetchRoles = async () => {
+        setLoading(true);
+        setError("");
         try {
             const response = await fetch("/api/Roles");
             if (!response.ok) throw new Error("Error al obtener los roles");
@@ -44,7 +44,7 @@ export default function AdmRolesPermisos() {
             setRoles(data);
             setFilteredRoles(data);
         } catch (err) {
-            setError(err.message);
+            setError(err.message || "Error inesperado");
         } finally {
             setLoading(false);
         }
@@ -57,8 +57,8 @@ export default function AdmRolesPermisos() {
     // Filtrado dinámico
     useEffect(() => {
         const timer = setTimeout(() => {
-            const result = roles.filter(
-                (r) => r.nombre.toLowerCase().includes(search.toLowerCase())
+            const result = roles.filter((r) =>
+                (r.nombre ?? "").toLowerCase().includes(search.toLowerCase())
             );
             setFilteredRoles(result);
         }, 400);
@@ -70,23 +70,29 @@ export default function AdmRolesPermisos() {
     //***************************************************************************
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const total = filteredRoles.length;;
-    const pageData = filteredRoles.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+    const total = filteredRoles.length;
     const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+    const pageData = filteredRoles.slice(
+        (page - 1) * rowsPerPage,
+        page * rowsPerPage
+    );
+
     useEffect(() => {
         if (page > totalPages) setPage(totalPages);
     }, [totalPages, page, rowsPerPage, total]);
-
 
     //***************************************************************************
     // CREAR ROL
     //***************************************************************************
     const handleSubmitRol = async (e) => {
-        e.preventDefault();
+        e?.preventDefault?.();
+
         if (!formRol.nombre.trim()) {
             alert("El nombre del rol es obligatorio");
             return;
         }
+
         try {
             const response = await fetch("/api/Roles", {
                 method: "POST",
@@ -94,12 +100,13 @@ export default function AdmRolesPermisos() {
                 body: JSON.stringify(formRol),
             });
             if (!response.ok) throw new Error("Error al crear rol");
+
             alert("Rol creado con éxito");
             setFormRol({ nombre: "" });
             setOpenModal(false);
             fetchRoles();
         } catch (err) {
-            alert("Error: " + err.message);
+            alert("Error: " + (err.message || "Error inesperado"));
         }
     };
 
@@ -112,8 +119,9 @@ export default function AdmRolesPermisos() {
     };
 
     const handleUpdateRol = async (e) => {
-        e.preventDefault();
+        e?.preventDefault?.();
         if (!editRol) return;
+
         try {
             const response = await fetch(`/api/Roles/${editRol.rolId}`, {
                 method: "PUT",
@@ -121,12 +129,13 @@ export default function AdmRolesPermisos() {
                 body: JSON.stringify(editRol),
             });
             if (!response.ok) throw new Error("Error al actualizar rol");
+
             alert("Rol actualizado con éxito");
             setOpenEditModal(false);
             setEditRol(null);
             fetchRoles();
         } catch (err) {
-            alert("Error: " + err.message);
+            alert("Error: " + (err.message || "Error inesperado"));
         }
     };
 
@@ -137,26 +146,31 @@ export default function AdmRolesPermisos() {
         try {
             // Traer lista de permisos disponibles
             const permisosResp = await fetch("/api/Permisos");
+            if (!permisosResp.ok) throw new Error("Error al obtener permisos");
             const permisosData = await permisosResp.json();
             setPermisos(permisosData);
 
             // Traer permisos ya asignados al rol
             const rolPermisosResp = await fetch(`/api/Roles/${rol.rolId}`);
+            if (!rolPermisosResp.ok) throw new Error("Error al obtener permisos del rol");
             const rolPermisosData = await rolPermisosResp.json();
 
             // Precargar los IDs de los permisos asignados
-            setSelectedPermisos(rolPermisosData.permisos.map((p) => p.permisoId));
+            const ids = (rolPermisosData.permisos ?? []).map((p) => p.permisoId);
+            setSelectedPermisos(ids);
 
             setEditRol(rol);
             setOpenPermisosModal(true);
         } catch (err) {
-            alert("Error cargando permisos: " + err.message);
+            alert("Error cargando permisos: " + (err.message || "Error inesperado"));
         }
     };
 
     const handleSavePermisos = async () => {
+        if (!editRol) return;
+
         try {
-            await fetch(`/api/Roles/${editRol.rolId}`, {
+            const resp = await fetch(`/api/Roles/${editRol.rolId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -165,33 +179,63 @@ export default function AdmRolesPermisos() {
                     permisosIds: selectedPermisos,
                 }),
             });
+
+            if (!resp.ok) throw new Error("Error al asignar permisos");
+
             alert("Permisos actualizados con éxito");
             setOpenPermisosModal(false);
             setEditRol(null);
             fetchRoles();
         } catch (err) {
-            alert("Error al asignar permisos: " + err.message);
+            alert("Error al asignar permisos: " + (err.message || "Error inesperado"));
         }
     };
 
     //***************************************************************************
-    // ELIMINAR ROL
+    // ELIMINAR ROL (con advertencia de usuarios asignados)
     //***************************************************************************
-    const handleDeleteRol = async (rolId) => {
-        if (!window.confirm("¿Seguro que deseas eliminar este rol?")) return;
+    const handleOpenDelete = async (rol) => {
+        setDeleteRol({ rolId: rol.rolId, nombre: rol.nombre });
+        setDeleteUsuarios([]);
+        setOpenDeleteModal(true);
+        setDeleteLoading(true);
 
         try {
-            const response = await fetch(`/api/Roles/${rolId}`, {
+            // Endpoint nuevo: GET /api/Roles/{id}/usuarios
+            const resp = await fetch(`/api/Roles/${rol.rolId}/usuarios`);
+            if (!resp.ok) {
+                // Si el endpoint no existe aún, no bloqueamos: solo mostramos confirmación simple
+                setDeleteUsuarios([]);
+                return;
+            }
+
+            const data = await resp.json();
+            setDeleteUsuarios(Array.isArray(data) ? data : []);
+        } catch {
+            setDeleteUsuarios([]);
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteRol) return;
+
+        try {
+            const response = await fetch(`/api/Roles/${deleteRol.rolId}`, {
                 method: "DELETE",
             });
             if (!response.ok) throw new Error("Error al eliminar rol");
+
             alert("Rol eliminado con éxito");
-            fetchRoles(); // refresca lista
+            setOpenDeleteModal(false);
+            setDeleteRol(null);
+            setDeleteUsuarios([]);
+            fetchRoles();
         } catch (err) {
-            alert("Error: " + err.message);
+            alert("Error: " + (err.message || "Error inesperado"));
         }
     };
-
 
     //***************************************************************************
     // RENDER
@@ -239,11 +283,8 @@ export default function AdmRolesPermisos() {
 
             {/* Filtros */}
             <Card className="p-3">
-
-                {/* Contenedor Principal de Controles */}
                 <div className="grid grid-cols-1 md:flex items-end gap-4">
-
-                    {/* 1. Barra de búsqueda */}
+                    {/* Barra de búsqueda */}
                     <div className="md:flex-1" id="search-bar">
                         <Input
                             label="Buscar por nombre de rol"
@@ -252,7 +293,7 @@ export default function AdmRolesPermisos() {
                         />
                     </div>
 
-                     {/* 2. Filtro por activo o inactivo */}
+                    {/* Estado (placeholder — lo dejé igual que tu código) */}
                     <div className="min-w-[140px]">
                         <Select
                             label="Estado"
@@ -264,7 +305,7 @@ export default function AdmRolesPermisos() {
                         </Select>
                     </div>
 
-                    {/* 2. Filas por página (Ancho fijo) */}
+                    {/* Filas por página */}
                     <div className="min-w-[140px]">
                         <Select
                             label="Filas por página"
@@ -277,7 +318,7 @@ export default function AdmRolesPermisos() {
                         </Select>
                     </div>
 
-                    {/* 3. Botón de limpiar filtros (Ancho fijo) */}
+                    {/* Limpiar filtros */}
                     <div className="min-w-[140px]">
                         <Button
                             variant="outlined"
@@ -298,24 +339,21 @@ export default function AdmRolesPermisos() {
             {/* Tabla */}
             {loading && <p>Cargando roles...</p>}
             {error && <p className="text-red-600">Error: {error}</p>}
+
             {!loading && !error && (
                 <Card className="overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-[600px] w-full text-left">
                             <thead>
                                 <tr className="bg-blue-gray-50 text-blue-gray-700">
-                                    <th className="p-3 text-sm font-semibold">Id</th>
                                     <th className="p-3 text-sm font-semibold">Rol</th>
-                                    <th className="p-3 text-sm font-semibold">Estado</th>
                                     <th className="p-3 text-sm font-semibold">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {pageData.map((r) => (
                                     <tr key={r.rolId} className="border-b">
-                                        <td className="p-3">{r.rolId}</td>
                                         <td className="p-3">{r.nombre}</td>
-                                        <td className="p-3">PENDIENTE</td>
                                         <td className="p-3 flex gap-2">
                                             <Tooltip content="Editar">
                                                 <Button
@@ -326,6 +364,7 @@ export default function AdmRolesPermisos() {
                                                     <PencilSquareIcon className="h-4 w-4" />
                                                 </Button>
                                             </Tooltip>
+
                                             <Tooltip content="Asignar Permisos">
                                                 <Button
                                                     size="sm"
@@ -335,16 +374,16 @@ export default function AdmRolesPermisos() {
                                                     <ShieldCheckIcon className="h-4 w-4" />
                                                 </Button>
                                             </Tooltip>
+
                                             <Tooltip content="Eliminar">
                                                 <Button
                                                     size="sm"
                                                     className="bg-red-600 text-white p-2"
-                                                    onClick={() => handleDeleteRol(r.rolId)}
+                                                    onClick={() => handleOpenDelete(r)}
                                                 >
                                                     <TrashIcon className="h-4 w-4" />
                                                 </Button>
                                             </Tooltip>
-
                                         </td>
                                     </tr>
                                 ))}
@@ -398,7 +437,7 @@ export default function AdmRolesPermisos() {
                         <Typography>Cargando datos del rol...</Typography>
                     )}
                 </DialogBody>
-                <DialogFooter>
+                <DialogFooter className="gap-3">
                     <Button className="bg-[#2B338C] text-white" onClick={() => setOpenEditModal(false)}>
                         Cancelar
                     </Button>
@@ -431,23 +470,84 @@ export default function AdmRolesPermisos() {
                         <Typography>Cargando permisos...</Typography>
                     )}
                 </DialogBody>
-                <DialogFooter>
-
-                    <Button
-                        className="bg-[#2B338C] text-white"
-                        onClick={() => setOpenPermisosModal(false)}
-                    >
+                <DialogFooter className="gap-3">
+                    <Button className="bg-[#2B338C] text-white" onClick={() => setOpenPermisosModal(false)}>
                         Cancelar
                     </Button>
-                    <Button
-                        className="bg-[#FFDA00] text-[#2B338C]"
-                        onClick={handleSavePermisos}
-                    >
+                    <Button className="bg-[#FFDA00] text-[#2B338C]" onClick={handleSavePermisos}>
                         Guardar
                     </Button>
                 </DialogFooter>
             </Dialog>
 
+            {/* Modal: Confirmar eliminación (con usuarios asignados) */}
+            <Dialog open={openDeleteModal} handler={() => setOpenDeleteModal(false)} size="md">
+                <DialogHeader className="text-[#2B338C]">Confirmar eliminación</DialogHeader>
+                <DialogBody divider>
+                    <Typography className="text-sm text-blue-gray-700">
+                        ¿Seguro que deseas eliminar el rol{" "}
+                        <b>{deleteRol?.nombre ?? ""}</b>?
+                    </Typography>
+
+                    <div className="mt-3">
+                        {deleteLoading ? (
+                            <Typography className="text-sm">Cargando usuarios asignados...</Typography>
+                        ) : deleteUsuarios.length === 0 ? (
+                            <Typography className="text-sm text-blue-gray-600">
+                                No se encontraron usuarios con este rol (o el endpoint aún no está disponible).
+                            </Typography>
+                        ) : (
+                            <>
+                                <Typography className="text-sm font-semibold text-red-600">
+                                    Este rol está asignado a {deleteUsuarios.length} usuario(s).
+                                </Typography>
+                                <Typography className="text-sm text-blue-gray-700 mt-1">
+                                    Si continuas, el rol se eliminará y quedará desasignado para todos ellos.
+                                </Typography>
+
+                                <div className="mt-3 max-h-56 overflow-auto border rounded-lg">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="bg-blue-gray-50">
+                                            <tr>
+                                                <th className="p-2 font-semibold">Nombre</th>
+                                                <th className="p-2 font-semibold">Correo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {deleteUsuarios.map((u) => (
+                                                <tr key={u.usuarioId} className="border-t">
+                                                    <td className="p-2">{u.nombre}</td>
+                                                    <td className="p-2">{u.correo}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </DialogBody>
+                <DialogFooter className="gap-3">
+                    <Button
+                        className="bg-[#2B338C] text-white"
+                        onClick={() => {
+                            setOpenDeleteModal(false);
+                            setDeleteRol(null);
+                            setDeleteUsuarios([]);
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        className="bg-red-600 text-white"
+                        disabled={deleteLoading || !deleteRol}
+                        onClick={handleConfirmDelete}
+                    >
+                        Eliminar rol
+                    </Button>
+                </DialogFooter>
+            </Dialog>
         </div>
     );
 }

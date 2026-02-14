@@ -1,20 +1,24 @@
 // src/widgets/layout/sidenav.jsx
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Typography, Avatar, Button, Card, IconButton } from "@material-tailwind/react";
-import { ArrowLeftOnRectangleIcon, UserCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { Typography, Button, Card, IconButton } from "@material-tailwind/react";
+import { ArrowLeftOnRectangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-
-
-export default function Sidenav({ routes, brandImg, brandName, isOpen = false, onClose = () => { } }) {
+export default function Sidenav({
+  routes,
+  brandImg,
+  brandName,
+  isOpen = false,
+  onClose = () => {},
+}) {
   const navigate = useNavigate();
 
-  // Traer el hook de autenticación
-  const { user, logout, loading } = useAuth();
+  // Traemos permisos + loadingPermisos + hasPermission desde AuthContext
+  const { user, logout, loading, loadingPermisos, hasPermission } = useAuth();
 
-  // Mostrar un indicador de carga mientras se verifica el estado de autenticación
-  if (loading)
+  // Mostrar un indicador de carga mientras se verifica el estado de autenticación / permisos
+  if (loading || loadingPermisos)
     return <div className="flex items-center justify-center h-full">Cargando...</div>;
 
   const group = routes.find((r) => r.layout === "dashboard");
@@ -26,6 +30,32 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
   };
 
   const [openMenu, setOpenMenu] = useState(null);
+
+  // Filtrar menú según permisos (y subpáginas en collapsible)
+  const menuPages = useMemo(() => {
+    const pages = (group?.pages ?? []).filter((p) => !p.hidden);
+
+    return pages
+      .map((item) => {
+        // Si el item tiene permiso y no lo tiene → ocultar
+        if (item.permiso && !hasPermission(item.permiso)) return null;
+
+        // Si es collapsible, filtrar hijos también por permiso y hidden
+        if (item.collapsible && Array.isArray(item.pages)) {
+          const filteredChildren = item.pages.filter(
+            (sub) => !sub.hidden && (!sub.permiso || hasPermission(sub.permiso))
+          );
+
+          // Si no queda nada permitido, ocultar el grupo completo
+          if (filteredChildren.length === 0) return null;
+
+          return { ...item, pages: filteredChildren };
+        }
+
+        return item;
+      })
+      .filter(Boolean);
+  }, [group, hasPermission]);
 
   const Content = ({ showClose = false }) => (
     <Card className="h-full w-full bg-[#2B338C] text-white rounded-2xl shadow-xl flex flex-col">
@@ -40,7 +70,7 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
             <XMarkIcon className="h-6 w-6 text-white" />
           </IconButton>
         )}
-        <Link to="/" className="flex flex-col items-start gap-2">
+        <Link to="/dashboard/ofertas" className="flex flex-col items-start gap-2">
           <img src={brandImg} alt="logo" className="h-10 w-auto object-contain" />
           <div className="leading-tight max-w-[180px]">
             <Typography className="font-bold">{brandName?.split(" (")[0] ?? "SIGO"}</Typography>
@@ -54,75 +84,71 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
       {/* Menú */}
       <nav className="px-3 py-3 flex-1 overflow-y-auto">
         <ul className="flex flex-col gap-1">
-          {(group?.pages ?? [])
-            .filter((p) => !p.hidden)
-            .map((item) => {
-              if (item.collapsible) {
-                // Menú desplegable
-                return (
-                  <li key={item.name} className="text-sm">
-                    <button
-                      className="flex w-full items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-white/10"
-                      onClick={() => setOpenMenu(openMenu === item.name ? null : item.name)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="grid place-items-center">{item.icon}</span>
-                        <span>{item.name}</span>
-                      </div>
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-
-
-                    {openMenu === item.name && (
-                      <ul className="ml-8 mt-1 flex flex-col gap-1">
-                        {item.pages.map((sub) => (
-                          <li key={sub.name}>
-                            <NavLink
-                              to={`/dashboard${sub.path}`}
-                              onClick={onClose}
-                              className={({ isActive }) =>
-                                [
-                                  "flex items-center gap-3 px-3 py-2 rounded-lg transition",
-                                  isActive
-                                    ? "bg-[#FFDA00] text-[#2B338C] font-semibold shadow"
-                                    : "hover:bg-white/10",
-                                ].join(" ")
-                              }
-                            >
-                              <span className="text-sm">{sub.name}</span>
-                            </NavLink>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                );
-              }
-
-              // Menú normal
-              const fullPath = `/dashboard${item.path}`;
+          {menuPages.map((item) => {
+            if (item.collapsible) {
               return (
-                <li key={item.name}>
-                  <NavLink
-                    to={fullPath}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      [
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition",
-                        isActive
-                          ? "bg-[#FFDA00] text-[#2B338C] font-semibold shadow"
-                          : "hover:bg-white/10",
-                      ].join(" ")
-                    }
+                <li key={item.name} className="text-sm">
+                  <button
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-white/10"
+                    onClick={() => setOpenMenu(openMenu === item.name ? null : item.name)}
                   >
-                    <span className="grid place-items-center">{item.icon}</span>
-                    <span className="text-sm">{item.name}</span>
-                  </NavLink>
+                    <div className="flex items-center gap-3">
+                      <span className="grid place-items-center">{item.icon}</span>
+                      <span>{item.name}</span>
+                    </div>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {openMenu === item.name && (
+                    <ul className="ml-8 mt-1 flex flex-col gap-1">
+                      {item.pages.map((sub) => (
+                        <li key={sub.name}>
+                          <NavLink
+                            to={`/dashboard${sub.path}`}
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                              [
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition",
+                                isActive
+                                  ? "bg-[#FFDA00] text-[#2B338C] font-semibold shadow"
+                                  : "hover:bg-white/10",
+                              ].join(" ")
+                            }
+                          >
+                            <span className="text-sm">{sub.name}</span>
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               );
-            })}
+            }
+
+            // Menú normal
+            const fullPath = `/dashboard${item.path}`;
+            return (
+              <li key={item.name}>
+                <NavLink
+                  to={fullPath}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition",
+                      isActive
+                        ? "bg-[#FFDA00] text-[#2B338C] font-semibold shadow"
+                        : "hover:bg-white/10",
+                    ].join(" ")
+                  }
+                >
+                  <span className="grid place-items-center">{item.icon}</span>
+                  <span className="text-sm">{item.name}</span>
+                </NavLink>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
@@ -132,34 +158,15 @@ export default function Sidenav({ routes, brandImg, brandName, isOpen = false, o
       <div className="p-4">
         <p className="text-sm font-semibold truncate">Bienvenido</p>
         <div className="flex items-center gap-3">
-          {/*<Avatar src="/img/Profile-Holder.png" alt="Usuario Demo" className="ring-2 ring-white/40" /> */}
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">
-              {user ? user.nombre : 'Invitado'}
-            </p>
+            <p className="text-sm font-semibold truncate">{user ? user.nombre : "Invitado"}</p>
             <p className="text-xs text-white/80 truncate">
-              {user ? user.correo : 'invitado@ufide.ac.cr'}
+              {user ? user.correo : "invitado@ufide.ac.cr"}
             </p>
           </div>
         </div>
 
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {/* Perfil 
-          <Link to="/dashboard/perfil" className="col-span-1">
-            <Button
-              variant="outlined"
-              size="sm"
-              className="w-full border-white/40 text-white hover:bg-white/10 flex items-center justify-center gap-1"
-              onClick={onClose}
-            >
-              <UserCircleIcon className="h-5 w-5" />
-              <span>Mi perfil</span>
-            </Button>
-          </Link>
-          */}
-        </div>
-
+        <div className="mt-3 grid grid-cols-2 gap-2">{/* Perfil (comentado) */}</div>
 
         <div className="col-span-1" title="Cerrar sesión">
           <Button
