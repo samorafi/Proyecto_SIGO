@@ -102,6 +102,12 @@ export default function OfertasPresencialesVirtuales() {
     const [loading, setLoading] = useState(true);
     const [setError] = useState(null);
 
+    const getPeriodoFormatoOfertaById = (periodoId) => {
+        const p = (periodos || []).find(x => String(x.periodoId) === String(periodoId));
+        if (!p) return "—";
+        return `${p.numero}C, ${p.anio}`;
+    };
+
     // Estados de formulario ---
     const [fichaId, setFichaId] = useState(null);
     const [fichaData, setFichaData] = useState(null);
@@ -164,6 +170,19 @@ export default function OfertasPresencialesVirtuales() {
     const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
     const [docenteId, setDocenteId] = useState("");
     const [enviando, setEnviando] = useState(false);
+
+    const [evalPeriodoId, setEvalPeriodoId] = useState("");
+
+    const getPeriodoLabel = (id) => {
+        const p = periodos?.find(x => String(x.periodoId ?? x.id) === String(id));
+        return (
+            p?.nombre ??
+            p?.descripcion ??
+            p?.periodo ??
+            p?.codigo ??
+            (id ? String(id) : "—")
+        );
+    };
 
     // Docentes para enviar oferta
     const [docentes, setDocentes] = useState([]);
@@ -460,6 +479,7 @@ export default function OfertasPresencialesVirtuales() {
         setOpenEnviar(false);
         setOfertaSeleccionada(null);
         setDocenteId("");
+        setEvalPeriodoId("");
     };
 
     // PENDIENTE DE MODIFICAR CON SWEETALERT
@@ -474,6 +494,11 @@ export default function OfertasPresencialesVirtuales() {
             return;
         }
 
+        if (!evalPeriodoId) {
+            alert("Debe seleccionar el periodo de la Evaluación docente.");
+            return;
+        }
+
         try {
             setEnviando(true);
 
@@ -483,13 +508,14 @@ export default function OfertasPresencialesVirtuales() {
                 body: JSON.stringify({
                     ofertaId: ofertaSeleccionada.ofertaId,
                     personaId: Number(docenteId),
+                    evaluacionPeriodoId: Number(evalPeriodoId),
                 }),
             });
 
             if (!response.ok) throw new Error("Error al enviar la oferta al docente.");
 
-            setOfertas(prev =>
-                prev.map(o =>
+            setOfertas((prev) =>
+                prev.map((o) =>
                     o.ofertaId === ofertaSeleccionada.ofertaId
                         ? { ...o, estado: "Enviada", estadoOfertaId: 1 }
                         : o
@@ -499,7 +525,7 @@ export default function OfertasPresencialesVirtuales() {
             alert("La oferta fue enviada al docente correctamente.");
 
             handleCerrarEnviar();
-            await fetchOfertas(); // refrescar estados si cambian
+            await fetchOfertas();
 
         } catch (error) {
             console.error(error);
@@ -784,7 +810,7 @@ export default function OfertasPresencialesVirtuales() {
 
                 modalidades={modalidades}
                 modalidadesExcluidas={[3]}
-                //bloquearModalidad
+            //bloquearModalidad
             />
 
             {/* Modal: Enviar oferta a docente */}
@@ -831,29 +857,238 @@ export default function OfertasPresencialesVirtuales() {
                                 )}
                             </div>
 
-                            {/* Previsualización del correo */}
+                            {/* Evaluación docente (cuatrimestre) */}
+                            <div className="grid grid-cols-1 gap-3 mt-2">
+                                <Select
+                                    label="Seleccione el periodo de la Evaluación docente"
+                                    value={evalPeriodoId ? String(evalPeriodoId) : ""}
+                                    onChange={(v) => setEvalPeriodoId(v || "")}
+                                    menuProps={{ className: "max-h-64 overflow-auto" }}
+                                >
+                                    <Option value="">Seleccione...</Option>
+
+                                    {(periodos || []).map((p) => (
+                                        <Option key={p.periodoId} value={String(p.periodoId)}>
+                                            {`${p.numero}C, ${p.anio}`}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                <Typography className="text-xs text-blue-gray-600">
+                                    Este valor se usará en el texto: “Evaluación Docente del `Sus resultados en la Evaluación Docente del...”.
+                                </Typography>
+                            </div>
+
+
+
+                            {/* Previsualización del correo (HTML) */}
                             <div className="mt-4 border border-gray-200 rounded-lg bg-white p-4 max-h-80 overflow-auto">
                                 <Typography className="text-[#2B338C] font-bold text-md mb-2">
                                     Previsualización del correo
                                 </Typography>
-                                <pre className="whitespace-pre-wrap text-md text-blue-gray-800 font-mono">
-                                    {`Estimado(a) ${docenteId ? getNombreDocente(docenteId) : "Nombre del docente"},
 
-                                    La Universidad Fidélitas le ofrece la siguiente carga:
+                                {(() => {
+                                    const nombreDocente = docenteId ? getNombreDocente(docenteId) : "Nombre del docente";
+                                    const horarioTxt = getNombreHorario(ofertaSeleccionada.horarioId);
+                                    const periodoTxt = ofertaSeleccionada.periodo ?? "—";
+                                    const sedeTxt = ofertaSeleccionada.sede ?? "—";
+                                    const modalidadTxt = ofertaSeleccionada.modalidad ?? "—";
+                                    const cursoTxt = ofertaSeleccionada.curso ?? "—";
+                                    const grupoTxt = ofertaSeleccionada.grupo ?? "—";
+                                    const cupoTxt = ofertaSeleccionada.cupo ?? "N/A";
+                                    const evalPeriodoTxt = evalPeriodoId ? getPeriodoFormatoOfertaById(evalPeriodoId) : "—";
 
-                                    - Curso: ${ofertaSeleccionada.curso}
-                                    - Sede: ${ofertaSeleccionada.sede}
-                                    - Modalidad: ${ofertaSeleccionada.modalidad}
-                                    - Período: ${ofertaSeleccionada.periodo}
-                                    - Horario: ${getNombreHorario(ofertaSeleccionada.horarioId)}
-                                    - Grupo: ${ofertaSeleccionada.grupo ?? ""}
-                                    - Cupo: ${ofertaSeleccionada.cupo ?? "N/A"} estudiantes
 
-                                    En el correo real se incluirán los enlaces para aceptar o rechazar la oferta.
+                                    const gradoTxt = ofertaSeleccionada.grado ?? "Bachillerato";
+                                    const carreraTxt = ofertaSeleccionada.carrera ?? "Sistemas";
+                                    const codigoCursoTxt =
+                                        ofertaSeleccionada.codigoCurso ??
+                                        ofertaSeleccionada.codigo ??
+                                        ofertaSeleccionada.cursoCodigo ??
+                                        ofertaSeleccionada.curso ??
+                                        "—";
 
-                                    Saludos cordiales,
-                                    Coordinación Académica`}
-                                </pre>
+                                    const nombreCursoTxt =
+                                        ofertaSeleccionada.nombreCurso ??
+                                        ofertaSeleccionada.materia ??
+                                        getCursoNombrePorCodigo?.(codigoCursoTxt) ??
+                                        "—";
+
+                                    const horarioObj = (horario || []).find(h => h.horarioId === ofertaSeleccionada.horarioId);
+                                    const diaTxt = horarioObj?.dia ?? "—";
+
+                                    const codigoTxt = codigoCursoTxt;
+                                    const materiaTxt = nombreCursoTxt;
+                                    const matriculaTxt = ofertaSeleccionada.matricula ?? cupoTxt;
+                                    const accionTxt = "Asignar Profesor";
+                                    const profesorTxt = nombreDocente?.toUpperCase?.() ?? nombreDocente;
+
+                                    return (
+                                        <div
+                                            className="rounded-lg p-4"
+                                            style={{
+                                                background: "#111827",
+                                                color: "white",
+                                                fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+                                            }}
+                                        >
+                                            {/* Título */}
+                                            <div className="text-sm font-semibold mb-3" style={{ color: "#E5E7EB" }}>
+                                                IMPORTANTE: NOMBRAMIENTO - {periodoTxt} -
+                                            </div>
+
+                                            {/* Saludo y texto */}
+                                            <div className="text-sm leading-6" style={{ color: "#F9FAFB" }}>
+                                                <div>Estimado/a</div>
+                                                <div>Es un gusto saludarle.</div>
+                                                <div className="mt-2">
+                                                    Quisiera confirmar su disponibilidad para impartir lecciones en el{" "}
+                                                    <b>{periodoTxt}</b> y, en caso afirmativo, conocer su aceptación para este posible
+                                                    nombramiento.
+                                                </div>
+                                            </div>
+
+                                            {/* Tabla */}
+                                            <div className="mt-4 overflow-x-auto">
+                                                <table
+                                                    className="w-full text-xs"
+                                                    style={{
+                                                        borderCollapse: "separate",
+                                                        borderSpacing: 0,
+                                                        minWidth: 760,
+                                                    }}
+                                                >
+                                                    <thead>
+                                                        <tr>
+                                                            {[
+                                                                "Grado",
+                                                                "Carrera",
+                                                                "Sede",
+                                                                "Periodo",
+                                                                "Código",
+                                                                "Materia",
+                                                                "Grupo",
+                                                                "Día",
+                                                                "Horario",
+                                                                "Matrícula",
+                                                                "Acción",
+                                                                "Profesor",
+                                                            ].map((h) => (
+                                                                <th
+                                                                    key={h}
+                                                                    style={{
+                                                                        textAlign: "left",
+                                                                        padding: "8px 10px",
+                                                                        background: "#1F2937",
+                                                                        color: "#F9FAFB",
+                                                                        borderTop: "1px solid #374151",
+                                                                        borderBottom: "1px solid #374151",
+                                                                        borderLeft: "1px solid #374151",
+                                                                    }}
+                                                                >
+                                                                    {h}
+                                                                </th>
+                                                            ))}
+                                                            <th
+                                                                style={{
+                                                                    borderTop: "1px solid #374151",
+                                                                    borderBottom: "1px solid #374151",
+                                                                    borderRight: "1px solid #374151",
+                                                                    background: "#1F2937",
+                                                                }}
+                                                            />
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        <tr>
+                                                            {[
+                                                                gradoTxt,
+                                                                carreraTxt,
+                                                                sedeTxt,
+                                                                periodoTxt,
+                                                                codigoTxt,
+                                                                materiaTxt,
+                                                                grupoTxt,
+                                                                diaTxt,
+                                                                horarioTxt,
+                                                                matriculaTxt,
+                                                                accionTxt,
+                                                                profesorTxt,
+                                                            ].map((v, idx) => (
+                                                                <td
+                                                                    key={idx}
+                                                                    style={{
+                                                                        padding: "8px 10px",
+                                                                        background: "#111827",
+                                                                        color: "#E5E7EB",
+                                                                        borderBottom: "1px solid #374151",
+                                                                        borderLeft: "1px solid #374151",
+                                                                        verticalAlign: "top",
+                                                                    }}
+                                                                >
+                                                                    {String(v)}
+                                                                </td>
+                                                            ))}
+                                                            <td
+                                                                style={{
+                                                                    borderBottom: "1px solid #374151",
+                                                                    borderRight: "1px solid #374151",
+                                                                }}
+                                                            />
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {/* Texto y checklist */}
+                                            <div className="mt-4 text-sm leading-6" style={{ color: "#F9FAFB" }}>
+                                                <div>Asimismo le recuerdo que este nombramiento está sujeto a:</div>
+
+                                                <ul className="mt-2 space-y-2">
+                                                    {[
+                                                        `Sus resultados en la Evaluación Docente del ${evalPeriodoTxt}.`,
+                                                        "La matrícula de los cursos asignados.",
+                                                        "La apertura de los cursos en Reserva, los cuales se habilitan bajo demanda a lo largo del periodo de matrícula. No hay una fecha exacta para su apertura y esta puede darse incluso en la semana 17.",
+                                                        "La asignación de los cursos es enviada a Procesos Académicos, departamento encargado de gestionar la asignación a nivel de sistema, cuando esto suceda usted podrá visualizar los cursos en el SAM y Campus Virtual.",
+                                                    ].map((txt, i) => (
+                                                        <li key={i} className="flex gap-2 items-start">
+                                                            <span
+                                                                style={{
+                                                                    display: "inline-flex",
+                                                                    width: 18,
+                                                                    height: 18,
+                                                                    borderRadius: 999,
+                                                                    background: "#7C3AED",
+                                                                    color: "white",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    fontSize: 12,
+                                                                    marginTop: 2,
+                                                                    flex: "0 0 auto",
+                                                                }}
+                                                            >
+                                                                ✓
+                                                            </span>
+                                                            <span style={{ color: "#E5E7EB" }}>{txt}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+
+                                                <div className="mt-4">Quedo atenta a su confirmación.</div>
+                                                <div className="mt-2">Saludos cordiales,</div>
+                                                <div className="font-semibold" style={{ color: "#F9FAFB" }}>
+                                                    Coordinación Académica
+                                                </div>
+
+                                                {/* Nota opcional */}
+                                                <div className="mt-3 text-xs" style={{ color: "#9CA3AF" }}>
+                                                    Nota: En el correo real se incluirán los enlaces para aceptar o rechazar la oferta.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </>
                     )}
