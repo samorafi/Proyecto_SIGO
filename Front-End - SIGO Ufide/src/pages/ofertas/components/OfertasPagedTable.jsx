@@ -21,11 +21,14 @@ import { alertService } from "@/services/alert.service";
 import { entityConfirm } from "@/services/entityConfirm.service";
 import { GuardarOferta } from "@/pages/ofertas/functions";
 
+import VerFichaOferta from "@/pages/ofertas/functions/VerFichaOferta_v2";
+
+
 // Importación de hooks  propias de ofertas
 import { useOfertasPaged, useOfertasSummary, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
-import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2 } from "../modals";
+import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2 } from "../modals";
 
 import {
   isHistorico
@@ -98,7 +101,11 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         return (
           <div className="flex items-center gap-2">
             <Tooltip content="Ver detalle">
-              <ViewButton />
+              <div>
+                <ViewButton
+                  onClick={() => handleVer(row.original.ofertaId)}
+                />
+              </div>
             </Tooltip>
 
             <Tooltip content="Editar oferta">
@@ -428,7 +435,36 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     }
   };
 
-  const catHistoricoRegistrar = isHistorico(category);
+  const catHistorico = isHistorico(category);
+
+  // Ver Oferta
+  const [openVer, setOpenVer] = useState(false);
+  const [loadingVer, setLoadingVer] = useState(false);
+  const [errorVer, setErrorVer] = useState("");
+  const [dataVer, setDataVer] = useState(null);
+
+  const handleVer = async (id) => {
+    setOpenVer(true);
+    setLoadingVer(true);
+    setErrorVer("");
+    setDataVer(null);
+
+    const r = await VerFichaOferta(id);
+
+    if (!r.ok) {
+      setErrorVer(r.error);
+    } else {
+      setDataVer(r.data);
+    }
+
+    setLoadingVer(false);
+  };
+
+  const closeVer = () => {
+    setOpenVer(false);
+    setErrorVer("");
+    setDataVer(null);
+  };
 
   return (
     <>
@@ -444,7 +480,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
 
           {/* Botón Nueva Oferta: Opcional hacerlo full width en móvil con 'w-full sm:w-auto' */}
-          {!catHistoricoRegistrar && (
+          {!catHistorico && (
             <FormButton
               onClick={handleOpenNueva}
               className="w-full sm:w-auto"
@@ -890,6 +926,16 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         coordinadores={coordinadores}
         estados={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
         modalidades={modalidades}
+      />
+
+      <ModalVerOferta_v2
+        open={openVer}
+        onClose={closeVer}
+        loading={loadingVer}
+        error={errorVer}
+        data={dataVer}
+        accionChips={accionChips}
+        estadoChips={estadoChips}
       />
 
 

@@ -36,12 +36,13 @@ export default async function OpenFichaOferta(id, helpers) {
         // 5. Retornar todo listo
         return {
             ok: true,
-            data, 
+            data,
             fichaForm,
         };
 
     } catch (error) {
         console.error("Error en OpenFichaOferta:", error);
+
         return { ok: false, error: "Error inesperado al abrir la oferta." };
     }
 }

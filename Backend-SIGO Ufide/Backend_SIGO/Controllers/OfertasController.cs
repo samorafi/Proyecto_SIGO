@@ -81,6 +81,10 @@ public class OfertasController : ControllerBase
     public async Task<ActionResult<OfertaResponseDto>> GetById(int id, CancellationToken ct)
         => Ok(await _mediator.Send(new GetOfertaByIdQuery(id), ct));
 
+    [HttpGet("{id:int}/ficha")]
+    public async Task<ActionResult<OfertaResponseDto>> GetFicha(int id, CancellationToken ct)
+    => Ok(await _mediator.Send(new GetOfertaByIdQuery_v2(id), ct));
+
     [HttpPost]
     [AuditDisabled]
     public async Task<ActionResult<int>> Create([FromBody] CreateOfertaRequest body, CancellationToken ct)
