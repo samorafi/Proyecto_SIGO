@@ -880,20 +880,15 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         onClose={handleCloseRegistrar}
         loading={registrarLoading}
         category={category}
-
         form={form}
         setForm={setForm}
         onRegistrar={handleRegistrar}
-
         cursos={cursos}
         sedes={sedes}
         horarios={horarios}
         periodos={periodos} // los de usePeriodosApi
         coordinadores={coordinadores}
-
-        // tu modal usa `accionId`, aquí lo armamos desde ACCIONES
         estados={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
-
         modalidades={modalidades}
       />
 

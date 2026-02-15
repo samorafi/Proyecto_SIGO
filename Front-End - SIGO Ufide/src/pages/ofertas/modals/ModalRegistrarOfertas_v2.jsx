@@ -139,16 +139,30 @@ export default function ModalRegistrarOfertas_v2({
 
           <Select
             label="Periodo"
+            key={`periodo-${form.tipoPeriodo}-${periodosOrdenados.map(p => p.periodoId).join(",")}`}
             value={form.periodoId ? String(form.periodoId) : ""}
             disabled={!form.tipoPeriodo}
-            onChange={(v) => setForm((p) => ({ ...p, periodoId: v || "" }))}
+            onChange={(v) => setForm((prev) => ({ ...prev, periodoId: v || "" }))}
+            selected={() => {
+              if (!form.periodoId) return "Seleccione";
+              const sel = periodosOrdenados.find(x => String(x.periodoId) === String(form.periodoId));
+              return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : "Seleccione";
+            }}
+            containerProps={{ className: "min-w-0" }}
+            menuProps={{
+              className:
+                "z-[99999] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)]",
+              placement: "bottom-start",
+            }}
           >
+            <Option value="">Seleccione</Option>
             {periodosOrdenados.map((p) => (
               <Option key={p.periodoId} value={String(p.periodoId)}>
                 {`${p.numero}${p.tipo} - ${p.anio}`}
               </Option>
             ))}
           </Select>
+
 
           <Select
             label="Horario"
