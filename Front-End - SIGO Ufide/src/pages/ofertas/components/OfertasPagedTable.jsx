@@ -6,27 +6,22 @@ import { useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-tabl
 // Componente: UI
 import PageTitle from "@/components/ui/Title/PageTitle";
 import { FormButton, ArchiveButton, DuplicateButton, ViewButton, EditButton, CancelButton, SendButton, ClearFiltersButton, RefreshButton } from "@/components/ui/Buttons";
+import AppPagination from "@/components/ui/pagination/AppPagination";
 
 // Componente: Resumen de estados de oferta (chips de colores)
 import ResumenEstadosChips from "./ResumenEstadosChips";
-import { useOfertasPaged } from "../hooks/useOfertasPaged";
-import { useOfertasSummary } from "../hooks/useOfertasSummary";
-
-// Componente: Chips para las acciones y estados de las ofertas.
 import { accionChips, estadoChips } from "./EstadosAccionesChips";
-
-// Componente: Paginación
-import AppPagination from "@/components/ui/pagination/AppPagination";
 
 // Hooks para cargar catálogos y periodos
 import { usePeriodos } from "@/hooks/usePeriodos";
 import { usePeriodosApi } from "@/hooks/usePeriodosApi";
 
-/* Componente principal: Tabla paginada de ofertas (Acorde a la categoría seleccionada)
-*   1: Presencial y En Línea, 
-*   2: 100% Virtual, 
-*   3: Histórico
-*/
+// Importación de hooks  propias de ofertas
+import { useOfertasPaged,useOfertasSummary,useArchivarOfertas_v2,useDuplicarOfertasV2 } from "../hooks";
+
+// Importación de modales propias de ofertas
+import {ModalArchivarOfertas_v2,ModalDuplicarOfertas} from "../modals";
+
 export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
   // Filtros de búsqueda
@@ -248,13 +243,98 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     placement: "bottom-start",
   };
 
+  // Archivar Ofertas
+  const {
+    openModal: openArchivarModal,
+    setOpenModal: setOpenArchivarModal,
+    abrirModal: abrirArchivarModal,
+
+    tipoPeriodo: tipoPeriodoArchivar,
+    setTipoPeriodo: setTipoPeriodoArchivar,
+
+    selectedPeriodo: selectedPeriodoArchivar,
+    setSelectedPeriodo: setSelectedPeriodoArchivar,
+
+    catHistorico: isHistoricoArchivar,
+    catRequiereModalidad,
+    bloquearModalidad,
+
+    modalidadesParaSelect,
+    selectedModalidad: selectedModalidadArchivar,
+    setSelectedModalidad: setSelectedModalidadArchivar,
+
+    periodosDisponibles,
+    avisoArchivar,
+    archivar,
+    loadingArchivar,
+    mensajeArchivar,
+  } = useArchivarOfertas_v2(periodos, refresh, category);
+
   const containerPropsSafe = { className: "min-w-0" };
+
+  // Duplicar Ofertas
+  const {
+    openModal: openDuplicarModal,
+    setOpenModal: setOpenDuplicarModal,
+    abrirModalDuplicar: abrirDuplicarModal,
+
+    tipoPeriodo: tipoPeriodoDuplicar,
+    setTipoPeriodo: setTipoPeriodoDuplicar,
+
+    periodoOrigen,
+    setPeriodoOrigen,
+    periodoDestino,
+    setPeriodoDestino,
+
+    selectedModalidad: selectedModalidadDuplicar,
+    setSelectedModalidad: setSelectedModalidadDuplicar,
+
+    periodosOrigenFiltrados,
+    periodosDestinoFiltrados,
+    duplicar,
+    loadingDuplicar,
+    avisoCanceladas,
+
+    catHistorico: isHistoricoDuplicar,
+    catRequiereModalidad: catRequiereModalidadDuplicar,
+    modalidadesPermitidas: modalidadesPermitidasDuplicar,
+    bloquearModalidad: bloquearModalidadDuplicar,
+  } = useDuplicarOfertasV2(periodos, refresh, category);
 
   return (
     <>
       {/* Título */}
-      <div className="mb-3">
-        <PageTitle>{OfertaTitle}</PageTitle>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+
+        {/* Título: Centrado en móvil, a la izquierda en escritorio */}
+        <div className="text-center sm:text-left">
+          <PageTitle>{OfertaTitle}</PageTitle>
+        </div>
+
+        {/* Contenedor de Botones: Wrap para que bajen si no caben, y scroll horizontal si es necesario */}
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+
+          {/* Botón Nueva Oferta: Opcional hacerlo full width en móvil con 'w-full sm:w-auto' */}
+          <FormButton className="w-full sm:w-auto">Nueva oferta</FormButton>
+
+          {!isHistoricoArchivar && (
+            <ArchiveButton
+              onClick={abrirArchivarModal}
+              className="w-full sm:w-auto"
+            >
+              Archivar Ofertas
+            </ArchiveButton>
+          )}
+
+          {!isHistoricoDuplicar && (
+            <DuplicateButton
+              onClick={abrirDuplicarModal}
+              className="w-full sm:w-auto"
+            >
+              Duplicar ofertas
+            </DuplicateButton>
+          )}
+        </div>
       </div>
 
       {/* Card de filtros */}
@@ -468,7 +548,6 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         </div>
       </Card>
 
-
       {/* Errores + Chips */}
       {error ? <div className="p-3 text-red-600">{error}</div> : null}
 
@@ -480,7 +559,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
       {/* Tabla */}
       <Card className="overflow-hidden">
-        
+
         {/* Modo: Mobile */}
         <div className="md:hidden p-3 space-y-3">
           {loading ? (
@@ -614,6 +693,50 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
           />
         </div>
       </Card>
+
+      {/* Modal para archivar ofertas */}
+      <ModalArchivarOfertas_v2
+        open={openArchivarModal}
+        onClose={() => setOpenArchivarModal(false)}
+        tipoPeriodo={tipoPeriodoArchivar}
+        setTipoPeriodo={setTipoPeriodoArchivar}
+        selectedPeriodo={selectedPeriodoArchivar}
+        setSelectedPeriodo={setSelectedPeriodoArchivar}
+        selectedModalidad={selectedModalidadArchivar}
+        setSelectedModalidad={setSelectedModalidadArchivar}
+        infoArchivar={avisoArchivar}
+        catRequiereModalidad={catRequiereModalidad}
+        bloquearModalidad={bloquearModalidad}
+        catHistorico={isHistoricoArchivar}
+        modalidades={modalidadesParaSelect}
+        periodosDisponibles={periodosDisponibles}
+        loadingArchivar={loadingArchivar}
+        mensajeArchivar
+        onArchivar={archivar}
+        onArchived={refresh}
+      />
+
+      {/* Modal para duplicar ofertas */}
+      <ModalDuplicarOfertas
+        open={openDuplicarModal}
+        onClose={() => setOpenDuplicarModal(false)}
+        mostrarModalidad={catRequiereModalidadDuplicar}
+        bloquearModalidad={bloquearModalidadDuplicar}
+        modalidadesPermitidas={modalidadesPermitidasDuplicar}
+        infoCanceladas={avisoCanceladas}
+        tipoPeriodo={tipoPeriodoDuplicar}
+        setTipoPeriodo={setTipoPeriodoDuplicar}
+        periodoOrigen={periodoOrigen}
+        setPeriodoOrigen={setPeriodoOrigen}
+        periodoDestino={periodoDestino}
+        setPeriodoDestino={setPeriodoDestino}
+        selectedModalidad={selectedModalidadDuplicar}
+        setSelectedModalidad={setSelectedModalidadDuplicar}
+        periodosOrigenFiltrados={periodosOrigenFiltrados}
+        periodosDestinoFiltrados={periodosDestinoFiltrados}
+        loadingDuplicar={loadingDuplicar}
+        onDuplicar={duplicar}
+      />
     </>
   );
 

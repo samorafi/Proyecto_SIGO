@@ -1,0 +1,205 @@
+--PROCEDIMIENTO ALMACENADO DE ARCHIVAR OFERTAS
+
+CREATE OR REPLACE FUNCTION universidad.archivar_ofertas_por_periodo_y_modalidad(
+  p_periodo_id integer,
+  p_modalidades integer[]
+)
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_total_existentes int;
+  v_total_archivadas int;
+  v_periodo_label text;
+  v_modalidades_text text;
+BEGIN
+  -- Obtener etiqueta del período
+  SELECT etiqueta
+    INTO v_periodo_label
+  FROM universidad.periodo
+  WHERE periodo_id = p_periodo_id;
+
+  IF v_periodo_label IS NULL THEN
+    v_periodo_label := p_periodo_id::text;
+  END IF;
+
+  -- Obtener nombres de modalidades
+  SELECT string_agg(nombre, ', ' ORDER BY modalidad_id)
+    INTO v_modalidades_text
+  FROM universidad.modalidad
+  WHERE modalidad_id = ANY(p_modalidades);
+
+  IF v_modalidades_text IS NULL THEN
+    v_modalidades_text := array_to_string(p_modalidades, ', ');
+  END IF;
+
+  -- Validar existencia
+  SELECT COUNT(*)
+    INTO v_total_existentes
+  FROM universidad.oferta
+  WHERE periodo_id = p_periodo_id
+    AND modalidad_id = ANY(p_modalidades);
+
+  IF v_total_existentes = 0 THEN
+    RETURN FORMAT('No existen ofertas para el período %s.', v_periodo_label);
+  END IF;
+
+  -- Archivar
+  UPDATE universidad.oferta
+  SET archivado = TRUE
+  WHERE periodo_id = p_periodo_id
+    AND modalidad_id = ANY(p_modalidades)
+    AND (archivado IS NULL OR archivado = FALSE);
+
+  GET DIAGNOSTICS v_total_archivadas = ROW_COUNT;
+
+  IF v_total_archivadas = 0 THEN
+    RETURN FORMAT(
+      'Todas las ofertas ya estaban archivadas para el período %s (%s).',
+      v_periodo_label,
+      v_modalidades_text
+    );
+  END IF;
+
+  RETURN FORMAT(
+    'Se archivaron %s oferta(s) del período %s para modalidad(es): %s.',
+    v_total_archivadas,
+    v_periodo_label,
+    v_modalidades_text
+  );
+END;
+$$;
+
+--PROCEDIMIENTO ALMACENADO DUPLICAR OFERTAS
+
+CREATE OR REPLACE FUNCTION universidad.duplicar_ofertas_por_periodo(
+    p_periodo_origen integer,
+    p_periodo_destino integer,
+    p_modalidades integer[]
+)
+RETURNS TABLE(total_duplicadas integer, mensaje text)
+LANGUAGE plpgsql
+COST 100
+VOLATILE PARALLEL UNSAFE
+ROWS 1000
+AS $BODY$
+DECLARE
+    v_count INT := 0;
+    v_omitidas_canceladas INT := 0;
+    v_etq_origen TEXT;
+    v_etq_destino TEXT;
+BEGIN
+    -- Traer etiquetas de periodos (para el mensaje)
+    SELECT p.etiqueta INTO v_etq_origen
+    FROM universidad.periodo p
+    WHERE p.periodo_id = p_periodo_origen;
+
+    SELECT p.etiqueta INTO v_etq_destino
+    FROM universidad.periodo p
+    WHERE p.periodo_id = p_periodo_destino;
+
+    -- Contar cuántas canceladas se omiten (estado_oferta_id = 5)
+    SELECT COUNT(*) INTO v_omitidas_canceladas
+    FROM universidad.oferta o
+    WHERE o.periodo_id = p_periodo_origen
+      AND o.modalidad_id = ANY(p_modalidades)
+      AND COALESCE(o.estado_oferta_id, 0) = 5;
+
+    -- Validar si existen ofertas elegibles para duplicar (excluye canceladas)
+    SELECT COUNT(*) INTO v_count
+    FROM universidad.oferta o
+    WHERE o.periodo_id = p_periodo_origen
+      AND o.modalidad_id = ANY(p_modalidades)
+      AND COALESCE(o.estado_oferta_id, 0) <> 5;
+
+    IF v_count = 0 THEN
+        RETURN QUERY
+        SELECT
+            0,
+            'No hay ofertas elegibles para duplicar desde "' ||
+            COALESCE(v_etq_origen, 'el período de origen') ||
+            '". Omitidas por estar canceladas: ' || v_omitidas_canceladas || '.';
+        RETURN;
+    END IF;
+
+    -- Insertar las ofertas duplicadas con grupo incremental por combinación (misma lógica)
+    WITH src AS (
+        SELECT
+            o.curso_id,
+            o.sede_id,
+            o.modalidad_id,
+            o.horario_id,
+            o.coordinador_id,
+            o.cupo,
+            o.persona_id,
+            ROW_NUMBER() OVER (
+                PARTITION BY o.curso_id, o.sede_id, o.modalidad_id
+                ORDER BY o.oferta_id
+            ) AS rn
+        FROM universidad.oferta o
+        WHERE o.periodo_id = p_periodo_origen
+          AND o.modalidad_id = ANY(p_modalidades)
+          AND COALESCE(o.estado_oferta_id, 0) <> 5 
+    ),
+    base AS (
+        SELECT
+            x.curso_id,
+            x.sede_id,
+            x.modalidad_id,
+            COALESCE(MAX(x.grupo), 0) AS max_grupo
+        FROM universidad.oferta x
+        WHERE x.periodo_id = p_periodo_destino
+        GROUP BY x.curso_id, x.sede_id, x.modalidad_id
+    )
+    INSERT INTO universidad.oferta (
+        curso_id,
+        sede_id,
+        modalidad_id,
+        horario_id,
+        periodo_id,
+        accion_id,
+        coordinador_id,
+        comentarios,
+        estado_oferta_id,
+        grupo,
+        cupo,
+        matriculados,
+        archivado,
+        persona_id
+    )
+    SELECT
+        s.curso_id,
+        s.sede_id,
+        s.modalidad_id,
+        s.horario_id,
+        p_periodo_destino,
+        1,
+        s.coordinador_id,
+        '',
+        2,
+        COALESCE(b.max_grupo, 0) + s.rn,
+        s.cupo,
+        0,
+        FALSE,
+        s.persona_id
+    FROM src s
+    LEFT JOIN base b
+      ON b.curso_id = s.curso_id
+     AND b.sede_id = s.sede_id
+     AND b.modalidad_id = s.modalidad_id;
+
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+
+    RETURN QUERY
+    SELECT
+        v_count,
+        'Se duplicaron ' || v_count || ' ofertas desde "' ||
+        COALESCE(v_etq_origen, 'el período de origen') ||
+        '" hacia "' ||
+        COALESCE(v_etq_destino, 'el período de destino') ||
+        '". Omitidas por estar canceladas: ' || v_omitidas_canceladas || '.';
+END;
+$BODY$;
+
+ALTER FUNCTION universidad.duplicar_ofertas_por_periodo(integer, integer, integer[])
+OWNER TO postgres;

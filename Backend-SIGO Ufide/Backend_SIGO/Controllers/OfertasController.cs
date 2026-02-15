@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
-using SIGO.Application.Features.Ofertas.Commands.Archivar;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
@@ -130,13 +129,7 @@ public class OfertasController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("archivar")]
-    public async Task<IActionResult> Archivar([FromBody] ArchivarOfertasCommand command)
-    {
-        var result = await _mediator.Send(command);
-        return Ok(result);
-    }
-
+    // Archivar ofertas
     [HttpPost("archivar-por-modalidad")]
     public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
     {
