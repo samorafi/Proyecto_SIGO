@@ -17,10 +17,10 @@ import { usePeriodos } from "@/hooks/usePeriodos";
 import { usePeriodosApi } from "@/hooks/usePeriodosApi";
 
 // Importación de hooks  propias de ofertas
-import { useOfertasPaged,useOfertasSummary,useArchivarOfertas_v2,useDuplicarOfertasV2 } from "../hooks";
+import { useOfertasPaged,useOfertasSummary,useArchivarOfertas_v2,useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
-import {ModalArchivarOfertas_v2,ModalDuplicarOfertas} from "../modals";
+import {ModalArchivarOfertas_v2,ModalDuplicarOfertas_v2} from "../modals";
 
 export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
@@ -299,7 +299,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     catRequiereModalidad: catRequiereModalidadDuplicar,
     modalidadesPermitidas: modalidadesPermitidasDuplicar,
     bloquearModalidad: bloquearModalidadDuplicar,
-  } = useDuplicarOfertasV2(periodos, refresh, category);
+  } = useDuplicarOfertas_v2(periodos, refresh, category);
 
   return (
     <>
@@ -717,7 +717,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
       />
 
       {/* Modal para duplicar ofertas */}
-      <ModalDuplicarOfertas
+      <ModalDuplicarOfertas_v2
         open={openDuplicarModal}
         onClose={() => setOpenDuplicarModal(false)}
         mostrarModalidad={catRequiereModalidadDuplicar}

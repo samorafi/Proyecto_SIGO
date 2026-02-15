@@ -32,7 +32,7 @@ import {
     modalidadesPermitidasPorCategoria,
 } from "../constants/OfertaCategory";
 
-export const useDuplicarOfertasV2 = (periodos, fetchOfertas, category) => {
+export const useDuplicarOfertas_v2 = (periodos, fetchOfertas, category) => {
 
     // Se definen flags de categoría de las ofertas.
     const catHistorico = isHistorico(category);
