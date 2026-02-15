@@ -15,12 +15,21 @@ import { accionChips, estadoChips } from "./EstadosAccionesChips";
 // Hooks para cargar catálogos y periodos
 import { usePeriodos } from "@/hooks/usePeriodos";
 import { usePeriodosApi } from "@/hooks/usePeriodosApi";
+import { useCatalogos } from "@/hooks/useCatalogos";
+
+import { alertService } from "@/services/alert.service";
+import { entityConfirm } from "@/services/entityConfirm.service";
+import { GuardarOferta } from "@/pages/ofertas/functions";
 
 // Importación de hooks  propias de ofertas
-import { useOfertasPaged,useOfertasSummary,useArchivarOfertas_v2,useDuplicarOfertas_v2 } from "../hooks";
+import { useOfertasPaged, useOfertasSummary, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
-import {ModalArchivarOfertas_v2,ModalDuplicarOfertas_v2} from "../modals";
+import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2 } from "../modals";
+
+import {
+  isHistorico
+} from "../constants/OfertaCategory";
 
 export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
@@ -51,6 +60,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     refresh,
     allowedPageSizes,
   } = useOfertasPaged({ category, initialPageSize: 10, filters });
+
 
   // Función para actualizar un filtro específico y resetear a página 1
   const setFilter = (key, value) => {
@@ -301,6 +311,125 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     bloquearModalidad: bloquearModalidadDuplicar,
   } = useDuplicarOfertas_v2(periodos, refresh, category);
 
+  // Registrar Oferta
+
+  const {
+    cursos,
+    sedes,
+    modalidades,
+    horarios,
+    coordinadores,
+    estados,
+    estadoOferta,
+    personas,
+    loading: loadingCatalogos
+  } = useCatalogos();
+
+  // Importante: Validación de formularios
+  const validarFormulario = () => {
+    const camposRequeridos = [
+      form.cursoId,
+      form.sedeId,
+      form.horarioId,
+      form.periodoId,
+      form.tipoPeriodo,
+      form.coordinadorId,
+      form.modalidadId,
+      form.accionId,
+    ];
+
+    const hayCampoVacio = camposRequeridos.some(
+      (campo) => campo === "" || campo === null || campo === undefined
+    );
+
+    if (hayCampoVacio) {
+      alertService.error(
+        "Información incompleta",
+        "Debe completar toda la información para registrar una oferta."
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const [openRegistrar, setOpenRegistrar] = useState(false);
+  const [registrarLoading, setRegistrarLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    cursoId: "",
+    sedeId: "",
+    horarioId: "",
+    periodoId: "",
+    tipoPeriodo: "",
+    coordinadorId: "",
+    comentarios: "",
+    accionId: 1,
+    modalidadId: "",
+    estadoOfertaId: 2,
+    cupo: null,
+    matriculados: null,
+    grupo: "",
+  });
+
+  const handleOpenNueva = () => {
+    setForm({
+      cursoId: "",
+      sedeId: "",
+      horarioId: "",
+      periodoId: "",
+      tipoPeriodo: "",
+      coordinadorId: "",
+      comentarios: "",
+      accionId: 1,
+      modalidadId: "",
+      estadoOfertaId: 2,
+      cupo: null,
+      matriculados: null,
+      grupo: "",
+    });
+    setOpenRegistrar(true);
+  };
+
+  const handleCloseRegistrar = () => setOpenRegistrar(false);
+
+  // Registrar nueva oferta (con SweetAlert)
+  const handleRegistrar = async () => {
+    // 1) Confirmación (pantalla de “¿va a crear?”)
+    const ok = await entityConfirm.create("la oferta");
+    if (!ok) return;
+
+    // 2) Validación (si está incompleto, avisar y no pegarle al backend)
+    if (!validarFormulario()) return;
+
+    try {
+      setRegistrarLoading(true);
+      alertService.loading("Registrando...", "Guardando la oferta");
+
+      const result = await GuardarOferta(null, form);
+
+      alertService.close();
+
+      if (!result?.ok) {
+        alertService.error("Error al registrar", result?.error || "Intente nuevamente.");
+        return;
+      }
+
+      alertService.toastSuccess("Oferta registrada correctamente");
+      setOpenRegistrar(false);
+
+      refresh();
+      refreshSummary?.();
+    } catch (err) {
+      alertService.close();
+      alertService.apiError(err, "No se pudo registrar la oferta");
+    } finally {
+      setRegistrarLoading(false);
+    }
+  };
+
+  const catHistoricoRegistrar = isHistorico(category);
+
   return (
     <>
       {/* Título */}
@@ -315,7 +444,14 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
 
           {/* Botón Nueva Oferta: Opcional hacerlo full width en móvil con 'w-full sm:w-auto' */}
-          <FormButton className="w-full sm:w-auto">Nueva oferta</FormButton>
+          {!catHistoricoRegistrar && (
+            <FormButton
+              onClick={handleOpenNueva}
+              className="w-full sm:w-auto"
+            >
+              Nueva oferta
+            </FormButton>
+          )}
 
           {!isHistoricoArchivar && (
             <ArchiveButton
@@ -737,6 +873,31 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         loadingDuplicar={loadingDuplicar}
         onDuplicar={duplicar}
       />
+
+      {/* Modal para registrar oferta */}
+      <ModalRegistrarOfertas_v2
+        open={openRegistrar}
+        onClose={handleCloseRegistrar}
+        loading={registrarLoading}
+        category={category}
+
+        form={form}
+        setForm={setForm}
+        onRegistrar={handleRegistrar}
+
+        cursos={cursos}
+        sedes={sedes}
+        horarios={horarios}
+        periodos={periodos} // los de usePeriodosApi
+        coordinadores={coordinadores}
+
+        // tu modal usa `accionId`, aquí lo armamos desde ACCIONES
+        estados={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
+
+        modalidades={modalidades}
+      />
+
+
     </>
   );
 

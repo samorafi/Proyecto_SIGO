@@ -1,6 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const ALLOWED_PAGE_SIZES = [10, 25, 50, 100];
+
+// cache global (vive mientras la app está abierta)
+const ofertasPagedCache = new Map();
+// { items, totalCount, totalPages, ts }
+const CACHE_TTL_MS = 60_000; // 1 minuto (ajustable)
+
+function buildCacheKey({ category, page, pageSize, stableFilters }) {
+  return JSON.stringify({ category, page, pageSize, ...stableFilters });
+}
 
 export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }) {
   const [items, setItems] = useState([]);
@@ -15,6 +24,9 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // para cancelar requests si el usuario cambia rápido o sale del módulo
+  const abortRef = useRef(null);
 
   const stableFilters = useMemo(() => ({
     buscar: (filters?.buscar ?? "").trim(),
@@ -36,14 +48,43 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
     filters?.estadoOfertaId,
     filters?.dia,
     filters?.horarioId,
-    filters?.accionId,
-    filters?.estadoOfertaId,
   ]);
 
-  const fetchPaged = useCallback(async () => {
+  const cacheKey = useMemo(
+    () => buildCacheKey({ category, page, pageSize, stableFilters }),
+    [category, page, pageSize, stableFilters]
+  );
+
+  const fetchPaged = useCallback(async ({ force = false } = {}) => {
+    const cached = ofertasPagedCache.get(cacheKey);
+    const isFresh = cached && (Date.now() - cached.ts) < CACHE_TTL_MS;
+
+    // 1) Si hay cache fresco y no forzás, pintá de una sin request
+    if (!force && isFresh) {
+      setItems(cached.items);
+      setTotalCount(cached.totalCount);
+      setTotalPages(cached.totalPages);
+      setError("");
+      setLoading(false);
+      return;
+    }
+
+    // 2) Si hay cache pero viejo, podés pintar primero y refrescar (opcional)
+    //    Esto evita “pantalla vacía” al volver.
+    if (!force && cached && !isFresh) {
+      setItems(cached.items);
+      setTotalCount(cached.totalCount);
+      setTotalPages(cached.totalPages);
+    }
+
     try {
       setLoading(true);
       setError("");
+
+      // cancelá request anterior
+      abortRef.current?.abort?.();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const params = new URLSearchParams({
         category: String(category),
@@ -62,6 +103,7 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
 
       const res = await fetch(`/api/Ofertas/paged?${params.toString()}`, {
         credentials: "include",
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -71,10 +113,23 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
 
       const data = await res.json();
 
-      setItems(data.items ?? []);
-      setTotalCount(data.totalCount ?? 0);
-      setTotalPages(data.totalPages ?? 0);
+      const next = {
+        items: data.items ?? [],
+        totalCount: data.totalCount ?? 0,
+        totalPages: data.totalPages ?? 0,
+        ts: Date.now(),
+      };
+
+      // guardar cache
+      ofertasPagedCache.set(cacheKey, next);
+
+      // setear state
+      setItems(next.items);
+      setTotalCount(next.totalCount);
+      setTotalPages(next.totalPages);
+
     } catch (e) {
+      if (e?.name === "AbortError") return; // normal
       setError(e?.message || "No se pudieron cargar las ofertas.");
       setItems([]);
       setTotalCount(0);
@@ -82,10 +137,11 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
     } finally {
       setLoading(false);
     }
-  }, [category, page, pageSize, stableFilters]);
+  }, [cacheKey, category, page, pageSize, stableFilters]);
 
   useEffect(() => {
     fetchPaged();
+    return () => abortRef.current?.abort?.();
   }, [fetchPaged]);
 
   const setSafePageSize = (next) => {
@@ -104,7 +160,7 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
     totalPages,
     loading,
     error,
-    refresh: fetchPaged,
+    refresh: () => fetchPaged({ force: true }), // refresh fuerza backend
     allowedPageSizes: ALLOWED_PAGE_SIZES,
   };
 }
