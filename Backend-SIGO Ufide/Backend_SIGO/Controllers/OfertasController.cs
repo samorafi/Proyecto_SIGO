@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
+using SIGO.Application.Features.Ofertas.Commands.Cancelar;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
@@ -191,6 +192,17 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
 
         // Si todo salió bien
         return Ok(response);
+    }
+
+    [HttpPost("{id:int}/cancelar")]
+    public async Task<IActionResult> Cancelar(int id, CancellationToken ct)
+    {
+        var ok = await _mediator.Send(new CancelarOfertaCommand(id), ct);
+
+        if (!ok)
+            return BadRequest(new { ok = false, message = "No se pudo cancelar, la oferta ya se encuentra cancelada." });
+
+        return Ok(new { ok = true });
     }
 
 }

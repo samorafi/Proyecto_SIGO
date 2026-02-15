@@ -13,6 +13,7 @@ import AppModal from "@/components/ui/Modals/AppModal";
 import EditarFichaOferta from "@/pages/ofertas/functions/EditarFichaOferta_v2";
 import { alertService } from "@/services/alert.service";
 import VerOfertaEditar from "../functions/VerFichaOferta_v2";
+import { entityConfirm } from "@/services/entityConfirm.service";
 
 
 const emptyForm = {
@@ -115,6 +116,12 @@ export default function ModalEditarOferta_v2({
         );
     }, [form, originalData]);
 
+    const isCancelada =
+        String(originalData?.estadoOfertaId) === "5" ||
+        String(originalData?.estado ?? "").toLowerCase().trim() === "cancelada";
+
+    const disabledFields = loading || saving || isCancelada;
+
     const validate = () => {
         const cupo = form.cupo === "" ? null : Number(form.cupo);
         const matric = form.matriculados === "" ? null : Number(form.matriculados);
@@ -146,8 +153,13 @@ export default function ModalEditarOferta_v2({
             return;
         }
 
+        const ok = await entityConfirm.update("la oferta");
+        if (!ok) return;
+
         try {
             setSaving(true);
+
+            alertService.loading("Actualizando...", "Aplicando cambios");
 
             const payload = {
                 horarioId: Number(form.horarioId),
@@ -161,6 +173,8 @@ export default function ModalEditarOferta_v2({
 
             const res = await EditarFichaOferta(ofertaId, payload);
 
+            alertService.close();
+
             if (res.ok) {
                 alertService.toastSuccess("Oferta actualizada correctamente");
                 onSuccess?.();
@@ -168,8 +182,10 @@ export default function ModalEditarOferta_v2({
             } else {
                 alertService.error("Error", res.error || "No se pudo actualizar la oferta.");
             }
+
         } catch (e) {
-            alertService.error("Error", "Falló la actualización de la oferta.");
+            alertService.close();
+            alertService.error("Error", "Falló la actualización.");
         } finally {
             setSaving(false);
         }
@@ -212,123 +228,130 @@ export default function ModalEditarOferta_v2({
                 </div>
             }
         >
-            <div className="flex flex-col gap-6">
+            {/* Contenedor de Scroll: Mantiene el modal dentro del área visible */}
+            <div className="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="flex flex-col gap-6 py-1">
+                    <div className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white p-5 shadow-sm">
+                        <div className="absolute top-0 left-0 h-1 w-full bg-[#FFDA00]" />
 
-                <div className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white p-5 shadow-sm">
-                    <div className="absolute top-0 left-0 h-1 w-full bg-[#FFDA00]" />
-
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div className="space-y-1">
-                                <Typography className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-gray-400">
-                                    Información del Oferta
-                                </Typography>
-                                <Typography className="text-lg sm:text-xl font-black text-[#2B338C] leading-tight">
-                                    <span className="opacity-60 font-medium">{originalData?.cursoId}</span> — {originalData?.curso}
-                                </Typography>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                    <Typography className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-gray-400">
+                                        Información del Oferta
+                                    </Typography>
+                                    <Typography className="text-lg sm:text-xl font-black text-[#2B338C] leading-tight">
+                                        <span className="opacity-60 font-medium">{originalData?.cursoId}</span> — {originalData?.curso}
+                                    </Typography>
+                                </div>
+                                <div className="shrink-0">
+                                    <span className="inline-flex items-center rounded-lg bg-[#2B338C]/5 px-3 py-1.5 text-xs font-bold text-[#2B338C] border border-[#2B338C]/10 uppercase">
+                                        {originalData?.modalidad || "—"}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="shrink-0">
-                                <span className="inline-flex items-center rounded-lg bg-[#2B338C]/5 px-3 py-1.5 text-xs font-bold text-[#2B338C] border border-[#2B338C]/10 uppercase">
-                                    {originalData?.modalidad || "—"}
-                                </span>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <InfoPill label="Sede" value={originalData?.sede} icon="📍" />
-                            <InfoPill label="Periodo" value={originalData?.periodo} icon="🗓️" />
-                            <InfoPill label="Modalidad" value={originalData?.modalidad} icon="💻" />
-                            {/* Aquí ya no es estático "Activo", usa el estado real */}
-                            <InfoPill label="Estado" value={originalData?.estado} icon="📊" />
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <InfoPill label="Sede" value={originalData?.sede} icon="📍" />
+                                <InfoPill label="Periodo" value={originalData?.periodo} icon="🗓️" />
+                                <InfoPill label="Modalidad" value={originalData?.modalidad} icon="💻" />
+                                <InfoPill label="Estado" value={originalData?.estado} icon="📊" />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="space-y-5 px-1">
-                    <div className="flex items-center justify-between border-b border-blue-gray-50 pb-2">
-                        <Typography className="text-[#2B338C] font-extrabold text-sm uppercase tracking-wider">
-                            Campos Editables
-                        </Typography>
-                        {hasChanges && (
-                            <div className="flex items-center gap-2 bg-orange-50 px-2 py-1 rounded-md">
-                                <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                                <span className="text-[11px] font-bold text-orange-800">Cambios sin guardar</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                        <Select
-                            label="Acción"
-                            value={form.accionId}
-                            onChange={(v) => setForm((p) => ({ ...p, accionId: v || "" }))}
-                            disabled={loading || saving}
-                        >
-                            {acciones.map((a) => (
-                                <Option key={a.accionId} value={String(a.accionId)}>{a.nombre}</Option>
-                            ))}
-                        </Select>
-
-                        <Select
-                            label="Horario"
-                            value={form.horarioId}
-                            onChange={(v) => setForm((p) => ({ ...p, horarioId: v || "" }))}
-                            disabled={loading || saving}
-                        >
-                            {horarios.map((h) => (
-                                <Option key={h.horarioId} value={String(h.horarioId)}>
-                                    {`${h.dia} - ${h.rango}`}
-                                </Option>
-                            ))}
-                        </Select>
-
-                        <Select
-                            label="Coordinador"
-                            value={form.coordinadorId}
-                            onChange={(v) => setForm((p) => ({ ...p, coordinadorId: v || "" }))}
-                            disabled={loading || saving}
-                        >
-                            {coordinadores.map((c) => (
-                                <Option key={c.id} value={String(c.id)}>
-                                    {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`}
-                                </Option>
-                            ))}
-                        </Select>
-
-                        <Input
-                            label="Grupo"
-                            value={form.grupo}
-                            onChange={(e) => setForm((p) => ({ ...p, grupo: e.target.value }))}
-                            disabled={loading || saving}
-                            crossOrigin={undefined}
-                        />
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input
-                                type="number"
-                                label="Cupo"
-                                value={form.cupo}
-                                onChange={(e) => setForm((p) => ({ ...p, cupo: e.target.value === "" ? "" : Number(e.target.value) }))}
-                                disabled={loading || saving}
-                                crossOrigin={undefined}
-                            />
-                            <Input
-                                type="number"
-                                label="Matriculados"
-                                value={form.matriculados}
-                                onChange={(e) => setForm((p) => ({ ...p, matriculados: e.target.value === "" ? "" : Number(e.target.value) }))}
-                                disabled={loading || saving}
-                                crossOrigin={undefined}
-                            />
+                    <div className="space-y-5 px-1">
+                        <div className="flex items-center justify-between border-b border-blue-gray-50 pb-2">
+                            <Typography className="text-[#2B338C] font-extrabold text-sm uppercase tracking-wider">
+                                Campos Editables
+                            </Typography>
+                            {hasChanges && (
+                                <div className="flex items-center gap-2 bg-orange-50 px-2 py-1 rounded-md">
+                                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                                    <span className="text-[11px] font-bold text-orange-800">Cambios sin guardar</span>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="md:col-span-2">
-                            <Textarea
-                                label="Comentarios"
-                                value={form.comentarios}
-                                onChange={(e) => setForm((p) => ({ ...p, comentarios: e.target.value }))}
-                                disabled={loading || saving}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <Select
+                                label="Acción"
+                                value={form.accionId}
+                                onChange={(v) => setForm((p) => ({ ...p, accionId: v || "" }))}
+                                disabled={disabledFields}
+                            >
+                                {acciones.map((a) => (
+                                    <Option key={a.accionId} value={String(a.accionId)}>{a.nombre}</Option>
+                                ))}
+                            </Select>
+
+                            <Select
+                                label="Horario"
+                                value={form.horarioId}
+                                onChange={(v) => setForm((p) => ({ ...p, horarioId: v || "" }))}
+                                disabled={disabledFields}
+                            >
+                                {horarios.map((h) => (
+                                    <Option key={h.horarioId} value={String(h.horarioId)}>
+                                        {`${h.dia} - ${h.rango}`}
+                                    </Option>
+                                ))}
+                            </Select>
+
+                            <Select
+                                label="Coordinador"
+                                value={form.coordinadorId}
+                                onChange={(v) => setForm((p) => ({ ...p, coordinadorId: v || "" }))}
+                                disabled={disabledFields}
+                            >
+                                {coordinadores.map((c) => (
+                                    <Option key={c.id} value={String(c.id)}>
+                                        {`${c.nombre} ${c.primerApellido} ${c.segundoApellido}`}
+                                    </Option>
+                                ))}
+                            </Select>
+
+                            <Input
+                                label="Grupo"
+                                value={form.grupo}
+                                onChange={(e) => setForm((p) => ({ ...p, grupo: e.target.value }))}
+                                disabled={disabledFields}
+                                crossOrigin={undefined}
                             />
+
+                            <div className="flex flex-col sm:flex-row gap-6">
+                                <div className="w-full">
+                                    <Input
+                                        type="number"
+                                        label="Cupo Máx."
+                                        value={form.cupo}
+                                        onChange={(e) => setForm((p) => ({ ...p, cupo: e.target.value === "" ? "" : Number(e.target.value) }))}
+                                        disabled={disabledFields}
+                                        crossOrigin={undefined}
+                                        className="h-12"
+                                    />
+                                </div>
+                                <div className="w-full">
+                                    <Input
+                                        type="number"
+                                        label="Matriculados"
+                                        value={form.matriculados}
+                                        onChange={(e) => setForm((p) => ({ ...p, matriculados: e.target.value === "" ? "" : Number(e.target.value) }))}
+                                        disabled={disabledFields}
+                                        crossOrigin={undefined}
+                                        className="h-12"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <Textarea
+                                    label="Comentarios"
+                                    value={form.comentarios}
+                                    onChange={(e) => setForm((p) => ({ ...p, comentarios: e.target.value }))}
+                                    disabled={loading || saving}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

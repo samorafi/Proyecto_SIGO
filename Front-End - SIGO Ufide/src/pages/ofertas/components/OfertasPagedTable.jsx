@@ -22,10 +22,10 @@ import { entityConfirm } from "@/services/entityConfirm.service";
 import { GuardarOferta } from "@/pages/ofertas/functions";
 
 import VerFichaOferta from "@/pages/ofertas/functions/VerFichaOferta_v2";
-
+import { useCancelarOferta_v2 } from "@/pages/ofertas/hooks/useCancelarOferta_v2";
 
 // Importación de hooks  propias de ofertas
-import { useOfertasPaged, useOfertasSummary, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
+import { useOfertasPaged, useOfertasResumen, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
 import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2, ModalEditarOferta_v2 } from "../modals";
@@ -77,7 +77,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     loading: loadingSummary,
     error: summaryError,
     refresh: refreshSummary,
-  } = useOfertasSummary(category);
+  } = useOfertasResumen(category);
 
   // Función para la selección del titulo.
   const TITLE_BY_CATEGORY = {
@@ -418,6 +418,17 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     setOfertaIdEditar(null);
   };
 
+  const { cancelar, cancelandoId } = useCancelarOferta_v2({
+    onAfterCancel: async () => {
+      await refresh();
+      await refreshSummary?.();
+    },
+  });
+
+  const handleCancelar = (id) => {
+    cancelar(id);
+  };
+
   // Validación de categoría (para evitar errores en caso de que se use el componente sin pasar una categoría o con una categoría inválida)
   const catHistorico = isHistorico(category);
 
@@ -470,7 +481,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
             {!isHistoricoArchivar && (
               <Tooltip content="Cancelar oferta">
-                <CancelButton />
+                <CancelButton onClick={() => handleCancelar(o.ofertaId)} />
               </Tooltip>
             )}
 
@@ -494,7 +505,6 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     manualPagination: true,
     pageCount: totalPages,
   });
-
 
   return (
     <>
