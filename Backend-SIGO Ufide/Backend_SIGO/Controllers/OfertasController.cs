@@ -133,6 +133,31 @@ public class OfertasController : ControllerBase
         return NoContent();
     }
 
+[HttpPut("{id:int}/editable")]
+[AuditDisabled]
+public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest_v2 body, CancellationToken ct)
+{
+    var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
+
+    await _mediator.Send(new UpdateOfertaCommand_v2(id, body), ct);
+
+    var oldJson = JsonSerializer.Serialize(oldData);
+    var newJson = JsonSerializer.Serialize(body);
+
+    await _auditService.LogManualAsync(
+        usuario: User?.Identity?.Name ?? "Anon",
+        tabla: "Ofertas",
+        accion: "UpdateEditable",
+        registroId: id,
+        oldValues: oldJson,
+        newValues: newJson,
+        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+        desc: "Actualización editable de oferta"
+    );
+
+    return NoContent();
+}
+
     // Archivar ofertas
     [HttpPost("archivar-por-modalidad")]
     public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
