@@ -82,7 +82,7 @@ export default function ModalVerOferta({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
               <Campo label="Coordinador" value={data?.coordinador ?? "Sin asignar"} />
-              <Campo label="Profesor" value={data?.profesor ?? "Sin asignar"} />
+              <Campo label="Profesor" value={data?.persona ?? "Sin asignar"} />
             </div>
 
             <hr className="my-4 border-gray-300" />

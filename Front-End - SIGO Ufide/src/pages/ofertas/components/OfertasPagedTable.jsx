@@ -23,12 +23,13 @@ import { GuardarOferta } from "@/pages/ofertas/functions";
 
 import VerFichaOferta from "@/pages/ofertas/functions/VerFichaOferta_v2";
 import { useCancelarOferta_v2 } from "@/pages/ofertas/hooks/useCancelarOferta_v2";
+import { useEnviarOfertaDocente } from "../hooks/useEnviarOfertaDocente";
 
 // Importación de hooks  propias de ofertas
 import { useOfertasPaged, useOfertasResumen, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
-import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2, ModalEditarOferta_v2 } from "../modals";
+import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2, ModalEditarOferta_v2, ModalEnviarOfertaDocente_v2 } from "../modals";
 
 import {
   isHistorico
@@ -429,6 +430,82 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     cancelar(id);
   };
 
+  // ------------------- ENVIAR OFERTA A DOCENTE -------------------
+  const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
+
+  // Normalizar docentes desde personas (catálogo)
+  const docentesNormalized = useMemo(() => {
+    return (personas || []).map((x) => ({
+      personaId: x.personaId ?? x.id ?? x.persona_id,
+      nombre: x.nombre ?? "",
+      apellido1: x.apellido1 ?? x.primerApellido ?? "",
+      apellido2: x.apellido2 ?? x.segundoApellido ?? "",
+      cedula: x.cedula ?? x.identificacion ?? "",
+      correo: x.correo ?? x.email ?? "",
+    }));
+  }, [personas]);
+
+  // Nombre horario para preview (se adapta a tu estructura)
+  const getNombreHorarioPreview = (horarioId) => {
+    const h = (horarios || []).find((x) => String(x.horarioId) === String(horarioId));
+    if (!h) return "Horario";
+    const rango = h.rango ?? `${h.horaInicio ?? ""} - ${h.horaFin ?? ""}`.trim();
+    return `${h.dia ?? ""} - ${rango}`.trim();
+  };
+
+  // Nombre curso por código para preview
+  const getCursoNombrePreview = (codigo) => {
+    const c = (cursos || []).find((x) =>
+      String(x.codigo ?? x.cursoCodigo ?? x.curso) === String(codigo)
+    );
+    return c?.nombre ?? "—";
+  };
+
+  // POST real
+  const handleEnviarOferta = async ({ ofertaId, docenteId, evalPeriodoId }) => {
+    const ok =
+      (await entityConfirm.custom?.("Enviar oferta", "¿Desea enviar la oferta al docente?")) ??
+      (await entityConfirm.create("el envío"));
+    if (!ok) return;
+
+    try {
+      alertService.loading("Enviando...", "Enviando oferta al docente");
+
+      const r = await fetch("/api/SolicitudesOferta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ofertaId,
+          personaId: Number(docenteId),
+          evaluacionPeriodoId: Number(evalPeriodoId),
+        }),
+      });
+
+      if (!r.ok) throw new Error("Error al enviar la oferta al docente.");
+
+      alertService.close();
+      alertService.toastSuccess("Oferta enviada correctamente");
+    } catch (err) {
+      alertService.close();
+      alertService.apiError(err, "No se pudo enviar la oferta");
+      throw err;
+    }
+  };
+
+  const { abrir: abrirEnviar, modalProps } = useEnviarOfertaDocente({
+    ofertaSeleccionada,
+    docentes: docentesNormalized,
+    periodos,          // usePeriodosApi()
+    horario: horarios, // catálogo de horarios (useCatalogos)
+    getNombreHorario: getNombreHorarioPreview,
+    getCursoNombrePorCodigo: getCursoNombrePreview,
+    onEnviar: async ({ ofertaId, docenteId, evalPeriodoId }) => {
+      await handleEnviarOferta({ ofertaId, docenteId, evalPeriodoId });
+      await refresh();
+      await refreshSummary?.();
+    },
+  });
+
   // Validación de categoría (para evitar errores en caso de que se use el componente sin pasar una categoría o con una categoría inválida)
   const catHistorico = isHistorico(category);
 
@@ -487,7 +564,12 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
             {!isHistoricoArchivar && (
               <Tooltip content="Enviar a docente">
-                <SendButton />
+                <SendButton
+                  onClick={() => {
+                    setOfertaSeleccionada(o);
+                    abrirEnviar();
+                  }}
+                />
               </Tooltip>
             )}
           </div>
@@ -923,7 +1005,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         modalidades={modalidadesParaSelect}
         periodosDisponibles={periodosDisponibles}
         loadingArchivar={loadingArchivar}
-        mensajeArchivar
+        mensajeArchivar={mensajeArchivar}
         onArchivar={archivar}
         onArchived={refresh}
       />
@@ -990,6 +1072,14 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         horarios={horarios}
         coordinadores={coordinadores}
         acciones={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
+      />
+
+      <ModalEnviarOfertaDocente_v2
+        {...modalProps}
+        onClose={() => {
+          modalProps.onClose();
+          setOfertaSeleccionada(null);
+        }}
       />
     </>
   );
