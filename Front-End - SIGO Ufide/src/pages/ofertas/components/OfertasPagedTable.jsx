@@ -22,13 +22,14 @@ import { entityConfirm } from "@/services/entityConfirm.service";
 import { GuardarOferta } from "@/pages/ofertas/functions";
 
 import VerFichaOferta from "@/pages/ofertas/functions/VerFichaOferta_v2";
-
+import { useCancelarOferta_v2 } from "@/pages/ofertas/hooks/useCancelarOferta_v2";
+import { useEnviarOfertaDocente } from "../hooks/useEnviarOfertaDocente";
 
 // Importación de hooks  propias de ofertas
-import { useOfertasPaged, useOfertasSummary, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
+import { useOfertasPaged, useOfertasResumen, useArchivarOfertas_v2, useDuplicarOfertas_v2 } from "../hooks";
 
 // Importación de modales propias de ofertas
-import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2 } from "../modals";
+import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2, ModalEditarOferta_v2, ModalEnviarOfertaDocente_v2 } from "../modals";
 
 import {
   isHistorico
@@ -71,77 +72,13 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     setPage(1);
   };
 
-  // Columnas de la tabla (Memorizadas para no recrearlas en cada render)
-  const columns = useMemo(() => [
-    { accessorKey: "sede", header: "Sede" },
-    { accessorKey: "cursoid", header: "Código Curso" },
-    { accessorKey: "curso", header: "Nombre Curso" },
-    { accessorKey: "grupo", header: "Grupo" },
-    { accessorKey: "horarioDia", header: "Día" },
-    { accessorKey: "horarioHora", header: "Horario" },
-    { accessorKey: "periodo", header: "Periodo" },
-    { accessorKey: "coordinador", header: "Coordinador" },
-    { accessorKey: "modalidad", header: "Modalidad" },
-    {
-      accessorKey: "accion",
-      header: "Acciones",
-      cell: ({ getValue }) => accionChips(getValue()),
-    },
-    {
-      accessorKey: "estado",
-      header: "Estado Oferta",
-      cell: ({ getValue }) => estadoChips(getValue()),
-    },
-    {
-      id: "opciones",
-      header: "Opciones",
-      cell: ({ row }) => {
-        const o = row.original;
-
-        return (
-          <div className="flex items-center gap-2">
-            <Tooltip content="Ver detalle">
-              <div>
-                <ViewButton
-                  onClick={() => handleVer(row.original.ofertaId)}
-                />
-              </div>
-            </Tooltip>
-
-            <Tooltip content="Editar oferta">
-              <EditButton />
-            </Tooltip>
-
-            <Tooltip content="Cancelar oferta">
-              <CancelButton />
-            </Tooltip>
-
-            <Tooltip content="Enviar a docente">
-              <SendButton />
-            </Tooltip>
-          </div>
-        );
-      },
-    }
-    ,
-  ], []);
-
-  // Configuración de la tabla con React Table
-  const table = useReactTable({
-    data: items,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: totalPages,
-  });
-
   // Resumen de estados de las ofertas.
   const {
     data: summary,
     loading: loadingSummary,
     error: summaryError,
     refresh: refreshSummary,
-  } = useOfertasSummary(category);
+  } = useOfertasResumen(category);
 
   // Función para la selección del titulo.
   const TITLE_BY_CATEGORY = {
@@ -319,7 +256,6 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
   } = useDuplicarOfertas_v2(periodos, refresh, category);
 
   // Registrar Oferta
-
   const {
     cursos,
     sedes,
@@ -363,6 +299,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
   const [openRegistrar, setOpenRegistrar] = useState(false);
   const [registrarLoading, setRegistrarLoading] = useState(false);
 
+  // Datos del formulario a registrar
   const [form, setForm] = useState({
     cursoId: "",
     sedeId: "",
@@ -379,6 +316,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     grupo: "",
   });
 
+  // Al abrir modal se limpia el formulario.
   const handleOpenNueva = () => {
     setForm({
       cursoId: "",
@@ -400,13 +338,12 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
   const handleCloseRegistrar = () => setOpenRegistrar(false);
 
-  // Registrar nueva oferta (con SweetAlert)
+  // Registrar nueva oferta
   const handleRegistrar = async () => {
-    // 1) Confirmación (pantalla de “¿va a crear?”)
+
     const ok = await entityConfirm.create("la oferta");
     if (!ok) return;
 
-    // 2) Validación (si está incompleto, avisar y no pegarle al backend)
     if (!validarFormulario()) return;
 
     try {
@@ -435,14 +372,13 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     }
   };
 
-  const catHistorico = isHistorico(category);
-
   // Ver Oferta
   const [openVer, setOpenVer] = useState(false);
   const [loadingVer, setLoadingVer] = useState(false);
   const [errorVer, setErrorVer] = useState("");
   const [dataVer, setDataVer] = useState(null);
 
+  // Al hacer click en ver, se abre el modal y se pasa el ID de la oferta a visualizar
   const handleVer = async (id) => {
     setOpenVer(true);
     setLoadingVer(true);
@@ -460,11 +396,197 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     setLoadingVer(false);
   };
 
+  // Al cerrar el modal de ver
   const closeVer = () => {
     setOpenVer(false);
     setErrorVer("");
     setDataVer(null);
   };
+
+  // Editar  Oferta
+  const [openEditar, setOpenEditar] = useState(false);
+  const [ofertaIdEditar, setOfertaIdEditar] = useState(null);
+
+  // Al hacer click en editar, se abre el modal y se pasa el ID de la oferta a editar
+  const handleEditar = (id) => {
+    setOfertaIdEditar(id);
+    setOpenEditar(true);
+  };
+
+  // Al cerrar el modal de editar, se limpia el ID de oferta a editar
+  const closeEditar = () => {
+    setOpenEditar(false);
+    setOfertaIdEditar(null);
+  };
+
+  const { cancelar, cancelandoId } = useCancelarOferta_v2({
+    onAfterCancel: async () => {
+      await refresh();
+      await refreshSummary?.();
+    },
+  });
+
+  const handleCancelar = (id) => {
+    cancelar(id);
+  };
+
+  // ------------------- ENVIAR OFERTA A DOCENTE -------------------
+  const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
+
+  // Normalizar docentes desde personas (catálogo)
+  const docentesNormalized = useMemo(() => {
+    return (personas || []).map((x) => ({
+      personaId: x.personaId ?? x.id ?? x.persona_id,
+      nombre: x.nombre ?? "",
+      apellido1: x.apellido1 ?? x.primerApellido ?? "",
+      apellido2: x.apellido2 ?? x.segundoApellido ?? "",
+      cedula: x.cedula ?? x.identificacion ?? "",
+      correo: x.correo ?? x.email ?? "",
+    }));
+  }, [personas]);
+
+  // Nombre horario para preview (se adapta a tu estructura)
+  const getNombreHorarioPreview = (horarioId) => {
+    const h = (horarios || []).find((x) => String(x.horarioId) === String(horarioId));
+    if (!h) return "Horario";
+    const rango = h.rango ?? `${h.horaInicio ?? ""} - ${h.horaFin ?? ""}`.trim();
+    return `${h.dia ?? ""} - ${rango}`.trim();
+  };
+
+  // Nombre curso por código para preview
+  const getCursoNombrePreview = (codigo) => {
+    const c = (cursos || []).find((x) =>
+      String(x.codigo ?? x.cursoCodigo ?? x.curso) === String(codigo)
+    );
+    return c?.nombre ?? "—";
+  };
+
+  // POST real
+  const handleEnviarOferta = async ({ ofertaId, docenteId, evalPeriodoId }) => {
+    const ok =
+      (await entityConfirm.custom?.("Enviar oferta", "¿Desea enviar la oferta al docente?")) ??
+      (await entityConfirm.create("el envío"));
+    if (!ok) return;
+
+    try {
+      alertService.loading("Enviando...", "Enviando oferta al docente");
+
+      const r = await fetch("/api/SolicitudesOferta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ofertaId,
+          personaId: Number(docenteId),
+          evaluacionPeriodoId: Number(evalPeriodoId),
+        }),
+      });
+
+      if (!r.ok) throw new Error("Error al enviar la oferta al docente.");
+
+      alertService.close();
+      alertService.toastSuccess("Oferta enviada correctamente");
+    } catch (err) {
+      alertService.close();
+      alertService.apiError(err, "No se pudo enviar la oferta");
+      throw err;
+    }
+  };
+
+  const { abrir: abrirEnviar, modalProps } = useEnviarOfertaDocente({
+    ofertaSeleccionada,
+    docentes: docentesNormalized,
+    periodos,          // usePeriodosApi()
+    horario: horarios, // catálogo de horarios (useCatalogos)
+    getNombreHorario: getNombreHorarioPreview,
+    getCursoNombrePorCodigo: getCursoNombrePreview,
+    onEnviar: async ({ ofertaId, docenteId, evalPeriodoId }) => {
+      await handleEnviarOferta({ ofertaId, docenteId, evalPeriodoId });
+      await refresh();
+      await refreshSummary?.();
+    },
+  });
+
+  // Validación de categoría (para evitar errores en caso de que se use el componente sin pasar una categoría o con una categoría inválida)
+  const catHistorico = isHistorico(category);
+
+  // Columnas de la tabla (Memorizadas para no recrearlas en cada render)
+  const columns = useMemo(() => [
+    { accessorKey: "sede", header: "Sede" },
+    { accessorKey: "cursoid", header: "Código Curso" },
+    { accessorKey: "curso", header: "Nombre Curso" },
+    { accessorKey: "grupo", header: "Grupo" },
+    { accessorKey: "horarioDia", header: "Día" },
+    { accessorKey: "horarioHora", header: "Horario" },
+    { accessorKey: "periodo", header: "Periodo" },
+    { accessorKey: "coordinador", header: "Coordinador" },
+    { accessorKey: "modalidad", header: "Modalidad" },
+    {
+      accessorKey: "accion",
+      header: "Acciones",
+      cell: ({ getValue }) => accionChips(getValue()),
+    },
+    {
+      accessorKey: "estado",
+      header: "Estado Oferta",
+      cell: ({ getValue }) => estadoChips(getValue()),
+    },
+    {
+      id: "opciones",
+      header: "Opciones",
+      cell: ({ row }) => {
+        const o = row.original;
+
+        return (
+          <div className="flex items-center gap-2">
+            <Tooltip content="Ver detalle">
+              <div>
+                <ViewButton
+                  onClick={() => handleVer(row.original.ofertaId)}
+                />
+              </div>
+            </Tooltip>
+
+            {/* Solo mostrar botones de Editar, Cancelar y Enviar a docente si no es histórico (ya que el histórico es solo de consulta) */}
+
+            {!isHistoricoArchivar && (
+              <Tooltip content="Editar oferta">
+                <EditButton
+                  onClick={() => handleEditar(o.ofertaId)}
+                />
+              </Tooltip>
+            )}
+
+            {!isHistoricoArchivar && (
+              <Tooltip content="Cancelar oferta">
+                <CancelButton onClick={() => handleCancelar(o.ofertaId)} />
+              </Tooltip>
+            )}
+
+            {!isHistoricoArchivar && (
+              <Tooltip content="Enviar a docente">
+                <SendButton
+                  onClick={() => {
+                    setOfertaSeleccionada(o);
+                    abrirEnviar();
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    }
+    ,
+  ], []);
+
+  // Configuración de la tabla con React Table
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+  });
 
   return (
     <>
@@ -883,7 +1005,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         modalidades={modalidadesParaSelect}
         periodosDisponibles={periodosDisponibles}
         loadingArchivar={loadingArchivar}
-        mensajeArchivar
+        mensajeArchivar={mensajeArchivar}
         onArchivar={archivar}
         onArchived={refresh}
       />
@@ -938,7 +1060,27 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         estadoChips={estadoChips}
       />
 
+      {/* Modal para editar oferta */}
+      <ModalEditarOferta_v2
+        open={openEditar}
+        onClose={closeEditar}
+        ofertaId={ofertaIdEditar}
+        onSuccess={() => {
+          refresh();
+          refreshSummary?.();
+        }}
+        horarios={horarios}
+        coordinadores={coordinadores}
+        acciones={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
+      />
 
+      <ModalEnviarOfertaDocente_v2
+        {...modalProps}
+        onClose={() => {
+          modalProps.onClose();
+          setOfertaSeleccionada(null);
+        }}
+      />
     </>
   );
 

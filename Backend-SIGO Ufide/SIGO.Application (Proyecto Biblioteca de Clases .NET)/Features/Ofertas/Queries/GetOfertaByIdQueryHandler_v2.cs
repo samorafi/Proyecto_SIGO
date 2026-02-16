@@ -32,7 +32,7 @@ public class GetOfertaByIdQueryHandler_v2 : IRequestHandler<GetOfertaByIdQuery_v
 
                 Periodo = o.Periodo != null ? o.Periodo.Etiqueta : null,
                 Accion = o.Accion != null ? o.Accion.Nombre : null,
-
+                AccionId = o.AccionId,
                 CoordinadorId = o.CoordinadorId,
                 Coordinador = o.Coordinador != null
                     ? ((o.Coordinador.Nombre ?? "") + " " +
@@ -46,7 +46,12 @@ public class GetOfertaByIdQueryHandler_v2 : IRequestHandler<GetOfertaByIdQuery_v
                 Cupo = o.Cupo,
                 Matriculados = o.Matriculados,
                 Archivados = o.Archivados,
-                PersonaId = o.PersonaId
+                PersonaId = o.PersonaId,
+                Persona = o.Persona != null
+                    ? ((o.Persona.Nombre ?? "") + " " +
+                       (o.Persona.PrimerApellido ?? "") + " " +
+                       (o.Persona.SegundoApellido ?? "")).Trim()
+                    : null,
 
             })
             .FirstOrDefaultAsync(ct);

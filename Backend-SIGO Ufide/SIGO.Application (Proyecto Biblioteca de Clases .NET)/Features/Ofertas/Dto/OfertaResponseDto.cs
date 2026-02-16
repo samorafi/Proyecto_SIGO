@@ -21,6 +21,8 @@ public class OfertaResponseDto
     public string? HorarioHora { get; set; }
     public string? Coordinador { get; set; }
     public string? Cursoid { get; internal set; }
+    public int? AccionId { get; internal set; }
+    public string? Persona { get; internal set; }
 
     public static OfertaResponseDto FromEntity(SIGO.Domain.Entities.Oferta o) => new()
     {

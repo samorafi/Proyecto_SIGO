@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 
-export function useOfertasSummary(category) {
+export function useOfertasResumen(category) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

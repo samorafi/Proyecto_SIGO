@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
+using SIGO.Application.Features.Ofertas.Commands.Cancelar;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
@@ -133,6 +134,31 @@ public class OfertasController : ControllerBase
         return NoContent();
     }
 
+[HttpPut("{id:int}/editable")]
+[AuditDisabled]
+public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest_v2 body, CancellationToken ct)
+{
+    var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
+
+    await _mediator.Send(new UpdateOfertaCommand_v2(id, body), ct);
+
+    var oldJson = JsonSerializer.Serialize(oldData);
+    var newJson = JsonSerializer.Serialize(body);
+
+    await _auditService.LogManualAsync(
+        usuario: User?.Identity?.Name ?? "Anon",
+        tabla: "Ofertas",
+        accion: "UpdateEditable",
+        registroId: id,
+        oldValues: oldJson,
+        newValues: newJson,
+        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+        desc: "Actualización editable de oferta"
+    );
+
+    return NoContent();
+}
+
     // Archivar ofertas
     [HttpPost("archivar-por-modalidad")]
     public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
@@ -166,6 +192,17 @@ public class OfertasController : ControllerBase
 
         // Si todo salió bien
         return Ok(response);
+    }
+
+    [HttpPost("{id:int}/cancelar")]
+    public async Task<IActionResult> Cancelar(int id, CancellationToken ct)
+    {
+        var ok = await _mediator.Send(new CancelarOfertaCommand(id), ct);
+
+        if (!ok)
+            return BadRequest(new { ok = false, message = "No se pudo cancelar, la oferta ya se encuentra cancelada." });
+
+        return Ok(new { ok = true });
     }
 
 }
