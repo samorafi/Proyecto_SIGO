@@ -9,50 +9,21 @@ using SIGO.Application.Services;
 using SIGO.Infrastructure;
 using SIGO.Infrastructure.Persistence;
 using SIGO.Infrastructure.Security;
+using DotNetEnv;
 
+// 1. Cargar variables de entorno (.env) al inicio
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 2. Configuración de Autenticación (Cookies)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-
-    /* Función de autenticación de seguridad en sesiones antigua.
-     * 
-     * .AddCookie(options =>
-    {
-        // Configuraciones de seguridad de cookies y sesiones
-
-        // Tiempo de inactividad
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
-
-        // Reinicia el contador si el usuario está activo.
-        options.SlidingExpiration = true;
-
-        // El cookie solo es accesible por el servidor
-        options.Cookie.HttpOnly = true;
-
-        // Usar solo con HTTPS
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-        // Protección CSRF 
-        options.Cookie.SameSite = SameSiteMode.Strict; 
-
-        // Endpoint para la redirección 
-        options.LoginPath = "/api/Autenticacion/unauthorized";
-    });*/
-
     .AddCookie(options =>
     {
-        // Configuraciones de seguridad de cookies y sesiones
-
-        // Path Controlador de autenticación.
         options.LoginPath = "/api/Autenticacion/unauthorized";
         options.AccessDeniedPath = "/api/Autenticacion/forbidden";
-
-        // Tiempo de Inactividad.
         options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         options.SlidingExpiration = false;
-
-        // Protección Cookies 
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -61,94 +32,78 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             OnRedirectToLogin = context =>
             {
-                // Caso API → 401, NO REDIRECT
                 if (context.Request.Path.StartsWithSegments("/api"))
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return Task.CompletedTask;
                 }
-
-                // Caso MVC -> Redirección normal -> NO UTILIZAMOS MVC pero queda en dado caso.
                 context.Response.Redirect(context.RedirectUri);
                 return Task.CompletedTask;
             },
-
             OnRedirectToAccessDenied = context =>
             {
-                // Caso API → 401, NO REDIRECT
                 if (context.Request.Path.StartsWithSegments("/api"))
                 {
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     return Task.CompletedTask;
                 }
-
                 context.Response.Redirect(context.RedirectUri);
                 return Task.CompletedTask;
             }
         };
     });
 
-
+// 3. CORS (Permitir todo)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
+// 4. Servicios de Aplicación
 builder.Services.AddScoped<IHashService, SIGO.Application.Services.BCryptHashService>();
 
-// Registrar MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(SIGO.Application.DependencyInjection).Assembly));
 
-// DbContext con PostgreSQL
+// 5. Base de Datos (Neon Postgres)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
-// Registrar la interfaz de ApplicationDbContext
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// --------------------------------------------------------------------
-// AUDITORIA: REGISTRO DE CAMBIOS DEL SISTEMA
-
+// 6. Auditoría y Usuario Actual
 builder.Services.AddScoped<IAuditService, AuditService>();
-
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuditActionFilter>();
+
+// 7. Controladores (Configuración Unificada con Filtros Globales)
 builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<AuditActionFilter>();
 });
-// --------------------------------------------------------------------
 
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = "redis_host:6379"; 
-    options.InstanceName = "SIGO_Session_";
-});
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
+// 8. CACHÉ (CORRECCIÓN CLAVE: Usar Memoria en lugar de Redis)
+// Esto permite que las sesiones funcionen sin necesitar un servidor Redis externo.
+builder.Services.AddDistributedMemoryCache();
 
-// --------------------------------------------------------------------
-//EXPORTAR EXCEL Y PDF
+// 9. Capas de Aplicación e Infraestructura
 builder.Services.AddApplication();
-
 builder.Services.AddInfrastructure();
-
-// --------------------------------------------------------------------
 
 var app = builder.Build();
 
-// Swagger solo en Development
+// 10. Pipeline HTTP
+// Habilitar Swagger siempre (o condicionalmente si prefieres)
+// Nota: Si usas Docker con 'ENV ASPNETCORE_ENVIRONMENT=Development', entrará aquí.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -157,7 +112,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

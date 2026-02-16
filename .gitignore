@@ -1,24 +1,26 @@
-# Dependencies
+# --- DEPENDENCIAS ---
 **/packages/
 **/node_modules/
 
-# Build results
+# --- RESULTADOS DE BUILD (Basura generada al compilar) ---
 **/[Bb]in/
 **/[Oo]bj/
+*.bin
 
-# Visual Studio specific
+# --- VISUAL STUDIO (Archivos temporales y de usuario) ---
+.vs/
+**/.vs/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 
-# Rider specific
+# --- RIDER / OTROS EDITORES ---
 .idea/
 
-# User-specific files
-*.rsuser
-Backend-SIGO Ufide/Backend_SIGO/appsettings.json
-/Backend-SIGO Ufide/Backend_SIGO/.vs
-*.bin
+# --- SEGURIDAD (Secretos - NUNCA SUBIR) ---
+.env
+**/.env
 
-/Backend-SIGO Ufide/Backend_SIGO/.vs
+# --- ARCHIVOS DE USUARIO ESPECÍFICOS ---
+*.rsuser
