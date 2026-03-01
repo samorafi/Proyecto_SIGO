@@ -41,7 +41,7 @@ import OfertasHistoricoV2 from "@/pages/ofertas/OfertasHistoricoV2";
 
 
 // Importación de datos
-//import ImportarDatosPrincipal from "@/pages/admin/admImportarDatos/importarDatosPrincipal";
+import ImportarDatosPrincipal from "@/pages/importar/importarDatosPrincipal";
 
 export const routes = [
   {
@@ -77,7 +77,7 @@ export const routes = [
       { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Bitácoras", path: "/bitacoras", element: <BitacoraAuditoria />, hidden: true, permiso: "ADMIN_VIEW" },
-      //{ name: "Importar Datos", path: "/admin/importarDatos", element: <ImportarDatosPrincipal />, hidden: true, permiso: "ADMIN_VIEW"  },
+      { name: "Importar Datos", path: "/admin/importarDatos", element: <ImportarDatosPrincipal />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Coordinadores", path: "/admin/admCoordinadores", element: <Coordinadores />, hidden: true, permiso: "ADMIN_VIEW" },
 
     ],
