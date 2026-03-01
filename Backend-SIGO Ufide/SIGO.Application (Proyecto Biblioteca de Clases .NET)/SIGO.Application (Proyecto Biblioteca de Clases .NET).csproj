@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
 	  
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
 	<PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />

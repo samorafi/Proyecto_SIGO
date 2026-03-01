@@ -13,6 +13,7 @@ using SIGO.Application.Features.Ofertas.Enums;
 using SIGO.Application.Features.Ofertas.Queries;
 using SIGO.Application.Services;
 using System.Text.Json;
+using SIGO.Application.Features.Ofertas.Queries.Export;
 
 namespace SIGO.Api.Controllers;
 
@@ -203,6 +204,42 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
             return BadRequest(new { ok = false, message = "No se pudo cancelar, la oferta ya se encuentra cancelada." });
 
         return Ok(new { ok = true });
+    }
+
+    [HttpGet("export/presencial-en_linea")]
+    public async Task<IActionResult> ExportPresencialVirtual(
+    [FromQuery] int periodoId,
+    CancellationToken ct = default)
+    {
+        if (periodoId <= 0)
+            return BadRequest("Debe seleccionar un período válido para exportar.");
+
+        var bytes = await _mediator.Send(new ExportOfertasPresencialVirtualExcelQuery
+        {
+            PeriodoId = periodoId
+        }, ct);
+
+        var fileName = $"Oferta_Academica_{periodoId}_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+        return File(bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
+    }
+
+    [HttpGet("export/100%-virtual")]
+    public async Task<IActionResult> ExportEnLinea([FromQuery] int periodoId, CancellationToken ct = default)
+    {
+        if (periodoId <= 0)
+            return BadRequest("Debe seleccionar un período válido para exportar.");
+
+        var bytes = await _mediator.Send(new ExportOfertasEnLineaExcelQuery
+        {
+            PeriodoId = periodoId
+        }, ct);
+
+        var fileName = $"Oferta_EnLinea_{periodoId}_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+        return File(bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
     }
 
 }

@@ -32,7 +32,20 @@
 
   <ItemGroup>
     <Folder Include="Middlewares\" />
+    <Folder Include="Templates\" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Templates\OfertaPresencialyEnLinea.xlsx">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Templates\Oferta100Virtual.xlsx">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SIGO.Application (Proyecto Biblioteca de Clases .NET)\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj" />
