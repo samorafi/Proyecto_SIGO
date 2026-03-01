@@ -535,7 +535,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
       header: "Opciones",
       cell: ({ row }) => {
         const o = row.original;
-
+        const esCancelada = o.estado === "Cancelada";
         return (
           <div className="flex items-center gap-2">
             <Tooltip content="Ver detalle">
@@ -562,7 +562,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
               </Tooltip>
             )}
 
-            {!isHistoricoArchivar && (
+            {!isHistoricoArchivar && !esCancelada && (
               <Tooltip content="Enviar a docente">
                 <SendButton
                   onClick={() => {

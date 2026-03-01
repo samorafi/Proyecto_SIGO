@@ -25,7 +25,9 @@ export default function ModalEnviarOfertaDocente_v2({
 
   evalPeriodoId,
   setEvalPeriodoId,
-
+  tipoPeriodo,
+  setTipoPeriodo,
+  periodosFuturos = [],
   docentesError,
   enviando,
 
@@ -34,6 +36,7 @@ export default function ModalEnviarOfertaDocente_v2({
   previewData,
 
   onEnviar,
+  getPeriodoFormatoOfertaById
 }) {
   const renderDocenteOptions = () => {
     if (!docentesFiltrados.length) return <Option disabled>No hay docentes</Option>;
@@ -62,7 +65,7 @@ export default function ModalEnviarOfertaDocente_v2({
         Enviar oferta a docente
       </DialogHeader>
 
-      
+
 
       <DialogBody className="p-6 bg-gray-50 border-x border-b border-gray-200 space-y-4">
         {!ofertaSeleccionada ? (
@@ -79,31 +82,63 @@ export default function ModalEnviarOfertaDocente_v2({
               />
 
               <Select
+                key={`docente-${docenteId || "none"}`}
                 label="Docente"
                 value={docenteId ? String(docenteId) : ""}
                 onChange={(v) => setDocenteId(v || "")}
+                selected={() => {
+                  const d = (docentesFiltrados || []).find(
+                    (x) => String(x?.personaId ?? x?.id) === String(docenteId)
+                  );
+                  const nombre = `${d?.nombre ?? ""} ${d?.apellido1 ?? d?.primerApellido ?? ""} ${d?.apellido2 ?? d?.segundoApellido ?? ""}`.trim();
+                  const ced = d?.cedula ?? d?.identificacion ?? "";
+                  return `${nombre}${ced ? ` - ${ced}` : ""}`;
+                }}
                 menuProps={menuPropsSafe}
               >
                 {renderDocenteOptions()}
               </Select>
 
               {docentesError && (
-                <Typography className="text-xs text-red-600 mt-1">{docentesError}</Typography>
+                <Typography className="text-xs text-red-600 mt-1">
+                  {docentesError}
+                </Typography>
               )}
             </div>
 
             {/* Evaluación docente */}
             <div className="grid grid-cols-1 gap-3 mt-2">
               <Select
-                label="Seleccione el periodo de la Evaluación docente"
-                value={evalPeriodoId ? String(evalPeriodoId) : ""}
-                onChange={(v) => setEvalPeriodoId(v || "")}
+                label="Tipo de periodo (Evaluación docente)"
+                value={tipoPeriodo || ""}
+                onChange={(v) => {
+                  setTipoPeriodo(v || "");
+                  setEvalPeriodoId(""); // reset limpio
+                }}
                 menuProps={menuPropsSafe}
               >
-                <Option value="">Seleccione...</Option>
-                {(periodos || []).map((p) => (
+                <Option value="C">Cuatrimestre (C)</Option>
+                <Option value="T">Trimestre (T)</Option>
+                <Option value="P">Periodo Mensual (P)</Option>
+              </Select>
+
+              <Select
+                label="Periodo (Evaluación docente)"
+                key={`eval-periodo-${tipoPeriodo}-${periodosFuturos.map((p) => p.periodoId).join(",")}`}
+                value={evalPeriodoId ? String(evalPeriodoId) : ""}
+                disabled={!tipoPeriodo}
+                onChange={(v) => setEvalPeriodoId(v || "")}
+                selected={() => {
+                  if (!evalPeriodoId) return "Seleccione";
+                  const sel = periodosFuturos.find((x) => String(x.periodoId) === String(evalPeriodoId));
+                  return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : "Seleccione";
+                }}
+                menuProps={menuPropsSafe}
+              >
+                <Option value="">Seleccione</Option>
+                {periodosFuturos.map((p) => (
                   <Option key={p.periodoId} value={String(p.periodoId)}>
-                    {`${p.numero}C, ${p.anio}`}
+                    {`${p.numero}${p.tipo} - ${p.anio}`}
                   </Option>
                 ))}
               </Select>
@@ -187,7 +222,7 @@ function CorreoPreview({
         <table className="w-full text-xs" style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: 760 }}>
           <thead>
             <tr>
-              {["Grado","Carrera","Sede","Periodo","Código","Materia","Grupo","Día","Horario","Matrícula","Acción","Profesor"].map((h) => (
+              {["Grado", "Carrera", "Sede", "Periodo", "Código", "Materia", "Grupo", "Día", "Horario", "Matrícula", "Acción", "Profesor"].map((h) => (
                 <th
                   key={h}
                   style={{
@@ -208,7 +243,7 @@ function CorreoPreview({
           </thead>
           <tbody>
             <tr>
-              {[gradoTxt,carreraTxt,sedeTxt,periodoTxt,codigoTxt,materiaTxt,grupoTxt,diaTxt,horarioTxt,matriculaTxt,accionTxt,profesorTxt].map((v, idx) => (
+              {[gradoTxt, carreraTxt, sedeTxt, periodoTxt, codigoTxt, materiaTxt, grupoTxt, diaTxt, horarioTxt, matriculaTxt, accionTxt, profesorTxt].map((v, idx) => (
                 <td
                   key={idx}
                   style={{

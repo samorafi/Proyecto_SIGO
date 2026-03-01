@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { usePeriodos } from "@/hooks/usePeriodos";
 
 export function useEnviarOfertaDocente({
   ofertaSeleccionada,
@@ -15,6 +16,8 @@ export function useEnviarOfertaDocente({
   const [evalPeriodoId, setEvalPeriodoId] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [docentesError, setDocentesError] = useState("");
+  const [tipoPeriodo, setTipoPeriodo] = useState("");
+  const { periodosFuturos } = usePeriodos(periodos, tipoPeriodo);
 
   const abrir = () => setOpenEnviar(true);
 
@@ -22,6 +25,7 @@ export function useEnviarOfertaDocente({
     setOpenEnviar(false);
     setFiltroDocente("");
     setDocenteId("");
+    setTipoPeriodo("");
     setEvalPeriodoId("");
     setDocentesError("");
     setEnviando(false);
@@ -32,6 +36,7 @@ export function useEnviarOfertaDocente({
 
     setFiltroDocente("");
     setDocenteId("");
+    setTipoPeriodo("");
     setEvalPeriodoId("");
     setDocentesError("");
     setEnviando(false);
@@ -57,7 +62,7 @@ export function useEnviarOfertaDocente({
   const getPeriodoFormatoOfertaById = (id) => {
     const p = (periodos || []).find((x) => String(x?.periodoId) === String(id));
     if (!p) return "—";
-    return `${p.numero}C, ${p.anio}`;
+    return `${p.numero}${p.tipo} - ${p.anio}`;
   };
 
   const previewData = useMemo(() => {
@@ -121,7 +126,8 @@ export function useEnviarOfertaDocente({
     setDocentesError("");
     if (!docenteId) return setDocentesError("Debe seleccionar un docente.");
     if (!evalPeriodoId) return setDocentesError("Debe seleccionar el periodo de Evaluación Docente.");
-
+    if (!tipoPeriodo) return setDocentesError("Debe seleccionar el tipo de periodo.");
+    if (!evalPeriodoId) return setDocentesError("Debe seleccionar el periodo de Evaluación Docente.");
     try {
       setEnviando(true);
       await onEnviar?.({ ofertaId: ofertaSeleccionada.ofertaId, docenteId, evalPeriodoId });
@@ -144,6 +150,9 @@ export function useEnviarOfertaDocente({
       setDocenteId,
       evalPeriodoId,
       setEvalPeriodoId,
+      tipoPeriodo,
+      setTipoPeriodo,
+      periodosFuturos,
       docentesError,
       enviando,
       docentesFiltrados,
