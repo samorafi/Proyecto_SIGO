@@ -1,45 +1,55 @@
 import { useState } from "react";
 import { Card, Input, Checkbox, Button, Typography } from "@material-tailwind/react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useAlert } from "@/hooks/useAlert";
+
 
 export default function SignIn() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
-  const { login } = useAuth(); 
+  const { login } = useAuth();
+  const alert = useAlert();
   const handleSubmit = async (e) => {
     e.preventDefault();
+    alert.loading("Iniciando sesión...", "Validando credenciales");
     setLoading(true);
 
     try {
-        const res = await fetch("/api/Autenticacion/login", { 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ correo, contrasena }),
-            credentials: 'include', 
-        });
+      const res = await fetch("/api/Autenticacion/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, contrasena }),
+        credentials: 'include',
+      });
 
-        if (!res.ok) {
-            // El backend retorna 401 Unauthorized si falla (Credenciales inválidas)
-            const errorData = await res.json();
-            throw new Error(errorData.message || "Credenciales inválidas");
+      if (!res.ok) {
+        let errorData = null;
+        try { errorData = await res.json(); } catch { }
+
+        if (res.status === 401) {
+          throw new Error("Correo o contraseña incorrectos.");
         }
 
-        // Ya NO guardamos la data. Solo llamamos a login() para que el AuthContext
-        // llame a /api/Auth/perfil y obtenga la data de los Claims del cookie.
-        await login(); 
+        throw new Error(errorData?.message || "No se pudo iniciar sesión.");
+      }
 
-        navigate("/dashboard/ofertas", { replace: true });
+      // Ya NO guardamos la data. Solo llamamos a login() para que el AuthContext
+      // llame a /api/Auth/perfil y obtenga la data de los Claims del cookie.
+      await login();
+      alert.close();
+      alert.toastSuccess("Bienvenido");
+      navigate("/dashboard/ofertas", { replace: true });
 
     } catch (error) {
-        console.error(error);
-        alert(error.message);
+      alert.close();
+      alert.error("No se pudo iniciar sesión", error.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   return (
     <section className="min-h-screen grid lg:grid-cols-5">
