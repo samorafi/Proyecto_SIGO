@@ -1,16 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 
 namespace SIGO.Domain.Entities
 {
-    [Table("provincia", Schema = "universidad")] 
     public class Provincia
     {
-        [Key]
-        [Column("provincia_id")]
         public int ProvinciaId { get; set; }
+        public string Nombre { get; set; } = string.Empty;
 
-        [Column("nombre")]
-        public string Nombre { get; set; }
+        // Propiedad de navegación que faltaba: Una provincia tiene una colección de cantones.
+        public virtual ICollection<Canton> Cantones { get; set; } = new List<Canton>();
     }
 }

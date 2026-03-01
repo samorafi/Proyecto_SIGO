@@ -1,9 +1,19 @@
-﻿//(Para registrar servicios de esta capa)
+﻿using Microsoft.Extensions.DependencyInjection;
+using SIGO.Application.Abstractions;
+using SIGO.Infrastructure.Services.Exports;
 
-namespace SIGO.Infrastructure__Proyecto_Biblioteca_de_Clases_.NET_
+namespace SIGO.Infrastructure
 {
-    public class DependencyInjection
+    public static class DependencyInjection
     {
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+        {
+            services.AddScoped<INominaExportService, NominaExportService>();
 
+           
+            services.AddScoped<IPermanencia4ExportService, Permanencia4ExportService>();
+
+            return services;
+        }
     }
 }

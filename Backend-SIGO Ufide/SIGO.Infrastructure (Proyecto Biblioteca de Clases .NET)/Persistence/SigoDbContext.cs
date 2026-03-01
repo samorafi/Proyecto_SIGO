@@ -7,13 +7,13 @@ namespace SIGO.Infrastructure.Persistence
     {
         public SigoDbContext(DbContextOptions<SigoDbContext> options) : base(options) { }
 
-
-        public DbSet<Provincia> Provincias { get; set; } 
+        public DbSet<Provincia> Provincias { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SigoDbContext).Assembly);
 
         }
     }

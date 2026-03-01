@@ -8,23 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Persistence\Configurations%28Entity Framework%29\" />
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Repositories\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-<<<<<<< Updated upstream
-=======
     <PackageReference Include="QuestPDF" Version="2025.12.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
 	<PackageReference Include="MediatR" Version="13.0.0" />
->>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SIGO.Application (Proyecto Biblioteca de Clases .NET)\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj" />
     <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
   </ItemGroup>
 

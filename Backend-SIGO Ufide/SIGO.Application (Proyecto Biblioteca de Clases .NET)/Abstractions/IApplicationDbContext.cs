@@ -1,0 +1,44 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SIGO.Domain.Entities;
+using System.Collections.Generic;
+
+namespace SIGO.Application.Abstractions
+{
+    public interface IApplicationDbContext
+    {
+        DbSet<Usuario> Usuarios { get; }
+        DbSet<Rol> Roles { get; }
+        DbSet<Permiso> Permisos { get; }
+        DbSet<UsuarioRol> UsuarioRoles { get; }
+        DbSet<RolPermiso> RolPermisos { get; }
+        DbSet<Persona> Personas { get; set; }
+        DbSet<Provincia> Provincias { get; set; }
+        DbSet<Canton> Cantones { get; set; }
+        DbSet<Genero> Generos { get;}
+        DbSet<Atestado> Atestados { get; set; }
+        DbSet<CategoriaDocente> CategoriasDocentes { get; set; }
+        DbSet<EstadoPersona> EstadosPersonas { get; set; }
+        DbSet<TipoContrato> TiposContratos { get; set; }
+        DbSet<MotivoDesvinculacion> MotivosDesvinculacion { get; set; }
+        DbSet<Periodo> Periodos { get; set; }
+        DbSet<Oferta> Ofertas { get; }
+        DbSet<Curso> Cursos { get; }
+        DbSet<Sede> Sedes { get; }
+        DbSet<Modalidad> Modalidades { get; }
+        DbSet<Horario> Horarios { get; }
+        DbSet<AccionOferta> AccionesOferta { get; }
+        DbSet<Grado> Grados { get; }
+        DbSet<Carrera> Carreras { get; }
+        DbSet<Coordinacion> Coordinaciones { get; }
+        DbSet<CoordinacionCurso> CoordinacionesCursos { get; }
+        DbSet<ConfSmtp> ConfSmtps { get; set; }
+        DbSet<RolDocente> RolesDocente { get; }
+        DbSet<EstadoOferta> EstadoOfertas { get; }
+        DbSet<BitacoraAuditoria> BitacoraAuditorias { get; }
+        DbSet<SolicitudOferta> SolicitudesOferta { get; } 
+        DbSet<Notificacion> Notificaciones { get; }
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        Task<List<T>> SqlQueryAsync<T>(FormattableString query, CancellationToken cancellationToken = default);
+
+    }
+}

@@ -8,12 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< Updated upstream
-    <Folder Include="Common\" />
-    <Folder Include="Features\" />
-    <Folder Include="Abstrations\" />
-=======
-    <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	  
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
 	<PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
@@ -32,7 +27,6 @@
     <Folder Include="Features\Ofertas\Strategies\" />
     <Folder Include="Features\SolicitudesOferta\Dto\" />
     <Folder Include="Features\SolicitudesOferta\Queries\" />
->>>>>>> Stashed changes
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,65 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SIGO.Application.Abstractions;
+using SIGO.Domain.Entities;
+
+namespace SIGO.Infrastructure.Persistence
+{
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options) { }
+
+        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Rol> Roles { get; set; }
+        public DbSet<Permiso> Permisos { get; set; }
+        public DbSet<UsuarioRol> UsuarioRoles { get; set; }
+        public DbSet<RolPermiso> RolPermisos { get; set; }
+        public DbSet<Genero> Generos { get; set; }
+        public DbSet<Persona> Personas { get; set; }
+        public DbSet<Provincia> Provincias { get; set; }
+        public DbSet<Canton> Cantones { get; set; }
+        public DbSet<Atestado> Atestados { get; set; }
+        public DbSet<CategoriaDocente> CategoriasDocentes { get; set; }
+        public DbSet<EstadoPersona> EstadosPersonas { get; set; }
+        public DbSet<TipoContrato> TiposContratos { get; set; }
+        public DbSet<MotivoDesvinculacion> MotivosDesvinculacion { get; set; }
+        public DbSet<Periodo> Periodos { get; set; }
+        public DbSet<Oferta> Ofertas => Set<Oferta>();
+        public DbSet<Modalidad> Modalidades => Set<Modalidad>();
+        public DbSet<Sede> Sedes => Set<Sede>();
+        public DbSet<Horario> Horarios => Set<Horario>();
+        public DbSet<AccionOferta> AccionesOferta => Set<AccionOferta>();
+        public DbSet<Curso> Cursos => Set<Curso>();
+        public DbSet<Carrera> Carreras => Set<Carrera>();
+        public DbSet<Grado> Grados => Set<Grado>();
+        public DbSet<Coordinacion> Coordinaciones => Set<Coordinacion>();
+        public DbSet<CoordinacionCurso> CoordinacionesCursos => Set<CoordinacionCurso>();
+        public DbSet<EstadoOferta> EstadoOfertas => Set<EstadoOferta>();
+        public DbSet<SolicitudOferta> SolicitudesOferta { get; set; } = null!;
+        public DbSet<RolDocente> RolesDocente => Set<RolDocente>();
+
+        public DbSet<ConfSmtp> ConfSmtps { get; set; }
+
+        public DbSet<BitacoraAuditoria> BitacoraAuditorias { get; set; }
+        public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            base.OnModelCreating(modelBuilder);
+        }
+
+        public Task<List<T>> SqlQueryAsync<T>(FormattableString query, CancellationToken cancellationToken = default)
+        {
+            return Database.SqlQuery<T>(query).ToListAsync(cancellationToken);
+        }
+
+
+    }
+}
