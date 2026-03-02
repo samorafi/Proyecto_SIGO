@@ -37,6 +37,9 @@ namespace SIGO.Application.Abstractions
         DbSet<BitacoraAuditoria> BitacoraAuditorias { get; }
         DbSet<SolicitudOferta> SolicitudesOferta { get; } 
         DbSet<Notificacion> Notificaciones { get; }
+        DbSet<PasswordResetOtp> PasswordResetOtps { get; }
+        DbSet<PasswordResetToken> PasswordResetTokens { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
         Task<List<T>> SqlQueryAsync<T>(FormattableString query, CancellationToken cancellationToken = default);
 

@@ -97,7 +97,7 @@ builder.Services.AddDistributedMemoryCache();
 
 // 9. Capas de Aplicación e Infraestructura
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

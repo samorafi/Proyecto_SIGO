@@ -12,6 +12,9 @@ using SIGO.Application.Features.Usuarios.Dto;
 using SIGO.Domain.Entities;
 using System.Security.Claims;
 using System.Threading;
+using SIGO.Application.Features.Autenticacion.PasswordReset.RequestOtp;
+using SIGO.Application.Features.Autenticacion.PasswordReset.VerifyOtp;
+using SIGO.Application.Features.Autenticacion.PasswordReset.Confirm;
 
 namespace SIGO.Api.Controllers {
 
@@ -146,5 +149,42 @@ public class AutenticacionController : ControllerBase
             }
 
         }
+
+        // Endpoints - Reseteo de contraseña para el Usuario
+
+        // Endpoint para solicitar reseteo de contraseña
+        [HttpPost("password-reset/request")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto, CancellationToken ct)
+        {
+            var result = await _mediator.Send(new RequestPasswordResetOtpCommand(dto.Correo), ct);
+
+            // result trae: Sent, Message, CooldownSeconds
+            return Ok(result);
+        }
+
+        // Endpoint para verificar OTP
+        [HttpPost("password-reset/verify")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyPasswordResetDto dto, CancellationToken ct)
+        {
+            var result = await _mediator.Send(new VerifyPasswordResetOtpCommand(dto.Correo, dto.Otp), ct);
+
+            if (result == null)
+                return BadRequest(new { message = "Código inválido o expirado." });
+
+            return Ok(result); // ResetTokenDto
+        }
+
+        // Endpoint confirmar nueva contraseña
+        [HttpPost("password-reset/confirm")]
+        public async Task<IActionResult> ConfirmReset([FromBody] ConfirmPasswordResetDto dto, CancellationToken ct)
+        {
+            var success = await _mediator.Send(new ConfirmPasswordResetCommand(dto.ResetToken, dto.NewPassword), ct);
+
+            if (!success)
+                return BadRequest(new { message = "Token inválido o expirado." });
+
+            return Ok(new { message = "Contraseña actualizada correctamente." });
+        }
+
     }
 }

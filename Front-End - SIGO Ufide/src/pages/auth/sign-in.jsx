@@ -3,13 +3,14 @@ import { Card, Input, Checkbox, Button, Typography } from "@material-tailwind/re
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/hooks/useAlert";
-
+import PasswordResetModal from "./modals/PasswordResetModal";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
+  const [openReset, setOpenReset] = useState(false);
   const { login } = useAuth();
   const alert = useAlert();
   const handleSubmit = async (e) => {
@@ -127,7 +128,11 @@ export default function SignIn() {
                 containerProps={{ className: "-ml-2.5" }}
                 label={<Typography variant="small" color="gray" className="font-medium">Recordarme</Typography>}
               />
-              <Typography variant="small" className="font-medium text-[#2B338C] hover:underline cursor-pointer">
+               <Typography
+                variant="small"
+                className="font-medium text-[#2B338C] hover:underline cursor-pointer"
+                onClick={() => setOpenReset(true)}
+              >
                 ¿Olvidaste tu contraseña?
               </Typography>
             </div>
@@ -143,6 +148,12 @@ export default function SignIn() {
           </form>
         </Card>
       </div>
+
+      <PasswordResetModal
+        open={openReset}
+        onClose={() => setOpenReset(false)}
+        initialEmail={correo} // opcional: precarga el correo si ya lo escribió
+      />
     </section>
   );
 }
