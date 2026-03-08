@@ -2,26 +2,24 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SIGO.Api.Attributes;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Features.Autenticacion.Credenciales;
-using SIGO.Application.Features.Autenticacion.Login; 
-using SIGO.Application.Features.Usuarios.Dto;
-using SIGO.Domain.Entities;
-using System.Security.Claims;
-using System.Threading;
+using SIGO.Application.Features.Autenticacion.Login;
+using SIGO.Application.Features.Autenticacion.PasswordReset.Confirm;
 using SIGO.Application.Features.Autenticacion.PasswordReset.RequestOtp;
 using SIGO.Application.Features.Autenticacion.PasswordReset.VerifyOtp;
-using SIGO.Application.Features.Autenticacion.PasswordReset.Confirm;
+using System.Security.Claims;
 
-namespace SIGO.Api.Controllers {
-
-[Route("api/[controller]")]
-[ApiController]
-public class AutenticacionController : ControllerBase
+namespace SIGO.Api.Controllers
 {
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AutenticacionController : ControllerBase
+    {
         private readonly IMediator _mediator;
         private readonly IApplicationDbContext _context;
         private readonly IHashService _hashService;
@@ -36,123 +34,102 @@ public class AutenticacionController : ControllerBase
         }
 
         //EndPoint: Login
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
-            // Validamos la entrada de datos (No admitir nulos o vacíos)
-            if (command == null || string.IsNullOrWhiteSpace(command.Correo) || string.IsNullOrWhiteSpace(command.Contrasena))
-                return BadRequest(new { message = "Correo y contraseña son requeridos." });
-            UsuarioDto? usuario = null;
-
-            try
-            {
-                usuario = await _mediator.Send(command);
-            }
-            catch (Exception)
-            {
-                return Unauthorized(new { message = "Credenciales inválidas." });
-            }
+            var usuario = await _mediator.Send(command);
 
             if (usuario == null)
-                return Unauthorized(new { message = "Credenciales inválidas." });
+                return Unauthorized(new { message = "Credenciales inválidas" });
 
-            // Crear claim para el cookie de autenticación
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
-            new Claim(ClaimTypes.Name, usuario.Nombre),
-            new Claim(ClaimTypes.Email, usuario.Correo),
-            new Claim(ClaimTypes.Role, "Admin")
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim(ClaimTypes.Email, usuario.Correo)
+            };
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = false,
+            };
+
+            await HttpContext.SignOutAsync();
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity));
+                principal,
+                authProperties);
 
             return Ok(usuario);
         }
 
-        // EndPoint: Perfil
-        [Authorize] // Solo es accesible si hay un cookie VÁLIDO y ACTIVO
+        // EndPoint: Perfil -> Redirige a la pantalla principal del Front
+        [Authorize]
         [HttpGet("perfil")]
         public IActionResult GetPerfil()
         {
-            // Accede a los Claims guardados en el cookie
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Sesión inválida." });
+
             var nombre = User.FindFirstValue(ClaimTypes.Name);
             var correo = User.FindFirstValue(ClaimTypes.Email);
-            var rol = User.FindFirstValue(ClaimTypes.Role);
 
-            // Retorna la data que el frontend necesita para rehidratar el AuthContext
             return Ok(new
             {
                 usuarioId = userId,
-                nombre = nombre,
-                correo = correo,
-                rol = rol
+                nombre,
+                correo
             });
         }
 
         // EndPoint: Cierre de sesión
-        [HttpGet("logout")]
+        [Authorize]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Cierra la sesión del servidor y pide al navegador eliminar el cookie
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Ok(new { Message = "Logout exitoso" });
+            return Ok(new { message = "Logout exitoso" });
         }
 
-        // En caso que no tenga autorización
-        [HttpGet("unauthorized")]
-        public IActionResult UnauthorizedHandler()
+        // EndPoint: Actualizar Contraseña - Desde administración del sistema del FrontEnd
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
+        [HttpPost("updatePassword")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommand request, CancellationToken cancellationToken)
         {
-            return Unauthorized(new { Message = "Sesión expirada o no autorizado." });
-        }
-
-        // EndPoint: Actualizar Contraseña
-        [HttpPost ("updatePassword")]
-        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommand command)
-        {
-
-            // Validaciones básicas
-            if (command == null)
-                return BadRequest(new { message = "Request body vacío." });
-
-            if (command.UsuarioId <= 0)
+            if (request.UsuarioId <= 0)
                 return BadRequest(new { message = "UsuarioId inválido." });
 
-            if (string.IsNullOrWhiteSpace(command.Contrasena))
-                return BadRequest(new { message = "La contraseña no puede estar vacía." });
-
-            if (command.Contrasena.Length < 8)
+            if (string.IsNullOrWhiteSpace(request.Contrasena) || request.Contrasena.Length < 8)
                 return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
 
-            try
-            {
-                var actualizado = await _mediator.Send(command);
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.UsuarioId == request.UsuarioId, cancellationToken);
 
-                if (!actualizado)
-                {
-                    // handler devolvió false => usuario no encontrado o no se actualizó
-                    return NotFound(new { message = "Usuario no encontrado o no se pudo actualizar la contraseña." });
-                }
+            if (usuario == null || !usuario.Activo)
+                return NotFound(new { message = "Usuario no encontrado o inactivo." });
 
-                return Ok(new { success = true, message = "Contraseña actualizada correctamente." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar la contraseña para usuario {UsuarioId}", command.UsuarioId);
-                // No devuelvas el stacktrace en producción
-                return StatusCode(500, new { message = "Error interno al actualizar la contraseña." });
-            }
+            usuario.PasswordHash = _hashService.HashPassword(request.Contrasena);
+            usuario.AccessFailedCount = 0;
+            usuario.LockoutEnd = null;
 
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { message = "Contraseña actualizada correctamente." });
         }
 
-        // Endpoints - Reseteo de contraseña para el Usuario
-
-        // Endpoint para solicitar reseteo de contraseña
+        // Endpoint: Solicitud de reseteo de contraseña -> Desde Login
+        [AllowAnonymous]
         [HttpPost("password-reset/request")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto, CancellationToken ct)
         {
@@ -163,6 +140,7 @@ public class AutenticacionController : ControllerBase
         }
 
         // Endpoint para verificar OTP
+        [AllowAnonymous]
         [HttpPost("password-reset/verify")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyPasswordResetDto dto, CancellationToken ct)
         {
@@ -175,6 +153,7 @@ public class AutenticacionController : ControllerBase
         }
 
         // Endpoint confirmar nueva contraseña
+        [AllowAnonymous]
         [HttpPost("password-reset/confirm")]
         public async Task<IActionResult> ConfirmReset([FromBody] ConfirmPasswordResetDto dto, CancellationToken ct)
         {
@@ -186,5 +165,12 @@ public class AutenticacionController : ControllerBase
             return Ok(new { message = "Contraseña actualizada correctamente." });
         }
 
+        // EndPoint: Manejo de acceso sin autorización
+        [AllowAnonymous]
+        [HttpGet("unauthorized")]
+        public IActionResult UnauthorizedHandler()
+        {
+            return Unauthorized(new { message = "Sesión expirada o no autorizado." });
+        }
     }
 }

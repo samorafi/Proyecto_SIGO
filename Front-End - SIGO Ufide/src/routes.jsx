@@ -33,11 +33,8 @@ import ConfiguracionCorreo from "@/pages/admin/admSMTP";
 
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
-import OfertasEnLineaV2 from "@/pages/ofertas/OfertasEnLineaV2";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
-import OfertasPresencialesVirtualesV2 from "@/pages/ofertas/OfertasPresencialesVirtualesV2";
 import OfertasHistorico from "@/pages/ofertas/OfertasHistorico";
-import OfertasHistoricoV2 from "@/pages/ofertas/OfertasHistoricoV2";
 
 
 // Importación de datos
@@ -54,12 +51,9 @@ export const routes = [
         collapsible: true,
         permiso: "OFERTAS_VIEW",
         pages: [
-          { name: "100% Virtual", path: "/ofertas/OfertasEnLinea", element: <OfertasEnLinea />, permiso: "OFERTAS_VIRTUALES_VIEW" },
-          { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtuales", element: <OfertasPresencialesVirtuales />, permiso: "OFERTAS_PRESENCIAL_EN_LINEA_VIEW" },
-          { name: "Histórico De Ofertas", path: "/ofertas/OfertasHistorico", element: <OfertasHistorico />, permiso: "HISTORICO_VIEW" },
-          { name: "Histórico De Ofertas V2", path: "/ofertas/OfertasHistoricoV2", element: <OfertasHistoricoV2 />, permiso: "HISTORICO_VIEW" },
-          { name: "100% Virtual V2", path: "/ofertas/OfertasEnLineaV2", element: <OfertasEnLineaV2 />, permiso: "OFERTAS_VIRTUALES_VIEW" },
-          { name: "Presencial Y En Línea V2", path: "/ofertas/OfertasPresencialesVirtualesV2", element: <OfertasPresencialesVirtualesV2 />, permiso: "OFERTAS_PRESENCIAL_EN_LINEA_VIEW" },
+          { name: "Histórico De Ofertas", path: "/ofertas/OfertasHistoricoV2", element: <OfertasHistorico />, permiso: "HISTORICO_VIEW" },
+          { name: "100% Virtual", path: "/ofertas/OfertasEnLineaV2", element: <OfertasEnLinea />, permiso: "OFERTAS_VIRTUALES_VIEW" },
+          { name: "Presencial Y En Línea", path: "/ofertas/OfertasPresencialesVirtualesV2", element: <OfertasPresencialesVirtuales />, permiso: "OFERTAS_PRESENCIAL_EN_LINEA_VIEW" },
         ],
       },
       { icon: <UsersIcon className="h-5 w-5" />, name: "Docentes", path: "/docentes/DocentesPage", element: <Docentes />, permiso: "DOCENTES_VIEW" },

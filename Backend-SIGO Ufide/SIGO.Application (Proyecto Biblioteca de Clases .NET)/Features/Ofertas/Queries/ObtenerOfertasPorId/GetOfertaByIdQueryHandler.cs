@@ -1,17 +1,17 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
-using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Common.Exceptions;
+using SIGO.Application.Features.Ofertas.Dto;
 
-namespace SIGO.Application.Features.Ofertas.Queries;
+namespace SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasPorId;
 
-public class GetOfertaByIdQueryHandler_v2 : IRequestHandler<GetOfertaByIdQuery_v2, OfertaResponseDto>
+public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, OfertaResponseDto>
 {
     private readonly IApplicationDbContext _db;
-    public GetOfertaByIdQueryHandler_v2(IApplicationDbContext db) => _db = db;
+    public GetOfertaByIdQueryHandler(IApplicationDbContext db) => _db = db;
 
-    public async Task<OfertaResponseDto> Handle(GetOfertaByIdQuery_v2 request, CancellationToken ct)
+    public async Task<OfertaResponseDto> Handle(GetOfertaByIdQuery request, CancellationToken ct)
     {
         var dto = await _db.Ofertas
             .AsNoTracking()

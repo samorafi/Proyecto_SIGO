@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 export function useCatalogos() {
   const [catalogos, setCatalogos] = useState({
@@ -31,16 +32,16 @@ export function useCatalogos() {
           personasRes,
           carrerasRes,
         ] = await Promise.all([
-          fetch("/api/cursos"),
-          fetch("/api/sedes"),
-          fetch("/api/modalidades"),
-          fetch("/api/horarios"),
-          fetch("/api/periodos"),
-          fetch("/api/personas/coordinadores"),
-          fetch("/api/acciones-oferta"),
-          fetch("/api/estadoOfertas"),
-          fetch("/api/personas"),
-          fetch("/api/carreras"),
+          apiFetch("/api/cursos"),
+          apiFetch("/api/sedes"),
+          apiFetch("/api/modalidades"),
+          apiFetch("/api/horarios"),
+          apiFetch("/api/periodos"),
+          apiFetch("/api/personas/coordinadores"),
+          apiFetch("/api/acciones-oferta"),
+          apiFetch("/api/estadoOfertas"),
+          apiFetch("/api/personas"),
+          apiFetch("/api/carreras"),
         ]);
 
         const [

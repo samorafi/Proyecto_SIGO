@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { PlusIcon, PencilSquareIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -75,9 +76,9 @@ export default function CatalogoCursos() {
     setErr("");
     try {
       const [cursosRes, carrerasRes, gradosRes] = await Promise.all([
-        fetch(URL.cursos),
-        fetch(URL.carreras),
-        fetch(URL.grados),
+        apiFetch(URL.cursos),
+        apiFetch(URL.carreras),
+        apiFetch(URL.grados),
       ]);
 
       if (!cursosRes.ok || !carrerasRes.ok || !gradosRes.ok)
@@ -148,7 +149,7 @@ export default function CatalogoCursos() {
         estado: Boolean(formData.estado),
       };
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

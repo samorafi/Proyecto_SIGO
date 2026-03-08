@@ -3,7 +3,7 @@ using SIGO.Application.Common.Pagination;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Enums;
 
-namespace SIGO.Application.Features.Ofertas.Queries;
+namespace SIGO.Application.Features.Ofertas.Queries.ObtenerOfertas;
 
 public sealed record GetOfertasPagedQuery(
     OfertaCategory Category,

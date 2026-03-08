@@ -1,10 +1,11 @@
 // /pages/ofertas/functions/OpenFichaOferta.js
 import { normalizarOferta } from "../../../hooks/normalizarOferta";
+import { apiFetch } from "@/services/apiClientService";
 
 export default async function OpenFichaOferta(id, helpers) {
     try {
         // 1. Llamar al backend
-        const res = await fetch(`/api/ofertas/${id}`);
+        const res = await apiFetch(`/api/ofertas/${id}`);
         if (!res.ok) {
             return { ok: false, error: "No se pudo cargar la oferta." };
         }

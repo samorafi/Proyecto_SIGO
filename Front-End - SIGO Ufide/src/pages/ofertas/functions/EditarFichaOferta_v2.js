@@ -24,6 +24,8 @@
               - Componente tabla: OfertasPagedTable.jsx (botón que abre el modal de edición)
 */
 
+import { apiFetch } from "@/services/apiClientService";
+
 export default async function EditarFichaOferta(id, payload) {
   try {
 
@@ -59,7 +61,7 @@ export default async function EditarFichaOferta(id, payload) {
     };
 
     // Llamada al endpoint
-    const res = await fetch(`/api/Ofertas/${id}/editable`, {
+    const res = await apiFetch(`/api/Ofertas/${id}/editable`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(cleanPayload),

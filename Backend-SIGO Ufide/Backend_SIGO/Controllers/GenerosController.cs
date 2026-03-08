@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Generos.Queries.GetAll;
-using System.Threading.Tasks;
 
 namespace SIGO.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/generos")]
     public class GenerosController : ControllerBase
@@ -17,6 +17,7 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

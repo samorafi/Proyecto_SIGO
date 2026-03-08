@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 export function useOfertasResumen(category) {
   const [data, setData] = useState(null);
@@ -12,7 +13,7 @@ export function useOfertasResumen(category) {
     setError(null);
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/Ofertas/summary?category=${category}`,
         {
           credentials: "include", 

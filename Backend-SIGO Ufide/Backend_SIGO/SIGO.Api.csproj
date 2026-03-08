@@ -48,9 +48,9 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SIGO.Application (Proyecto Biblioteca de Clases .NET)\SIGO.Application (Proyecto Biblioteca de Clases .NET).csproj" />
-    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
-    <ProjectReference Include="..\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET).csproj" />
+    <ProjectReference Include="..\SIGO.Application (Proyecto Biblioteca de Clases .NET)\SIGO.Application.csproj" />
+    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain.csproj" />
+    <ProjectReference Include="..\SIGO.Infrastructure (Proyecto Biblioteca de Clases .NET)\SIGO.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

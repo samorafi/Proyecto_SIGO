@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.AccionesOferta.Dto;
 using SIGO.Application.Features.AccionesOferta.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/acciones-oferta")]
 public class AccionesOfertaController : ControllerBase
@@ -12,12 +14,12 @@ public class AccionesOfertaController : ControllerBase
     private readonly IMediator _mediator;
     public AccionesOfertaController(IMediator mediator) => _mediator = mediator;
 
-    // GET api/acciones-oferta
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<AccionOfertaResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetAccionesOfertaQuery(), ct));
 
-    // GET api/acciones-oferta/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AccionOfertaResponseDto>> GetById(int id, CancellationToken ct)
     {

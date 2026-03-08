@@ -21,6 +21,7 @@
 */
 
 import { useCallback, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 // Importar SweetAlert
 import { alertService } from "@/services/alert.service";
@@ -63,7 +64,7 @@ export function useCancelarOferta_v2({
         setCancelandoId(id);
 
         // Llamada al endpoint
-        const res = await fetch(`/api/ofertas/${id}/cancelar`, {
+        const res = await apiFetch(`/api/ofertas/${id}/cancelar`, {
           method: "POST",
         });
 

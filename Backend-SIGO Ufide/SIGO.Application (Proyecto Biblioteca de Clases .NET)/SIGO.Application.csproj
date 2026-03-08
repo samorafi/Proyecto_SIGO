@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain (Proyecto Biblioteca de Clases .NET).csproj" />
+    <ProjectReference Include="..\SIGO.Domain (Proyecto Biblioteca de Clases .NET)\SIGO.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

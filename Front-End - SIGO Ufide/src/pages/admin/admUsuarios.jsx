@@ -7,6 +7,7 @@ import {
   PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon, KeyIcon
 } from "@heroicons/react/24/outline";
 import { UserIcon } from "@heroicons/react/24/solid";
+import { apiFetch } from "@/services/apiClientService";
 
 export default function AdmUsuarios() {
   //******************************************************************************* */
@@ -41,14 +42,14 @@ export default function AdmUsuarios() {
 
     try {
 
-      // Validación básica antes del fetch - Evitar envios en blanco
+      // Validación básica antes del apiFetch - Evitar envios en blanco
       if (!formData.nombre.trim() || !formData.correo.trim() || !formData.contrasena.trim()) {
         alert("Todos los campos son obligatorios");
         return;
       }
 
       // Fetch al EndPoint
-      const response = await fetch("/api/Usuarios", {
+      const response = await apiFetch("/api/Usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +106,7 @@ export default function AdmUsuarios() {
 
   const fetchUsuarios = async () => {
     try {
-      const response = await fetch("/api/Usuarios");
+      const response = await apiFetch("/api/Usuarios");
       if (!response.ok) throw new Error("Error al obtener los usuarios");
 
       const data = await response.json();
@@ -170,7 +171,7 @@ export default function AdmUsuarios() {
     };
 
     try {
-      const response = await fetch(`/api/Usuarios/${editUser.usuarioId}`, {
+      const response = await apiFetch(`/api/Usuarios/${editUser.usuarioId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -197,12 +198,12 @@ export default function AdmUsuarios() {
   const handleOpenRoles = async (user) => {
     try {
       // Traer todos los roles disponibles
-      const rolesResp = await fetch("/api/Roles");
+      const rolesResp = await apiFetch("/api/Roles");
       const rolesData = await rolesResp.json();
       setRoles(rolesData);
 
       // Traer los roles ya asignados a este usuario
-      const userRolesResp = await fetch(`/api/Roles/usuario/${user.usuarioId}/permisos`);
+      const userRolesResp = await apiFetch(`/api/Roles/usuario/${user.usuarioId}/permisos`);
       const userRolesData = await userRolesResp.json();
 
       // userRolesData.roles es un array de nombres de roles
@@ -224,7 +225,7 @@ export default function AdmUsuarios() {
   const handleSaveRoles = async () => {
     try {
       // Traer roles actuales del usuario para comparar
-      const currentResp = await fetch(`/api/Roles/usuario/${targetUser.usuarioId}/permisos`);
+      const currentResp = await apiFetch(`/api/Roles/usuario/${targetUser.usuarioId}/permisos`);
       const currentData = await currentResp.json();
 
       // Mapeamos nombres a IDs
@@ -238,7 +239,7 @@ export default function AdmUsuarios() {
 
       // Asignar roles nuevos
       for (const rolId of rolesToAdd) {
-        await fetch("/api/Roles/asignar", {
+        await apiFetch("/api/Roles/asignar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ usuarioId: targetUser.usuarioId, rolId }),
@@ -247,7 +248,7 @@ export default function AdmUsuarios() {
 
       // Remover roles desmarcados
       for (const rolId of rolesToRemove) {
-        await fetch("/api/Roles/remover", {
+        await apiFetch("/api/Roles/remover", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ usuarioId: targetUser.usuarioId, rolId }),
@@ -299,7 +300,7 @@ export default function AdmUsuarios() {
     }
 
     try {
-      const response = await fetch("/api/Autenticacion/updatePassword", {
+      const response = await apiFetch("/api/Autenticacion/updatePassword", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

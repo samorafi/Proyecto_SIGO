@@ -23,6 +23,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "@/services/apiClientService";
 
 export default function CatalogoPeriodos() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function CatalogoPeriodos() {
     setLoading(true);
     setErr("");
     try {
-      const res = await fetch("/api/periodos");
+      const res = await apiFetch("/api/periodos");
       if (!res.ok) throw new Error("Error al obtener periodos");
       const data = await res.json();
 
@@ -98,7 +99,7 @@ export default function CatalogoPeriodos() {
     const url = isEdit ? `/api/periodos/${editId}` : "/api/periodos";
 
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

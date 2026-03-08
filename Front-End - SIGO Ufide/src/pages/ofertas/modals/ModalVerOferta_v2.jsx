@@ -1,7 +1,7 @@
 import { Typography, Button, Input } from "@material-tailwind/react";
 import AppModal from "@/components/ui/Modals/AppModal";
 
-export default function ModalVerOferta({
+export default function ModalVerOferta_v2({
   open,
   onClose,
 

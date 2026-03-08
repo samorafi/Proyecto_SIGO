@@ -3,6 +3,7 @@ import { Card, Typography, Button, Dialog, DialogHeader, DialogBody, DialogFoote
 import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { PlusIcon, PencilSquareIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -37,7 +38,7 @@ export default function CatalogoCarreras() {
     setLoading(true);
     setErr("");
     try {
-      const res = await fetch(URL.carreras);
+      const res = await apiFetch(URL.carreras);
 
       if (!res.ok) throw new Error(`GET ${URL.carreras} -> ${res.status}`);
 
@@ -82,7 +83,7 @@ export default function CatalogoCarreras() {
     try {
       const method = editId ? "PUT" : "POST";
       const url = editId ? URL.carreraById(editId) : URL.carreras;
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre: formData.nombre }),

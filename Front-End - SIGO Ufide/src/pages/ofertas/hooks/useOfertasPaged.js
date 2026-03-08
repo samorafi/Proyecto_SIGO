@@ -20,6 +20,7 @@
   */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 // Tamaños de pagina permitidas
 const ALLOWED_PAGE_SIZES = [10, 25, 50, 100];
@@ -135,8 +136,7 @@ export function useOfertasPaged({ category, initialPageSize = 10, filters = {} }
       if (stableFilters.estadoOfertaId) params.set("estadoOfertaId", stableFilters.estadoOfertaId);
 
       // Llamada al endpoint
-      const res = await fetch(`/api/Ofertas/paged?${params.toString()}`, {
-        credentials: "include",
+      const res = await apiFetch(`/api/Ofertas/paged?${params.toString()}`, {
         signal: controller.signal,
       });
 

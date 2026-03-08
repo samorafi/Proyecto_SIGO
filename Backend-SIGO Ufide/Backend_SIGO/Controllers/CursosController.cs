@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Api.Attributes;
@@ -12,6 +13,7 @@ using System.Text.Json;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/cursos")]
 public class CursosController : ControllerBase
@@ -25,16 +27,16 @@ public class CursosController : ControllerBase
     }
 
 
-    // POST api/cursos
+    [Authorize]
     [HttpPost]
-    [AuditDisabled] // Habilitar auditoria MANUAL en endpoint
+    [HasPermission("ADMIN_VIEW")]
+    [AuditDisabled]
     public async Task<ActionResult<CursoResponseDto>> Create([FromBody] CreateCursoRequest body, CancellationToken ct)
     {
         try
         {
             var created = await _mediator.Send(new CreateCursoCommand(body), ct);
 
-            // Extracción de datos para auditoria
             var json = JsonSerializer.Serialize(body);
             await _auditService.LogManualAsync(
                 usuario: User?.Identity?.Name ?? "Anon",
@@ -60,21 +62,20 @@ public class CursosController : ControllerBase
     }
 
 
-    // PUT api/cursos/{id}
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [HttpPut("{id:int}")]
-    [AuditDisabled] // Habilitar auditoria MANUAL en endpoint
+    [AuditDisabled]
     public async Task<ActionResult<CursoResponseDto>> Update(int id, [FromBody] UpdateCursoRequest body, CancellationToken ct)
     {
         try
         {
-            // Auditoria: Obtener datos antiguos antes de la actualización
             var oldData = await _mediator.Send(new GetCursoByIdQuery(id), ct);
 
             var updated = await _mediator.Send(new UpdateCursoCommand(id, body), ct);
             if (updated is null)
                 return NotFound(new { message = $"No se encontró el curso con id {id}." });
 
-            // Extracción de datos para auditoria
             var oldJson = JsonSerializer.Serialize(oldData);
             var newJson = JsonSerializer.Serialize(body);
 
@@ -101,7 +102,7 @@ public class CursosController : ControllerBase
         }
     }
 
-    // GET api/cursos/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CursoResponseDto>> GetById(int id, CancellationToken ct)
     {
@@ -109,7 +110,7 @@ public class CursosController : ControllerBase
         return dto is null ? NotFound(new { message = $"No se encontró el curso con id {id}." }) : Ok(dto);
     }
 
-    // GET api/cursos?estado=true|false (si se omite 'estado', trae todos)
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<CursoResponseDto>>> GetAll([FromQuery] bool? estado, CancellationToken ct)
     {

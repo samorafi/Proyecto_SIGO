@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using DotNetEnv;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Api.Filters;
 using SIGO.Application;
@@ -9,24 +11,25 @@ using SIGO.Application.Services;
 using SIGO.Infrastructure;
 using SIGO.Infrastructure.Persistence;
 using SIGO.Infrastructure.Security;
-using DotNetEnv;
 
-// 1. Cargar variables de entorno (.env) al inicio
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 2. Configuración de Autenticación (Cookies)
+// Autenticación con cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/api/Autenticacion/unauthorized";
         options.AccessDeniedPath = "/api/Autenticacion/forbidden";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
-        options.SlidingExpiration = false;
+
+        options.Cookie.Name = "SIGO.Auth";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.None;
+
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+        options.SlidingExpiration = true;
 
         options.Events = new CookieAuthenticationEvents
         {
@@ -37,6 +40,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return Task.CompletedTask;
                 }
+
                 context.Response.Redirect(context.RedirectUri);
                 return Task.CompletedTask;
             },
@@ -47,75 +51,92 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     return Task.CompletedTask;
                 }
+
                 context.Response.Redirect(context.RedirectUri);
                 return Task.CompletedTask;
             }
         };
     });
 
-// 3. CORS (Permitir todo)
+builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<PermissionFilter>();
+
+// Proxy / Load Balancer
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("FrontendOnly", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                "https://localhost:5173",
+                "http://localhost:5173"
+              )
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
-// 4. Servicios de Aplicación
+// Servicios de aplicación
 builder.Services.AddScoped<IHashService, SIGO.Application.Services.BCryptHashService>();
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(SIGO.Application.DependencyInjection).Assembly));
 
-// 5. Base de Datos (Neon Postgres)
+// Base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
-builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
+    provider.GetRequiredService<ApplicationDbContext>());
 
-// 6. Auditoría y Usuario Actual
+// Auditoría y usuario actual
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuditActionFilter>();
 
-// 7. Controladores (Configuración Unificada con Filtros Globales)
+// Controladores
 builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<AuditActionFilter>();
+    options.Filters.AddService<PermissionFilter>();
 });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 8. CACHÉ (CORRECCIÓN CLAVE: Usar Memoria en lugar de Redis)
-// Esto permite que las sesiones funcionen sin necesitar un servidor Redis externo.
 builder.Services.AddDistributedMemoryCache();
 
-// 9. Capas de Aplicación e Infraestructura
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// 10. Pipeline HTTP
-// Habilitar Swagger siempre (o condicionalmente si prefieres)
-// Nota: Si usas Docker con 'ENV ASPNETCORE_ENVIRONMENT=Development', entrará aquí.
+// Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHsts();
+}
 
-app.UseCors("AllowAll");
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
-
+app.UseCors("FrontendOnly");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

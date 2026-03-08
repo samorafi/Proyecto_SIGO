@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SIGO.Api.Attributes;
 using SIGO.Application.Common.Exceptions;
 using SIGO.Application.Features.Carreras.Commands.Create;
 using SIGO.Application.Features.Carreras.Commands.Update;
@@ -9,6 +11,7 @@ using SIGO.Application.Features.Carreras.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/carreras")]
 public class CarrerasController : ControllerBase
@@ -16,6 +19,7 @@ public class CarrerasController : ControllerBase
     private readonly IMediator _mediator;
     public CarrerasController(IMediator mediator) => _mediator = mediator;
 
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CarreraResponseDto>> GetById(int id, CancellationToken ct)
     {
@@ -23,10 +27,13 @@ public class CarrerasController : ControllerBase
         return dto is null ? NotFound(new { message = $"No se encontró la carrera con id {id}." }) : Ok(dto);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<CarreraResponseDto>>> GetAll([FromQuery] bool? estado, CancellationToken ct)
         => Ok(await _mediator.Send(new GetCarrerasQuery(estado), ct));
 
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [HttpPost]
     public async Task<ActionResult<CarreraResponseDto>> Create([FromBody] CreateCarreraRequest body, CancellationToken ct)
     {
@@ -39,6 +46,8 @@ public class CarrerasController : ControllerBase
         catch (DbUpdateException ex) { return StatusCode(500, new { message = "Error al guardar la carrera.", detail = ex.InnerException?.Message ?? ex.Message }); }
     }
 
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CarreraResponseDto>> Update(int id, [FromBody] UpdateCarreraRequest body, CancellationToken ct)
     {

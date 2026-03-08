@@ -5,7 +5,7 @@ using SIGO.Application.Common.Pagination;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Enums;
 
-namespace SIGO.Application.Features.Ofertas.Queries;
+namespace SIGO.Application.Features.Ofertas.Queries.ObtenerOfertas;
 
 public sealed class GetOfertasPagedQueryHandler
     : IRequestHandler<GetOfertasPagedQuery, PagedResult<OfertaResponseDto>>
@@ -47,18 +47,18 @@ public sealed class GetOfertasPagedQueryHandler
             var isGrupo = int.TryParse(q, out var grupo);
 
             query = query.Where(o =>
-                (isGrupo && o.Grupo == grupo)
+                isGrupo && o.Grupo == grupo
                 ||
-                (o.Curso != null && (
+                o.Curso != null && (
                     (o.Curso.Codigo ?? "").Contains(q) ||
                     (o.Curso.Nombre ?? "").Contains(q)
-                )) ||
-                (o.Coordinador != null && (
+                ) ||
+                o.Coordinador != null &&
                     ((o.Coordinador.Nombre ?? "") + " " +
                      (o.Coordinador.PrimerApellido ?? "") + " " +
                      (o.Coordinador.SegundoApellido ?? ""))
                     .Contains(q)
-                ))
+
             );
         }
 

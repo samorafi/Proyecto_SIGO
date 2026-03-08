@@ -8,6 +8,7 @@ import {
 } from "@material-tailwind/react";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = {
@@ -41,7 +42,7 @@ export default function AdmSMTP() {
     setLoading(true);
     setErr("");
     try {
-      const res = await fetch(URL.conf);
+      const res = await apiFetch(URL.conf);
       if (!res.ok) throw new Error("Error al obtener configuración SMTP");
       const data = await res.json();
       setConfig((prev) => ({ ...prev, ...data }));
@@ -66,7 +67,7 @@ export default function AdmSMTP() {
 
     setSaving(true);
     try {
-      const res = await fetch(URL.conf, {
+      const res = await apiFetch(URL.conf, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
@@ -93,7 +94,7 @@ export default function AdmSMTP() {
     }
     setTesting(true);
     try {
-      const res = await fetch(URL.test, {
+      const res = await apiFetch(URL.test, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ toEmail: correoPrueba }),

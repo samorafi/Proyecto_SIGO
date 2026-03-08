@@ -1,9 +1,13 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Api.Attributes;
 using SIGO.Application.Features.Permisos.Queries.GetAll;
 
 namespace SIGO.Api.Controllers
 {
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [ApiController]
     [Route("api/[controller]")]
     public class PermisosController : ControllerBase
@@ -15,10 +19,8 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
-        // ======================================================
-        // GET: api/Permisos
-        // Devuelve todos los permisos disponibles en la BD.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet]
         public async Task<IActionResult> GetAllPermisos()
         {

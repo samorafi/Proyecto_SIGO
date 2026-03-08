@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Sedes.Dto;
 using SIGO.Application.Features.Sedes.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/sedes")]
 public class SedesController : ControllerBase
@@ -12,12 +14,12 @@ public class SedesController : ControllerBase
     private readonly IMediator _mediator;
     public SedesController(IMediator mediator) => _mediator = mediator;
 
-    // GET api/sedes
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<SedeResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetSedesQuery(), ct));
 
-    // GET api/sedes/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SedeResponseDto>> GetById(int id, CancellationToken ct)
     {

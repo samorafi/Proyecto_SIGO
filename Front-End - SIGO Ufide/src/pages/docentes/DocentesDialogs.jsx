@@ -5,7 +5,7 @@ import {
   Dialog, DialogHeader, DialogBody, DialogFooter, Switch,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
-
+import { apiFetch } from "@/services/apiClientService";
 
 /* ===================== API CONFIG ===================== */
 const API = import.meta.env.VITE_API_BASE ?? "";
@@ -28,7 +28,7 @@ const URL = {
 
 /* ===================== HELPERS ===================== */
 async function fetchArray(url) {
-  const r = await fetch(url);
+  const r = await apiFetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
 
   const txt = await r.text();
@@ -99,7 +99,7 @@ const buildPeriodoLabel = (x) => {
 
 async function fetchPeriodosOrdered() {
   const url = URL.periodos;
-  const r = await fetch(url);
+  const r = await apiFetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
 
   const txt = await r.text();
@@ -197,7 +197,7 @@ function FichaDocente({ open, onClose, id }) {
       setError("");
       setP(null);
       try {
-        const r = await fetch(URL.personaById(id));
+        const r = await apiFetch(URL.personaById(id));
         if (!r.ok) throw new Error("GET persona");
         const x = await r.json();
         if (!live) return;
@@ -223,7 +223,7 @@ function FichaDocente({ open, onClose, id }) {
       const getNombrePeriodo = async (id, fallback) => {
         if (!id) return fallback || "—";
         try {
-          const r = await fetch(URL.periodoById(id));
+          const r = await apiFetch(URL.periodoById(id));
           if (!r.ok) throw new Error("GET periodo");
           const j = await r.json();
           const label = buildPeriodoLabel(j);
@@ -603,7 +603,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
         enLinea: !!f.enLinea,
         comentarios: f.comentarios ?? "",
       };
-      const r = await fetch(URL.personas, {
+      const r = await apiFetch(URL.personas, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -1220,7 +1220,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
       if (!open || !id || !catsReady) return;
       setLoading(true);
       try {
-        const r = await fetch(URL.personaById(id));
+        const r = await apiFetch(URL.personaById(id));
         if (!r.ok) throw new Error("GET persona");
         const x = await r.json();
 
@@ -1413,7 +1413,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         enLinea: !!f.enLinea,
         comentarios: f.comentarios ?? "",
       };
-      const r = await fetch(URL.personaById(id), {
+      const r = await apiFetch(URL.personaById(id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 export function usePeriodosApi() {
   const [periodos, setPeriodos] = useState([]);
@@ -10,7 +11,7 @@ export function usePeriodosApi() {
       setLoading(true);
       setError("");
 
-      const res = await fetch("/api/Periodos?estado=true", {
+      const res = await apiFetch("/api/Periodos?estado=true", {
         credentials: "include",
       });
 

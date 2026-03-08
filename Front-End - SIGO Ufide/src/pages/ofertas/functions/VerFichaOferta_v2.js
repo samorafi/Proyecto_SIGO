@@ -19,12 +19,13 @@
 
 
 */
+import { apiFetch } from "@/services/apiClientService";
 
 export default async function VerFichaOferta(id) {
     try {
 
         // Llamada al endpoint
-        const res = await fetch(`/api/ofertas/${id}/ficha`);
+        const res = await apiFetch(`/api/ofertas/${id}/ficha`);
         if (!res.ok) {
             return { ok: false, error: "No se pudo cargar la ficha de la oferta." };
         }

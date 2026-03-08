@@ -1,4 +1,5 @@
 // /pages/ofertas/functions/GuardarOferta.js
+import { apiFetch } from "@/services/apiClientService";
 
 export default async function GuardarOferta(ofertaId, payload) {
     try {
@@ -10,7 +11,7 @@ export default async function GuardarOferta(ofertaId, payload) {
 
         const method = isNew ? "POST" : "PUT";
 
-        const res = await fetch(url, {
+        const res = await apiFetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

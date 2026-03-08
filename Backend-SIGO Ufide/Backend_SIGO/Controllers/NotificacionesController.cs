@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Notificaciones.Commands.Crear;
 using SIGO.Application.Features.Notificaciones.Commands.MarcarLeida;
@@ -8,6 +9,7 @@ using SIGO.Application.Features.Notificaciones.Queries.Listar;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class NotificacionesController : ControllerBase
@@ -19,7 +21,7 @@ public class NotificacionesController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/Notificaciones?personaId=123&soloNoLeidas=true&search=hola&page=1&pageSize=20
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<GetNotificacionesResponse>> Listar(
         [FromQuery] GetNotificacionesQuery query,
@@ -36,7 +38,7 @@ public class NotificacionesController : ControllerBase
         }
     }
 
-    // GET /api/Notificaciones/count-no-leidas?personaId=123
+    [Authorize]
     [HttpGet("count-no-leidas")]
     public async Task<ActionResult<int>> CountNoLeidas([FromQuery] int? personaId, CancellationToken ct)
     {
@@ -44,7 +46,7 @@ public class NotificacionesController : ControllerBase
         return Ok(count);
     }
 
-    // POST /api/Notificaciones
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<int>> Crear(
         [FromBody] CrearNotificacionRequest request,
@@ -64,7 +66,7 @@ public class NotificacionesController : ControllerBase
         }
     }
 
-    // PATCH /api/Notificaciones/123/leida
+    [Authorize]
     [HttpPatch("{id:int}/leida")]
     public async Task<IActionResult> MarcarLeida(
         [FromRoute] int id,
@@ -74,7 +76,7 @@ public class NotificacionesController : ControllerBase
         return ok ? Ok() : NotFound();
     }
 
-    // PATCH /api/Notificaciones/leidas
+    [Authorize]
     [HttpPatch("leidas")]
     public async Task<ActionResult<int>> MarcarTodasLeidas(CancellationToken ct)
     {

@@ -16,21 +16,23 @@ namespace SIGO.Application.Features.Autenticacion.Login
             _hashService = hashService;
         }
 
-        // Metodo asincronico para manejar el Command de Login
         public async Task<UsuarioDto?> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            // Identificar el usuario 
-            var user = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Correo == request.Correo, cancellationToken);
+            var correo = request.Correo.Trim().ToLower();
 
-            // Verificar el bloqueo y la contraseña
+            var user = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Correo.ToLower() == correo, cancellationToken);
+
+            if (user != null && !user.Activo)
+            {
+                return null;
+            }
+
             if (user != null && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
             {
                 return null;
             }
 
-
-            // Verificar la contraseña - Aplica si no esta bloqueado
             if (user == null || !_hashService.VerifyPassword(request.Contrasena, user.PasswordHash))
             {
                 if (user != null && user.LockoutEnabled)
@@ -41,6 +43,7 @@ namespace SIGO.Application.Features.Autenticacion.Login
                     {
                         user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
                     }
+
                     await _context.SaveChangesAsync(cancellationToken);
                 }
 

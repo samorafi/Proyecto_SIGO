@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, Input, Button, Typography, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip, Checkbox, Select, Option, } from "@material-tailwind/react";
 import { PlusIcon, PencilSquareIcon, ShieldCheckIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon, } from "@heroicons/react/24/outline";
+import { apiFetch } from "@/services/apiClientService";
 
 export default function AdmRolesPermisos() {
     //***************************************************************************
@@ -38,7 +39,7 @@ export default function AdmRolesPermisos() {
         setLoading(true);
         setError("");
         try {
-            const response = await fetch("/api/Roles");
+            const response = await apiFetch("/api/Roles");
             if (!response.ok) throw new Error("Error al obtener los roles");
             const data = await response.json();
             setRoles(data);
@@ -94,7 +95,7 @@ export default function AdmRolesPermisos() {
         }
 
         try {
-            const response = await fetch("/api/Roles", {
+            const response = await apiFetch("/api/Roles", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formRol),
@@ -123,7 +124,7 @@ export default function AdmRolesPermisos() {
         if (!editRol) return;
 
         try {
-            const response = await fetch(`/api/Roles/${editRol.rolId}`, {
+            const response = await apiFetch(`/api/Roles/${editRol.rolId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editRol),
@@ -145,13 +146,13 @@ export default function AdmRolesPermisos() {
     const handleOpenPermisos = async (rol) => {
         try {
             // Traer lista de permisos disponibles
-            const permisosResp = await fetch("/api/Permisos");
+            const permisosResp = await apiFetch("/api/Permisos");
             if (!permisosResp.ok) throw new Error("Error al obtener permisos");
             const permisosData = await permisosResp.json();
             setPermisos(permisosData);
 
             // Traer permisos ya asignados al rol
-            const rolPermisosResp = await fetch(`/api/Roles/${rol.rolId}`);
+            const rolPermisosResp = await apiFetch(`/api/Roles/${rol.rolId}`);
             if (!rolPermisosResp.ok) throw new Error("Error al obtener permisos del rol");
             const rolPermisosData = await rolPermisosResp.json();
 
@@ -170,7 +171,7 @@ export default function AdmRolesPermisos() {
         if (!editRol) return;
 
         try {
-            const resp = await fetch(`/api/Roles/${editRol.rolId}`, {
+            const resp = await apiFetch(`/api/Roles/${editRol.rolId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -202,7 +203,7 @@ export default function AdmRolesPermisos() {
 
         try {
             // Endpoint nuevo: GET /api/Roles/{id}/usuarios
-            const resp = await fetch(`/api/Roles/${rol.rolId}/usuarios`);
+            const resp = await apiFetch(`/api/Roles/${rol.rolId}/usuarios`);
             if (!resp.ok) {
                 // Si el endpoint no existe aún, no bloqueamos: solo mostramos confirmación simple
                 setDeleteUsuarios([]);
@@ -222,7 +223,7 @@ export default function AdmRolesPermisos() {
         if (!deleteRol) return;
 
         try {
-            const response = await fetch(`/api/Roles/${deleteRol.rolId}`, {
+            const response = await apiFetch(`/api/Roles/${deleteRol.rolId}`, {
                 method: "DELETE",
             });
             if (!response.ok) throw new Error("Error al eliminar rol");

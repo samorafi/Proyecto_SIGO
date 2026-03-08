@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/hooks/useAlert";
 import PasswordResetModal from "./modals/PasswordResetModal";
+import { apiFetch } from "@/services/apiClientService";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -13,22 +14,31 @@ export default function SignIn() {
   const [openReset, setOpenReset] = useState(false);
   const { login } = useAuth();
   const alert = useAlert();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     alert.loading("Iniciando sesión...", "Validando credenciales");
     setLoading(true);
 
     try {
-      const res = await fetch("/api/Autenticacion/login", {
+      const res = await apiFetch("/api/Autenticacion/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, contrasena }),
-        credentials: 'include',
+        body: JSON.stringify({
+          correo,
+          contrasena,
+        }),
+        credentials: "include",
       });
 
       if (!res.ok) {
         let errorData = null;
-        try { errorData = await res.json(); } catch { }
+
+        try {
+          errorData = await res.json();
+        } catch {
+          // Ignorar si la respuesta no viene en JSON
+        }
 
         if (res.status === 401) {
           throw new Error("Correo o contraseña incorrectos.");
@@ -37,16 +47,21 @@ export default function SignIn() {
         throw new Error(errorData?.message || "No se pudo iniciar sesión.");
       }
 
-      // Ya NO guardamos la data. Solo llamamos a login() para que el AuthContext
-      // llame a /api/Auth/perfil y obtenga la data de los Claims del cookie.
-      await login();
+      const ok = await login();
+
+      if (!ok) {
+        throw new Error("No se pudo validar la sesión después del login.");
+      }
+
       alert.close();
       alert.toastSuccess("Bienvenido");
       navigate("/dashboard/ofertas", { replace: true });
-
     } catch (error) {
       alert.close();
-      alert.error("No se pudo iniciar sesión", error.message);
+      alert.error(
+        "No se pudo iniciar sesión",
+        error?.message || "Ocurrió un error inesperado."
+      );
     } finally {
       setLoading(false);
     }
@@ -54,7 +69,6 @@ export default function SignIn() {
 
   return (
     <section className="min-h-screen grid lg:grid-cols-5">
-      {/* PANEL IZQUIERDO CON IMAGEN DEL EDIFICIO */}
       <div className="hidden lg:block lg:col-span-2 relative">
         <img
           src="/img/Campus-1.png"
@@ -69,9 +83,11 @@ export default function SignIn() {
         </div>
       </div>
 
-      {/* FORMULARIO (DERECHA) */}
       <div className="lg:col-span-3 flex justify-center items-center p-6">
-        <Card shadow={true} className="w-full max-w-2xl p-8 rounded-2xl shadow-lg border-t-4 border-[#2B338C]">
+        <Card
+          shadow={true}
+          className="w-full max-w-2xl p-8 rounded-2xl shadow-lg border-t-4 border-[#2B338C]"
+        >
           <div className="text-center">
             <Typography variant="h2" className="font-bold mb-2 text-[#2B338C]">
               Iniciar sesión
@@ -83,7 +99,6 @@ export default function SignIn() {
 
           <form className="mt-8" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6">
-              {/* Correo */}
               <div>
                 <Typography variant="small" color="blue-gray" className="font-medium">
                   Correo electrónico
@@ -102,7 +117,6 @@ export default function SignIn() {
                 />
               </div>
 
-              {/* Contraseña */}
               <div>
                 <Typography variant="small" color="blue-gray" className="font-medium">
                   Contraseña
@@ -123,12 +137,7 @@ export default function SignIn() {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <Checkbox
-                defaultChecked
-                containerProps={{ className: "-ml-2.5" }}
-                label={<Typography variant="small" color="gray" className="font-medium">Recordarme</Typography>}
-              />
-               <Typography
+              <Typography
                 variant="small"
                 className="font-medium text-[#2B338C] hover:underline cursor-pointer"
                 onClick={() => setOpenReset(true)}
@@ -152,7 +161,7 @@ export default function SignIn() {
       <PasswordResetModal
         open={openReset}
         onClose={() => setOpenReset(false)}
-        initialEmail={correo} // opcional: precarga el correo si ya lo escribió
+        initialEmail={correo}
       />
     </section>
   );

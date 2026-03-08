@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.RolesDocente.Dto;
 using SIGO.Application.Features.RolesDocente.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/rol-docentes")]
 public class RolesDocenteController : ControllerBase
@@ -12,12 +14,12 @@ public class RolesDocenteController : ControllerBase
     private readonly IMediator _mediator;
     public RolesDocenteController(IMediator mediator) => _mediator = mediator;
 
-    // GET api/rol-docentes
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<RolDocenteResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetRolesDocenteQuery(), ct));
 
-    // GET api/rol-docentes/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<RolDocenteResponseDto>> GetById(int id, CancellationToken ct)
     {

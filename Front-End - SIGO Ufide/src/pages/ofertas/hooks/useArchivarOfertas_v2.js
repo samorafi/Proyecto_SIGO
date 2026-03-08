@@ -20,6 +20,7 @@
 */
 
 import { useMemo, useState, useEffect } from "react"; 
+import { apiFetch } from "@/services/apiClientService";
 
 // Importar hooks de periodos para filtrar opciones
 import { usePeriodos } from "@/hooks/usePeriodos";
@@ -111,7 +112,7 @@ export const useArchivarOfertas_v2 = (periodos, refresh, category) => {
         modalidades: [modalidadFinal],
       };
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -1,17 +1,18 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
-using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Common.Exceptions;
+using SIGO.Application.Features.Ofertas.Dto;
+using SIGO.Application__Proyecto_Biblioteca_de_Clases_.NET_.Features.Ofertas.Queries.ObtenerOfertaNotificaciones;
 
-namespace SIGO.Application.Features.Ofertas.Queries;
+namespace SIGO.Application.Features.Ofertas.Queries.ObtenerOfertaNotificaciones;
 
-public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, OfertaResponseDto>
+public class GetOfertaNotificacionesQueryHandler : IRequestHandler<GetOfertaNotificacionesQuery, OfertaResponseDto>
 {
     private readonly IApplicationDbContext _db;
-    public GetOfertaByIdQueryHandler(IApplicationDbContext db) => _db = db;
+    public GetOfertaNotificacionesQueryHandler(IApplicationDbContext db) => _db = db;
 
-    public async Task<OfertaResponseDto> Handle(GetOfertaByIdQuery request, CancellationToken ct)
+    public async Task<OfertaResponseDto> Handle(GetOfertaNotificacionesQuery request, CancellationToken ct)
     {
         var dto = await _db.Ofertas
             .AsNoTracking()

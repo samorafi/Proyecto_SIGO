@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
@@ -10,13 +11,18 @@ using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Enums;
-using SIGO.Application.Features.Ofertas.Queries;
-using SIGO.Application.Services;
-using System.Text.Json;
 using SIGO.Application.Features.Ofertas.Queries.Export;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertas;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasPorId;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasReportes;
+using SIGO.Application.Features.Ofertas.Queries.ResumenEstadosOfertas;
+using SIGO.Application.Services;
+using SIGO.Application__Proyecto_Biblioteca_de_Clases_.NET_.Features.Ofertas.Queries.ObtenerOfertaNotificaciones;
+using System.Text.Json;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class OfertasController : ControllerBase
@@ -29,12 +35,19 @@ public class OfertasController : ControllerBase
         _auditService = auditService;
     }
 
-    // API ANTIGUA
+    // Endpoint: Obtener todas las ofertas (Utilizado para reportes
+    [Authorize]
+    [HasPermission("REPORTES_VIEW")]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<OfertaResponseDto>>> GetAll(CancellationToken ct)
-        => Ok(await _mediator.Send(new GetAllOfertasQuery(), ct));
-    
+        => Ok(await _mediator.Send(new GetAllOfertasReporteQuery(), ct));
 
+
+    // Endpoint: Obtener todas las ofertas (Filtro/Paginación)
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
+    [HasPermission("export/100%-virtual")]
+    [HasPermission("HISTORICO_VIEW")]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<OfertaResponseDto>>> GetPaged(
         [FromQuery] OfertaCategory category,
@@ -68,7 +81,11 @@ public class OfertasController : ControllerBase
         return Ok(result);
     }
 
-    // Resumen de estados de las ofertas
+    // Endpoint: Total de ofertas por estado (Se utiliza en Chips)
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
+    [HasPermission("export/100%-virtual")]
+    [HasPermission("HISTORICO_VIEW")]
     [HttpGet("summary")]
     public async Task<ActionResult<OfertasSummaryDto>> GetSummary(
     [FromQuery] OfertaCategory category,
@@ -78,15 +95,25 @@ public class OfertasController : ControllerBase
         return Ok(result);
     }
 
-
+    [Authorize]
+    [HasPermission("NOTIFICACIONES_VIEW")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<OfertaResponseDto>> GetById(int id, CancellationToken ct)
-        => Ok(await _mediator.Send(new GetOfertaByIdQuery(id), ct));
+        => Ok(await _mediator.Send(new GetOfertaNotificacionesQuery(id), ct));
 
+    /// Endpoint: Ver datos de una oferta en Ficha para Modulos de Ofertas
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
+    [HasPermission("export/100%-virtual")]
+    [HasPermission("HISTORICO_VIEW")]
     [HttpGet("{id:int}/ficha")]
     public async Task<ActionResult<OfertaResponseDto>> GetFicha(int id, CancellationToken ct)
-    => Ok(await _mediator.Send(new GetOfertaByIdQuery_v2(id), ct));
+    => Ok(await _mediator.Send(new GetOfertaByIdQuery(id), ct));
 
+    // Endpoint: Crear una nueva oferta
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
+    [HasPermission("export/100%-virtual")]
     [HttpPost]
     [AuditDisabled]
     public async Task<ActionResult<int>> Create([FromBody] CreateOfertaRequest body, CancellationToken ct)
@@ -105,62 +132,43 @@ public class OfertasController : ControllerBase
             desc: "Creación de oferta"
         );
 
-        return CreatedAtAction(nameof(GetById), new { id }, id);
+        return CreatedAtAction(nameof(GetFicha), new { id }, id);
     }
 
-    [HttpPut("{id:int}")]
+    // EndPoint: Actualizar una oferta existente
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
+    [HasPermission("export/100%-virtual")]
+    [HasPermission("HISTORICO_VIEW")]
+    [HttpPut("{id:int}/editable")]
     [AuditDisabled]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateOfertaRequest body, CancellationToken ct)
+    public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest body, CancellationToken ct)
     {
-        // Obtener datos antes de actualizar
         var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
 
         await _mediator.Send(new UpdateOfertaCommand(id, body), ct);
 
-        // Serializar antes y después
         var oldJson = JsonSerializer.Serialize(oldData);
         var newJson = JsonSerializer.Serialize(body);
 
         await _auditService.LogManualAsync(
-            usuario: User?.Identity?.Name ?? "Anon",
+            usuario: User?.Identity?.Name ?? "Anonimous",
             tabla: "Ofertas",
-            accion: "Update",
+            accion: "UpdateEditable",
             registroId: id,
             oldValues: oldJson,
             newValues: newJson,
             ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-            desc: "Actualización de oferta"
+            desc: "Actualización editable de oferta"
         );
 
         return NoContent();
     }
 
-[HttpPut("{id:int}/editable")]
-[AuditDisabled]
-public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest_v2 body, CancellationToken ct)
-{
-    var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
-
-    await _mediator.Send(new UpdateOfertaCommand_v2(id, body), ct);
-
-    var oldJson = JsonSerializer.Serialize(oldData);
-    var newJson = JsonSerializer.Serialize(body);
-
-    await _auditService.LogManualAsync(
-        usuario: User?.Identity?.Name ?? "Anon",
-        tabla: "Ofertas",
-        accion: "UpdateEditable",
-        registroId: id,
-        oldValues: oldJson,
-        newValues: newJson,
-        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-        desc: "Actualización editable de oferta"
-    );
-
-    return NoContent();
-}
-
-    // Archivar ofertas
+    // EndPoint: Archivar ofertas
+    [Authorize]
+    [HasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW")]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
     [HttpPost("archivar-por-modalidad")]
     public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
     {
@@ -168,6 +176,10 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
         return Ok(result);
     }
 
+    // EndPoint: Duplicar Ofertas
+    [Authorize]
+    [HasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW")]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
     [HttpPost("duplicar")]
     public async Task<IActionResult> Duplicar([FromBody] DuplicarOfertasCommand command)
     {
@@ -175,8 +187,12 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
         return Ok(result);
     }
 
+    // EndPoint: Importar Ofertas
+    [Authorize]
+    [HasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW")]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
     [HttpPost("importar-presencial")]
-    [AuditDisabled] // Opcional: Desactiva auditoría automática fila por fila para mejorar rendimiento
+    [AuditDisabled]
     public async Task<IActionResult> ImportarPresencial([FromForm] ImportarOfertasPresencialesCommand command)
     {
         // El 'command' ya incluye el IFormFile ArchivoExcel
@@ -195,6 +211,10 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
         return Ok(response);
     }
 
+    // EndPoint: Cancelar Oferta por Id
+    [Authorize]
+    [HasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW")]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
     [HttpPost("{id:int}/cancelar")]
     public async Task<IActionResult> Cancelar(int id, CancellationToken ct)
     {
@@ -206,6 +226,9 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
         return Ok(new { ok = true });
     }
 
+    // EndPoint: Exportar Oferta Presencial/En Linea
+    [Authorize]
+    [HasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW")]
     [HttpGet("export/presencial-en_linea")]
     public async Task<IActionResult> ExportPresencialVirtual(
     [FromQuery] int periodoId,
@@ -225,6 +248,9 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
             fileName);
     }
 
+    // EndPoint: Exportar Oferta 100% Virtual
+    [Authorize]
+    [HasPermission("OFERTAS_VIRTUALES_VIEW")]
     [HttpGet("export/100%-virtual")]
     public async Task<IActionResult> ExportEnLinea([FromQuery] int periodoId, CancellationToken ct = default)
     {

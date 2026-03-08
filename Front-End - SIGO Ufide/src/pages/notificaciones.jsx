@@ -7,6 +7,7 @@ import { CatalogosNormalizados } from "@/hooks/CatalogosNormalizados";
 import { OpenFichaOferta } from "@/pages/ofertas/functions";
 import { accionChips, estadoChips } from "@/pages/ofertas/Components/EstadosAccionesChips";
 import FichaOfertaModal from "@/pages/ofertas/modals/FichaOfertaModal";
+import { apiFetch } from "@/services/apiClientService";
 
 import {
   Card,
@@ -359,7 +360,7 @@ export default function Notificaciones() {
     setError("");
     try {
       const qs = buildQueryParams();
-      const r = await fetch(NOTI_ENDPOINT.list(qs));
+      const r = await apiFetch(NOTI_ENDPOINT.list(qs));
       if (!r.ok) throw new Error(await buildApiError(r));
       const j = await r.json();
 
@@ -377,7 +378,7 @@ export default function Notificaciones() {
 
   const loadCountNoLeidas = async () => {
     try {
-      const r = await fetch(NOTI_ENDPOINT.countNoLeidas());
+      const r = await apiFetch(NOTI_ENDPOINT.countNoLeidas());
       if (!r.ok) return;
       const n = await r.json();
       setCountNoLeidas(Number(n ?? 0));
@@ -449,7 +450,7 @@ export default function Notificaciones() {
       setLoadingTipos(true);
       try {
         const tasks = missing.map((id) => async () => {
-          const r = await fetch(OFERTA_ENDPOINT.getById(id));
+          const r = await apiFetch(OFERTA_ENDPOINT.getById(id));
           if (!r.ok) return { id, modalidad: null };
           const j = await r.json();
           const modalidad = getModalidadFromOferta(j);
@@ -527,7 +528,7 @@ export default function Notificaciones() {
     setError("");
 
     try {
-      const r = await fetch(NOTI_ENDPOINT.marcarLeida(item.notificacionId), {
+      const r = await apiFetch(NOTI_ENDPOINT.marcarLeida(item.notificacionId), {
         method: "PATCH",
       });
       if (!r.ok) throw new Error(await buildApiError(r));
@@ -554,7 +555,7 @@ export default function Notificaciones() {
     try {
       // si tiene ambos permisos, usar endpoint global
       if (canBoth) {
-        const r = await fetch(NOTI_ENDPOINT.marcarTodasLeidas(), { method: "PATCH" });
+        const r = await apiFetch(NOTI_ENDPOINT.marcarTodasLeidas(), { method: "PATCH" });
         if (!r.ok) throw new Error(await buildApiError(r));
         await loadNotis();
         await loadCountNoLeidas();
@@ -564,7 +565,7 @@ export default function Notificaciones() {
       // si no tiene ambos, marcar solo visibles + permitidas
       const targets = visibleNotis.filter((n) => !n.leido && canActOnNoti(n));
       for (const n of targets) {
-        const r = await fetch(NOTI_ENDPOINT.marcarLeida(n.notificacionId), { method: "PATCH" });
+        const r = await apiFetch(NOTI_ENDPOINT.marcarLeida(n.notificacionId), { method: "PATCH" });
         if (!r.ok) throw new Error(await buildApiError(r));
       }
 

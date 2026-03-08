@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import PageTitle from "@/components/ui/Title/PageTitle";
 import { useCatalogos } from "@/hooks/useCatalogos";
 import { usePeriodos } from "@/hooks/usePeriodos";
+import { apiFetch } from "@/services/apiClientService";
 
 import {
     Card,
@@ -149,7 +150,7 @@ function FichaCoordinacion({ open, onClose, id, maps }) {
             setLoading(true);
             setErr("");
             try {
-                const r = await fetch(`/api/coordinaciones/${id}`);
+                const r = await apiFetch(`/api/coordinaciones/${id}`);
                 if (!r.ok) throw new Error(await buildApiError(r));
                 const j = await r.json();
                 if (!alive) return;
@@ -562,7 +563,7 @@ function CoordinacionForm({
 /* ===================== Modales Create/Edit ===================== */
 function AgregarCoordinacion({ open, onClose, catalogs, onSaved }) {
     const onSubmit = async (payload) => {
-        const r = await fetch("/api/coordinaciones", {
+        const r = await apiFetch("/api/coordinaciones", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -597,7 +598,7 @@ function EditarCoordinacionModal({ open, onClose, id, catalogs, onSaved }) {
             setLoading(true);
             setErr("");
             try {
-                const r = await fetch(`/api/coordinaciones/${id}`);
+                const r = await apiFetch(`/api/coordinaciones/${id}`);
                 if (!r.ok) throw new Error(await buildApiError(r));
                 const j = await r.json();
                 if (!alive) return;
@@ -613,7 +614,7 @@ function EditarCoordinacionModal({ open, onClose, id, catalogs, onSaved }) {
     }, [open, id]);
 
     const onSubmit = async (payload) => {
-        const r = await fetch(`/api/coordinaciones/${id}`, {
+        const r = await apiFetch(`/api/coordinaciones/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -695,7 +696,7 @@ export default function Coordinadores() {
         setLoading(true);
         setError("");
         try {
-            const r = await fetch("/api/coordinaciones");
+            const r = await apiFetch("/api/coordinaciones");
             if (!r.ok) throw new Error(await buildApiError(r));
             const j = await r.json();
             setRows(asArray(j));

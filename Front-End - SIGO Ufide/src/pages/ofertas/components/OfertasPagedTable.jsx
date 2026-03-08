@@ -30,6 +30,7 @@ import { useOfertasPaged, useOfertasResumen, useArchivarOfertas_v2, useDuplicarO
 
 // Importación de modales propias de ofertas
 import { ModalArchivarOfertas_v2, ModalDuplicarOfertas_v2, ModalRegistrarOfertas_v2, ModalVerOferta_v2, ModalEditarOferta_v2, ModalEnviarOfertaDocente_v2 } from "../modals";
+import { apiFetch } from "@/services/apiClientService";
 
 import {
   isHistorico
@@ -471,7 +472,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     try {
       alertService.loading("Enviando...", "Enviando oferta al docente");
 
-      const r = await fetch("/api/SolicitudesOferta", {
+      const r = await apiFetch("/api/SolicitudesOferta", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

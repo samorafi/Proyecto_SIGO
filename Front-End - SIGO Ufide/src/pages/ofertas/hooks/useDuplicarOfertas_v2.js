@@ -20,6 +20,7 @@
 */
 
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 // Importar hooks de periodos para filtrar opciones
 import { usePeriodos } from "@/hooks/usePeriodos";
@@ -127,7 +128,7 @@ export const useDuplicarOfertas_v2 = (periodos, fetchOfertas, category) => {
             };
 
             // Llamada al Endpoint
-            const res = await fetch("/api/Ofertas/duplicar", {
+            const res = await apiFetch("/api/Ofertas/duplicar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

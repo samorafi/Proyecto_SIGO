@@ -5,6 +5,7 @@ import {
 import {
   MagnifyingGlassIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon
 } from "@heroicons/react/24/outline";
+import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const URL = `${API}/api/auditoria`;
@@ -61,7 +62,7 @@ export default function BitacoraAuditoria() {
         ...(tabla !== "Todas" && { tabla }),
         ...(accion !== "Todas" && { accion }),
       });
-      const res = await fetch(`${URL}?${params.toString()}`);
+      const res = await apiFetch(`${URL}?${params.toString()}`);
       const data = await res.json();
       setRows(data.items || []);
       setTotal(data.total || 0);

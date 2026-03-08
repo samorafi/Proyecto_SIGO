@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { apiFetch } from "@/services/apiClientService";
 
 function parseErrorMessage(text) {
   if (!text) return "";
@@ -28,7 +29,7 @@ export function usePasswordReset() {
       setError("");
       setLastStatus(null);
 
-      const res = await fetch("/api/autenticacion/password-reset/request", {
+      const res = await apiFetch("/api/autenticacion/password-reset/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -59,7 +60,7 @@ export function usePasswordReset() {
       setError("");
       setLastStatus(null);
 
-      const res = await fetch("/api/autenticacion/password-reset/verify", {
+      const res = await apiFetch("/api/autenticacion/password-reset/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -90,7 +91,7 @@ export function usePasswordReset() {
       setError("");
       setLastStatus(null);
 
-      const res = await fetch("/api/autenticacion/password-reset/confirm", {
+      const res = await apiFetch("/api/autenticacion/password-reset/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

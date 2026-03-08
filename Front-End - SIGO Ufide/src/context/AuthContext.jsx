@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAlert } from "@/hooks/useAlert";
+import { apiFetch, setUnauthorizedHandler } from "@/services/apiClientService";
 
 const AuthContext = createContext();
 
@@ -15,30 +18,46 @@ function extractUserId(u) {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
-  // Permisos
   const [permisos, setPermisos] = useState(new Set());
   const [loadingPermisos, setLoadingPermisos] = useState(true);
 
+  const navigate = useNavigate();
+  const alert = useAlert();
+
+  const clearAuthState = () => {
+    setUser(null);
+    setPermisos(new Set());
+  };
+
+  const handleSessionExpired = async () => {
+    clearAuthState();
+
+    await alert.warning(
+      "Sesión caducada",
+      "Tu sesión ha expirado por inactividad. Debes iniciar sesión nuevamente."
+    );
+
+    navigate("/auth/sign-in", { replace: true });
+  };
+
   const fetchPermisos = async (u) => {
     setLoadingPermisos(true);
-    try {
-      // 1) Intento recomendado: endpoint que infiere el usuario por cookie/claims
-      let res = await fetch("/api/Roles/me/permisos", { credentials: "include" });
 
-      // 2) Fallback: endpoint por id (si el anterior no existe)
+    try {
+      let res = await apiFetch("/api/Roles/me/permisos");
+
+      // Fallback temporal mientras exista endpoint por id
       if (!res.ok) {
         const id = extractUserId(u);
+
         if (!id) {
           setPermisos(new Set());
           return;
         }
 
-        res = await fetch(`/api/Roles/usuario/${id}/permisos`, {
-          credentials: "include",
-        });
+        res = await apiFetch(`/api/Roles/usuario/${id}/permisos`);
       }
 
       if (!res.ok) {
@@ -63,30 +82,23 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     setLoading(true);
+
     try {
-      const res = await fetch("/api/Autenticacion/perfil", {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/Autenticacion/perfil");
 
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-        localStorage.setItem("user", JSON.stringify(data));
-
-        // Cargar permisos al tener usuario
-        await fetchPermisos(data);
-
-        return true;
-      } else {
-        setUser(null);
-        setPermisos(new Set());
-        localStorage.removeItem("user");
+      if (!res.ok) {
+        clearAuthState();
         return false;
       }
+
+      const data = await res.json();
+      setUser(data);
+
+      await fetchPermisos(data);
+
+      return true;
     } catch {
-      setUser(null);
-      setPermisos(new Set());
-      localStorage.removeItem("user");
+      clearAuthState();
       return false;
     } finally {
       setLoading(false);
@@ -94,14 +106,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    setUnauthorizedHandler(handleSessionExpired);
+  }, []);
+
+  useEffect(() => {
     fetchUser();
   }, []);
 
   const logout = async () => {
-    await fetch("/api/Autenticacion/logout", { credentials: "include" });
-    setUser(null);
-    setPermisos(new Set());
-    localStorage.removeItem("user");
+    try {
+      const res = await apiFetch("/api/Autenticacion/logout", {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        console.error("Error al cerrar sesión");
+      }
+    } finally {
+      clearAuthState();
+      navigate("/auth/sign-in", { replace: true });
+    }
   };
 
   const login = () => fetchUser();

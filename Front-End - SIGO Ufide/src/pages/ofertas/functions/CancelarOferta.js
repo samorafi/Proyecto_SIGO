@@ -1,4 +1,5 @@
 // /pages/ofertas/functions/CancelarOferta.js
+import { apiFetch } from "@/services/apiClientService";
 
 export async function CancelarOferta(oferta, helpers) {
     const {
@@ -48,7 +49,7 @@ export async function CancelarOferta(oferta, helpers) {
         // --------------------------
         // PUT al backend
         // --------------------------
-        const response = await fetch(`/api/ofertas/${oferta.ofertaId}`, {
+        const response = await apiFetch(`/api/ofertas/${oferta.ofertaId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SIGO.Api.Attributes;
 using SIGO.Application.Common.Exceptions;
 using SIGO.Application.Features.Coordinaciones.Commands.Create;
 using SIGO.Application.Features.Coordinaciones.Commands.Update;
@@ -9,6 +11,7 @@ using SIGO.Application.Features.Coordinaciones.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/coordinaciones")]
 public class CoordinacionesController : ControllerBase
@@ -16,12 +19,12 @@ public class CoordinacionesController : ControllerBase
     private readonly IMediator _mediator;
     public CoordinacionesController(IMediator mediator) => _mediator = mediator;
 
-    // GET api/coordinaciones
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<CoordinacionResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetCoordinacionesQuery(), ct));
 
-    // GET api/coordinaciones/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CoordinacionResponseDto>> GetById(int id, CancellationToken ct)
     {
@@ -31,7 +34,8 @@ public class CoordinacionesController : ControllerBase
             : Ok(dto);
     }
 
-    // POST api/coordinaciones
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [HttpPost]
     public async Task<ActionResult<CoordinacionResponseDto>> Create([FromBody] CreateCoordinacionRequest body, CancellationToken ct)
     {
@@ -50,7 +54,8 @@ public class CoordinacionesController : ControllerBase
         }
     }
 
-    // PUT api/coordinaciones/{id}
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CoordinacionResponseDto>> Update(int id, [FromBody] UpdateCoordinacionRequest body, CancellationToken ct)
     {

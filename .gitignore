@@ -18,9 +18,5 @@
 # --- RIDER / OTROS EDITORES ---
 .idea/
 
-# --- SEGURIDAD (Secretos - NUNCA SUBIR) ---
-.env
-**/.env
-
 # --- ARCHIVOS DE USUARIO ESPECÍFICOS ---
 *.rsuser

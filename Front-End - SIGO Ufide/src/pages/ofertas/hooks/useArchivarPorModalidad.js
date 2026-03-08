@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePeriodos } from "@/hooks/usePeriodos";
+import { apiFetch } from "@/services/apiClientService";
 
 export const useArchivarPorModalidad = (periodos, fetchOfertas) => {
 
@@ -45,7 +46,7 @@ export const useArchivarPorModalidad = (periodos, fetchOfertas) => {
                 modalidades: [Number(selectedModalidad)],
             };
 
-            const res = await fetch("/api/Ofertas/archivar-por-modalidad", {
+            const res = await apiFetch("/api/Ofertas/archivar-por-modalidad", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

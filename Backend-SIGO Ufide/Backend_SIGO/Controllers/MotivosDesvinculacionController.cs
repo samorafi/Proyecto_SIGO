@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.MotivosDesvinculacion.Queries.GetAll;
-using System.Threading.Tasks;
 
 namespace SIGO.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/motivosdesvinculacion")]
-    //[Authorize]
     public class MotivosDesvinculacionController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -18,6 +17,7 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

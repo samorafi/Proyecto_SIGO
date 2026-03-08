@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Modalidades.Dto;
 using SIGO.Application.Features.Modalidades.Queries;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/modalidades")]
 public class ModalidadesController : ControllerBase
@@ -12,12 +14,12 @@ public class ModalidadesController : ControllerBase
     private readonly IMediator _mediator;
     public ModalidadesController(IMediator mediator) => _mediator = mediator;
 
-    // GET api/modalidades
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<ModalidadResponseDto>>> GetAll(CancellationToken ct)
         => Ok(await _mediator.Send(new GetModalidadesQuery(), ct));
 
-    // GET api/modalidades/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ModalidadResponseDto>> GetById(int id, CancellationToken ct)
     {

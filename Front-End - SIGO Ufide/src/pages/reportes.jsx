@@ -3,6 +3,7 @@ import {Card,Typography,Button,Input,Select,Option,
 } from "@material-tailwind/react";
 import {PieChart,Pie,Cell,Tooltip,Legend,ResponsiveContainer,BarChart,Bar,XAxis,YAxis,CartesianGrid,
 } from "recharts";
+import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
 const API_URL = {
@@ -105,7 +106,7 @@ function getFilenameFromContentDisposition(cd) {
 }
 
 async function postAndDownload(url, payload, fallbackName = "export.bin") {
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -167,11 +168,11 @@ export default function Reportes() {
     setErr("");
     try {
       const [rPer, rOf, rCoo, rPerCat, rMot] = await Promise.all([
-        fetch(API_URL.personas),
-        fetch(API_URL.ofertas),
-        fetch(API_URL.coordinaciones),
-        fetch(API_URL.periodos),
-        fetch(API_URL.motivos),
+        apiFetch(API_URL.personas),
+        apiFetch(API_URL.ofertas),
+        apiFetch(API_URL.coordinaciones),
+        apiFetch(API_URL.periodos),
+        apiFetch(API_URL.motivos),
       ]);
 
       if (!rPer.ok) throw new Error("GET /api/personas");

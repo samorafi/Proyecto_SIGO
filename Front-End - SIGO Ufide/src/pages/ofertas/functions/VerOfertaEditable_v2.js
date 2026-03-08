@@ -10,12 +10,13 @@
   - Frontend:
             - Componente Modal: ModalEditarOferta_v2.jsx (usa esta función para cargar datos al abrir el modal)
 */
+import { apiFetch } from "@/services/apiClientService";
 
 export default async function VerOfertaEditable(id) {
   try {
 
     // Llamada al endpoint
-    const res = await fetch(`/api/ofertas/${id}/ficha`);
+    const res = await apiFetch(`/api/ofertas/${id}/ficha`);
     if (!res.ok) {
       return { ok: false, error: "No se pudo cargar la oferta para edición." };
     }

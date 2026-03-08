@@ -2,16 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Features.Ofertas.Dto;
-using System.Linq;
 
-namespace SIGO.Application.Features.Ofertas.Queries;
+namespace SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasReportes;
 
-public class GetAllOfertasQueryHandler : IRequestHandler<GetAllOfertasQuery, IReadOnlyList<OfertaResponseDto>>
+public class GetAllOfertasReporterQueryHandler : IRequestHandler<GetAllOfertasReporteQuery, IReadOnlyList<OfertaResponseDto>>
 {
     private readonly IApplicationDbContext _db;
-    public GetAllOfertasQueryHandler(IApplicationDbContext db) => _db = db;
+    public GetAllOfertasReporterQueryHandler(IApplicationDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<OfertaResponseDto>> Handle(GetAllOfertasQuery request, CancellationToken ct)
+    public async Task<IReadOnlyList<OfertaResponseDto>> Handle(GetAllOfertasReporteQuery request, CancellationToken ct)
     {
         return await _db.Ofertas
             .AsNoTracking()
