@@ -3,6 +3,7 @@ import {Card,Typography,Button,Input,Select,Option,
 } from "@material-tailwind/react";
 import {PieChart,Pie,Cell,Tooltip,Legend,ResponsiveContainer,BarChart,Bar,XAxis,YAxis,CartesianGrid,
 } from "recharts";
+import { alertService } from "@/services/alert.service";
 import { apiFetch } from "@/services/apiClientService";
 
 const API = import.meta.env.VITE_API_BASE ?? "";
@@ -163,66 +164,78 @@ export default function Reportes() {
     return periodoMap[String(nomPeriodoId)] ?? "";
   }, [nomPeriodoId, periodoMap]);
 
-  const loadData = async () => {
-    setLoading(true);
-    setErr("");
-    try {
-      const [rPer, rOf, rCoo, rPerCat, rMot] = await Promise.all([
-        apiFetch(API_URL.personas),
+  const loadData = async (showLoader = false) => {
+  setLoading(true);
+  setErr("");
+
+  try {
+    if (showLoader) {
+      alertService.loading("Actualizando...", "Cargando datos de reportes");
+    }
+
+    const [rPer, rOf, rCoo, rPerCat, rMot] = await Promise.all([
+      apiFetch(API_URL.personas),
         apiFetch(API_URL.ofertas),
         apiFetch(API_URL.coordinaciones),
         apiFetch(API_URL.periodos),
         apiFetch(API_URL.motivos),
-      ]);
+    ]);
 
-      if (!rPer.ok) throw new Error("GET /api/personas");
-      if (!rOf.ok) throw new Error("GET /api/ofertas");
-      if (!rCoo.ok) throw new Error("GET /api/coordinaciones");
-      if (!rPerCat.ok) throw new Error("GET /api/periodos");
-      if (!rMot.ok) throw new Error("GET /api/motivosdesvinculacion");
+    if (!rPer.ok) throw new Error("GET /api/personas");
+    if (!rOf.ok) throw new Error("GET /api/ofertas");
+    if (!rCoo.ok) throw new Error("GET /api/coordinaciones");
+    if (!rPerCat.ok) throw new Error("GET /api/periodos");
+    if (!rMot.ok) throw new Error("GET /api/motivosdesvinculacion");
 
-      const jPer = await rPer.json();
-      const jOf = await rOf.json();
-      const jCoo = await rCoo.json();
-      const jPerCat = await rPerCat.json();
-      const jMot = await rMot.json();
+    const jPer = await rPer.json();
+    const jOf = await rOf.json();
+    const jCoo = await rCoo.json();
+    const jPerCat = await rPerCat.json();
+    const jMot = await rMot.json();
 
-      const arrPer = Array.isArray(jPer) ? jPer : jPer.data ?? jPer.items ?? jPer.result ?? jPer.results ?? [];
-      const arrOf = Array.isArray(jOf) ? jOf : jOf.data ?? jOf.items ?? jOf.result ?? jOf.results ?? [];
-      const arrCoo = Array.isArray(jCoo) ? jCoo : jCoo.data ?? jCoo.items ?? jCoo.result ?? jCoo.results ?? [];
-      const arrPerCat = Array.isArray(jPerCat) ? jPerCat : jPerCat.data ?? jPerCat.items ?? jPerCat.result ?? jPerCat.results ?? [];
-      const arrMot = Array.isArray(jMot) ? jMot : jMot.data ?? jMot.items ?? jMot.result ?? jMot.results ?? [];
+    const arrPer = Array.isArray(jPer) ? jPer : jPer.data ?? jPer.items ?? jPer.result ?? jPer.results ?? [];
+    const arrOf = Array.isArray(jOf) ? jOf : jOf.data ?? jOf.items ?? jOf.result ?? jOf.results ?? [];
+    const arrCoo = Array.isArray(jCoo) ? jCoo : jCoo.data ?? jCoo.items ?? jCoo.result ?? jCoo.results ?? [];
+    const arrPerCat = Array.isArray(jPerCat) ? jPerCat : jPerCat.data ?? jPerCat.items ?? jPerCat.result ?? jPerCat.results ?? [];
+    const arrMot = Array.isArray(jMot) ? jMot : jMot.data ?? jMot.items ?? jMot.result ?? jMot.results ?? [];
 
-      setPersonas(Array.isArray(arrPer) ? arrPer : []);
-      setOfertas(Array.isArray(arrOf) ? arrOf : []);
-      setCoordinaciones(Array.isArray(arrCoo) ? arrCoo : []);
+    setPersonas(Array.isArray(arrPer) ? arrPer : []);
+    setOfertas(Array.isArray(arrOf) ? arrOf : []);
+    setCoordinaciones(Array.isArray(arrCoo) ? arrCoo : []);
 
-      const perList = (Array.isArray(arrPerCat) ? arrPerCat : []).map((x) => {
-        const id = String(x.periodoId ?? x.id ?? x.Id ?? x.ID);
-        const nombre = buildPeriodoLabel(x);
-        return { id, nombre, __raw: x };
-      });
-      perList.sort((a, b) => a.nombre.localeCompare(b.nombre));
-      setPeriodosCat(perList);
+    const perList = (Array.isArray(arrPerCat) ? arrPerCat : []).map((x) => {
+      const id = String(x.periodoId ?? x.id ?? x.Id ?? x.ID);
+      const nombre = buildPeriodoLabel(x);
+      return { id, nombre, __raw: x };
+    });
+    perList.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    setPeriodosCat(perList);
 
-      const pMap = {};
-      perList.forEach((p) => (pMap[String(p.id)] = p.nombre));
-      setPeriodoMap(pMap);
+    const pMap = {};
+    perList.forEach((p) => (pMap[String(p.id)] = p.nombre));
+    setPeriodoMap(pMap);
 
-      const mMap = {};
-      (Array.isArray(arrMot) ? arrMot : []).forEach((m) => {
-        const id = String(m.motivoDesvinculacionId ?? m.id ?? m.Id ?? m.ID);
-        const nombre = String(m.motivo ?? m.nombre ?? m.descripcion ?? "");
-        if (id) mMap[id] = nombre;
-      });
-      setMotivoMap(mMap);
-    } catch (e) {
-      console.error(e);
-      setErr("No se pudieron cargar los datos de reportes.");
-    } finally {
-      setLoading(false);
+    const mMap = {};
+    (Array.isArray(arrMot) ? arrMot : []).forEach((m) => {
+      const id = String(m.motivoDesvinculacionId ?? m.id ?? m.Id ?? m.ID);
+      const nombre = String(m.motivo ?? m.nombre ?? m.descripcion ?? "");
+      if (id) mMap[id] = nombre;
+    });
+    setMotivoMap(mMap);
+
+    if (showLoader) {
+      alertService.close();
+      alertService.toastSuccess("Datos actualizados correctamente");
     }
-  };
+  } catch (e) {
+    console.error(e);
+    setErr("No se pudieron cargar los datos de reportes.");
+    alertService.close();
+    alertService.error("Error", "No se pudieron cargar los datos de reportes.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadData();
@@ -502,50 +515,65 @@ export default function Reportes() {
 
   // ===== Export Nómina =====
   const handleExportExcel = async () => {
-    try {
-      await postAndDownload(API_URL.nominaExcel, buildNominaPayload(), "Nomina_Docentes.xlsx");
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo exportar Excel.");
-    }
-  };
+  try {
+    alertService.loading("Exportando...", "Generando archivo Excel");
+    await postAndDownload(API_URL.nominaExcel, buildNominaPayload(), "Nomina_Docentes.xlsx");
+    alertService.close();
+    alertService.toastSuccess("Excel exportado correctamente");
+  } catch (e) {
+    console.error(e);
+    alertService.close();
+    alertService.error("Error", "No se pudo exportar Excel.");
+  }
+};
 
   const handleExportPdf = async () => {
-    try {
-      await postAndDownload(API_URL.nominaPdf, buildNominaPayload(), "Nomina_Docentes.pdf");
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo exportar PDF.");
-    }
-  };
+  try {
+    alertService.loading("Exportando...", "Generando archivo PDF");
+    await postAndDownload(API_URL.nominaPdf, buildNominaPayload(), "Nomina_Docentes.pdf");
+    alertService.close();
+    alertService.toastSuccess("PDF exportado correctamente");
+  } catch (e) {
+    console.error(e);
+    alertService.close();
+    alertService.error("Error", "No se pudo exportar PDF.");
+  }
+};
 
   // ===== Export Permanencia +4 =====
   const handleExportPermanenciaExcel = async () => {
-    try {
-      await postAndDownload(
-        API_URL.permanenciaExcel,
-        buildPermanenciaPayload(),
-        "Docentes_Permanencia4.xlsx"
-      );
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo exportar Excel (+4 años).");
-    }
-  };
+  try {
+    alertService.loading("Exportando...", "Generando Excel de permanencia");
+    await postAndDownload(
+      API_URL.permanenciaExcel,
+      buildPermanenciaPayload(),
+      "Docentes_Permanencia4.xlsx"
+    );
+    alertService.close();
+    alertService.toastSuccess("Excel de permanencia exportado correctamente");
+  } catch (e) {
+    console.error(e);
+    alertService.close();
+    alertService.error("Error", "No se pudo exportar Excel (+4 años).");
+  }
+};
 
   const handleExportPermanenciaPdf = async () => {
-    try {
-      await postAndDownload(
-        API_URL.permanenciaPdf,
-        buildPermanenciaPayload(),
-        "Docentes_Permanencia4.pdf"
-      );
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo exportar PDF (+4 años).");
-    }
-  };
-
+  try {
+    alertService.loading("Exportando...", "Generando PDF de permanencia");
+    await postAndDownload(
+      API_URL.permanenciaPdf,
+      buildPermanenciaPayload(),
+      "Docentes_Permanencia4.pdf"
+    );
+    alertService.close();
+    alertService.toastSuccess("PDF de permanencia exportado correctamente");
+  } catch (e) {
+    console.error(e);
+    alertService.close();
+    alertService.error("Error", "No se pudo exportar PDF (+4 años).");
+  }
+};
   // ======================= RENDER =======================
   return (
     <div className="p-2 md:p-6 space-y-4">
@@ -564,7 +592,7 @@ export default function Reportes() {
           size="md"
           variant="outlined"
           className="border-[#2B338C] text-[#2B338C]"
-          onClick={loadData}
+          onClick={() => loadData(true)}
           disabled={loading}
         >
           {loading ? "Actualizando..." : "Actualizar"}
@@ -1019,7 +1047,7 @@ export default function Reportes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {nominaDisplayRows.length === 0 ? (
+                    {nominaDisplayRows.length === 0 ?  (
                       <tr>
                         <td colSpan={5} className="border border-blue-gray-200 p-2 text-center">
                           Sin registros.

@@ -1,10 +1,10 @@
-// src/pages/docentes/DocentesDialogs.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button, Input, Select, Option, Typography,
-  Dialog, DialogHeader, DialogBody, DialogFooter, Switch,
+  Dialog, DialogHeader, DialogBody, DialogFooter, Switch, Textarea
 } from "@material-tailwind/react";
-import { useNavigate } from "react-router-dom";
+import { alertService } from "@/services/alert.service";
+import AppModal from "@/components/ui/Modals/AppModal";
 import { apiFetch } from "@/services/apiClientService";
 
 /* ===================== API CONFIG ===================== */
@@ -26,6 +26,47 @@ const URL = {
   sedes: `${API}/api/sedes`,
 };
 
+/* ===================== CONSTANTES ===================== */
+const MENU_CLS =
+  "z-[2147483647] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
+const CONT_CLS = "relative z-0";
+
+const EMPTY_FORM = {
+  nombre: "",
+  primerApellido: "",
+  segundoApellido: "",
+  generoId: "",
+  cedula: "",
+  correo: "",
+  telefono: "",
+  provinciaId: "",
+  cantonId: "",
+  sedeId: "",
+  periodoIngresoId: "",
+  atestadoId: "",
+  categoriaId: "",
+  tipoContratoId: "",
+  estadoPersonaId: "",
+  rolDocenteId: "",
+  motivoDesvinculacionId: "",
+  periodoDesvinculacionId: "",
+  enLinea: false,
+  comentarios: "",
+};
+
+const EMPTY_CATALOGS = {
+  generos: [],
+  provincias: [],
+  categorias: [],
+  estados: [],
+  tiposContrato: [],
+  atestados: [],
+  roles: [],
+  sedes: [],
+  periodos: [],
+  motivos: [],
+};
+
 /* ===================== HELPERS ===================== */
 async function fetchArray(url) {
   const r = await apiFetch(url);
@@ -43,28 +84,56 @@ async function fetchArray(url) {
 
   let arr = Array.isArray(j)
     ? j
-    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+    : j.data ?? j.items ?? j.result ?? j.results ?? [];
 
   if (!Array.isArray(arr)) arr = [];
 
   return arr.map((x) => ({
     id: String(
-      x.id ?? x.Id ?? x.ID ?? x.valor ?? x.value ??
-      x.generoId ?? x.provinciaId ?? x.cantonId ?? x.categoriaId ??
-      x.estadoPersonaId ?? x.tipoContratoId ?? x.atestadoId ?? x.rolDocenteId ??
+      x.id ??
+      x.Id ??
+      x.ID ??
+      x.valor ??
+      x.value ??
+      x.generoId ??
+      x.provinciaId ??
+      x.cantonId ??
+      x.categoriaId ??
+      x.estadoPersonaId ??
+      x.tipoContratoId ??
+      x.atestadoId ??
+      x.rolDocenteId ??
       x.rolId ??
-      x.motivoDesvinculacionId ?? x.periodoDesvinculacionId ?? x.sedeId ??
+      x.motivoDesvinculacionId ??
+      x.periodoDesvinculacionId ??
+      x.sedeId ??
       x.periodoIngresoId
     ),
     nombre: String(
-      x.nombre ?? x.Nombre ?? x.descripcion ?? x.label ??
-      x.genero ?? x.provincia ?? x.canton ?? x.categoria ??
-      x.estado ?? x.tipoContrato ?? x.atestado ?? x.rol ?? x.rolDocente ??
-      x.motivo ?? x.periodo ?? x.sede
+      x.nombre ??
+      x.Nombre ??
+      x.descripcion ??
+      x.label ??
+      x.genero ??
+      x.provincia ??
+      x.canton ??
+      x.categoria ??
+      x.estado ??
+      x.tipoContrato ??
+      x.atestado ??
+      x.rol ??
+      x.rolDocente ??
+      x.motivo ??
+      x.periodo ??
+      x.sede ??
+      ""
     ),
     __raw: x,
   }));
 }
+
+const normalizeList = (arr = []) =>
+  arr.map((x) => ({ id: String(x.id), nombre: String(x.nombre) }));
 
 const findLabel = (list, id) =>
   (list || []).find((x) => String(x.id) === String(id))?.nombre ?? "";
@@ -87,7 +156,6 @@ const buildPeriodoLabel = (x) => {
   const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
   const tipo = x.tipo ?? x.Tipo ?? "";
   const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
-
   const numTipo = [numero, tipo].filter(Boolean).join("");
 
   if (numTipo && anio) return `${numTipo}, ${anio}`;
@@ -114,14 +182,14 @@ async function fetchPeriodosOrdered() {
 
   let arr = Array.isArray(j)
     ? j
-    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+    : j.data ?? j.items ?? j.result ?? j.results ?? [];
 
   if (!Array.isArray(arr)) arr = [];
 
   arr.sort((a, b) => {
     const aId = Number(a.periodoId ?? a.id ?? a.Id ?? a.ID ?? 0);
     const bId = Number(b.periodoId ?? b.id ?? b.Id ?? b.ID ?? 0);
-    return bId - aId; // descendente
+    return bId - aId;
   });
 
   return arr.map((x) => ({
@@ -131,17 +199,121 @@ async function fetchPeriodosOrdered() {
   }));
 }
 
+async function loadCatalogs() {
+  const [
+    generos,
+    provincias,
+    categorias,
+    estados,
+    tiposContrato,
+    atestados,
+    roles,
+    sedes,
+    periodos,
+    motivos,
+  ] = await Promise.all([
+    fetchArray(URL.generos),
+    fetchArray(URL.provincias),
+    fetchArray(URL.categorias),
+    fetchArray(URL.estados),
+    fetchArray(URL.tiposContrato),
+    fetchArray(URL.atestados),
+    fetchArray(URL.roles),
+    fetchArray(URL.sedes),
+    fetchPeriodosOrdered(),
+    fetchArray(URL.motivos),
+  ]);
 
-/* Z-index/menu fixes */
-const MENU_CLS =
-  "z-[2147483647] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
-const CONT_CLS = "relative z-0";
+  return {
+    generos: normalizeList(generos),
+    provincias: normalizeList(provincias),
+    categorias: normalizeList(categorias),
+    estados: normalizeList(estados),
+    tiposContrato: normalizeList(tiposContrato),
+    atestados: normalizeList(atestados),
+    roles: normalizeList(roles),
+    sedes: normalizeList(sedes),
+    periodos: normalizeList(periodos),
+    motivos: normalizeList(motivos),
+  };
+}
 
+const pickId = (obj, ...paths) => {
+  for (const p of paths) {
+    const v = p.split(".").reduce((a, k) => (a ? a[k] : undefined), obj);
+    if (v != null && v !== "") return String(v);
+  }
+  return "";
+};
+
+const byNombre = (arr, nombre) =>
+  (arr || []).find(
+    (x) => String(x.nombre).toLowerCase() === String(nombre ?? "").toLowerCase()
+  );
+
+const findIdByNombre = (arr, nombre) => byNombre(arr, nombre)?.id ?? "";
+
+const getEstadoText = (value) => {
+  if (typeof value?.estado === "boolean") return value.estado ? "Activo" : "Inactivo";
+  return value?.estadoPersona?.nombre ?? value?.estado ?? "";
+};
+
+const getPeriodoFallback = (x) =>
+  buildPeriodoLabel(x) || x?.nombre || x || "";
+
+const buildPayload = (f, id = null) => ({
+  ...(id != null ? { id: Number(id), personaId: Number(id) } : {}),
+  nombre: f.nombre,
+  primerApellido: f.primerApellido,
+  segundoApellido: f.segundoApellido,
+  generoId: Number(f.generoId),
+  cedula: f.cedula,
+  correo: f.correo,
+  telefono: f.telefono,
+  provinciaId: Number(f.provinciaId),
+  cantonId: Number(f.cantonId),
+  sedeId: f.sedeId ? Number(f.sedeId) : null,
+  periodoIngresoId: f.periodoIngresoId ? Number(f.periodoIngresoId) : null,
+  atestadoId: Number(f.atestadoId),
+  categoriaId: Number(f.categoriaId),
+  tipoContratoId: Number(f.tipoContratoId),
+  estadoPersonaId: Number(f.estadoPersonaId),
+  rolDocenteId: Number(f.rolDocenteId),
+  motivoDesvinculacionId: f.motivoDesvinculacionId
+    ? Number(f.motivoDesvinculacionId)
+    : null,
+  periodoDesvinculacionId: f.periodoDesvinculacionId
+    ? Number(f.periodoDesvinculacionId)
+    : null,
+  enLinea: !!f.enLinea,
+  comentarios: f.comentarios ?? "",
+});
+
+const validateForm = (f) => {
+  const req = [
+    f.nombre,
+    f.primerApellido,
+    f.generoId,
+    f.cedula,
+    f.correo,
+    f.telefono,
+    f.provinciaId,
+    f.cantonId,
+    f.periodoIngresoId,
+    f.atestadoId,
+    f.categoriaId,
+    f.tipoContratoId,
+    f.estadoPersonaId,
+    f.rolDocenteId,
+  ];
+  return !req.some((v) => !v);
+};
+
+/* ===================== UI HELPERS ===================== */
 const Field = ({ children }) => (
   <div className="relative z-0 focus-within:z-[500]">{children}</div>
 );
 
-/* ===================== Chips / filas ===================== */
 const Pill = ({ children, className = "" }) => (
   <span
     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white ${className}`}
@@ -157,57 +329,413 @@ const EstadoChip = ({ value }) => {
     inactivo: "bg-red-600",
     suspendido: "bg-amber-600",
   };
+
   return (
     <Pill className={map[v] || "bg-blue-gray-600"}>
-      {(v || "—").toUpperCase()}
+      {(value || "—").toString()}
     </Pill>
   );
 };
 
-function RowInfo({ label, value }) {
+function Campo({ label, value, chip = false }) {
   return (
-    <div className="text-sm">
-      <p className="text-blue-gray-500">{label}</p>
-      <div className="font-medium">{value ?? "—"}</div>
+    <div>
+      <p className="text-[#2B338C] font-bold mb-1">{label}:</p>
+      {chip ? value : <p className="text-gray-700 text-md">{value ?? "—"}</p>}
     </div>
   );
 }
 
-/* ===================== FICHA DEL DOCENTE ===================== */
+function SeccionFicha({ title, children }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md text-[15px] leading-tight">
+      <h2 className="text-[#2B338C] font-bold text-base mb-4 border-b border-gray-300 pb-2">
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function InfoPill({ label, value, icon }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-xl bg-blue-gray-50/40 p-3 border border-blue-gray-50">
+      <span className="text-[10px] font-bold text-blue-gray-400 uppercase tracking-tight">
+        {label}
+      </span>
+      <div className="flex items-center gap-2 overflow-hidden">
+        <span className="text-xs">{icon}</span>
+        <span className="text-[13px] font-bold text-blue-gray-800 truncate">
+          {value || "—"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function BloqueResumenDocente({
+  p,
+  estadoTxt,
+  categoriaTxt,
+  rolTxt,
+  sedeTxt,
+  periodoIngresoNombre,
+  subtitle,
+  showDirty = false,
+}) {
+  const nombreCompleto = [p?.nombre, p?.primerApellido, p?.segundoApellido]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white p-5 shadow-sm">
+      <div className="absolute top-0 left-0 h-1 w-full bg-[#FFDA00]" />
+
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div className="space-y-1">
+            <Typography className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-gray-400">
+              Información del docente
+            </Typography>
+            <Typography className="text-lg sm:text-xl font-black text-[#2B338C] leading-tight">
+              {nombreCompleto || "Docente"}
+            </Typography>
+            <Typography className="text-sm text-blue-gray-500">
+              {subtitle || `Cédula: ${p?.cedula || "—"}`}
+            </Typography>
+          </div>
+
+          {showDirty ? (
+            <div className="flex items-center gap-2 bg-orange-50 px-2 py-1 rounded-md">
+              <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-[11px] font-bold text-orange-800">
+                Cambios sin guardar
+              </span>
+            </div>
+          ) : (
+            <div className="shrink-0">
+              <span className="inline-flex items-center rounded-lg bg-[#2B338C]/5 px-3 py-1.5 text-xs font-bold text-[#2B338C] border border-[#2B338C]/10 uppercase">
+                {estadoTxt || "—"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <InfoPill label="Categoría" value={categoriaTxt} />
+          <InfoPill label="Rol docente" value={rolTxt} />
+          <InfoPill label="Sede" value={sedeTxt} />
+          <InfoPill label="Periodo ingreso" value={periodoIngresoNombre} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TextField({ label, value, onChange, required = false }) {
+  return (
+    <Field>
+      <Input
+        label={`${label}${required ? " *" : ""}`}
+        value={value}
+        onChange={onChange}
+        crossOrigin=""
+      />
+    </Field>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  list = [],
+  disabled = false,
+}) {
+  return (
+    <Field>
+      <Select
+        label={label}
+        value={value}
+        onChange={(v) => onChange(String(v ?? ""))}
+        selected={() => findLabel(list, value)}
+        disabled={disabled}
+        menuProps={{
+          className: MENU_CLS,
+          keepMounted: true,
+          placement: "bottom-start",
+        }}
+        containerProps={{ className: CONT_CLS }}
+      >
+        {list.map((item) => (
+          <Option key={item.id} value={item.id} className="bg-white">
+            {item.nombre}
+          </Option>
+        ))}
+      </Select>
+    </Field>
+  );
+}
+
+function TextAreaField({ label, value, onChange }) {
+  return (
+    <Field>
+      <Textarea label={label} value={value} onChange={onChange} />
+    </Field>
+  );
+}
+
+/* ===================== CAMPOS REUTILIZABLES ===================== */
+function InformacionGeneralFields({
+  f,
+  onChange,
+  cat,
+  cantonesVisibles,
+  loadingCantones,
+  onProvinciaChange,
+}) {
+  return (
+    <SeccionFicha title="Información General">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 overflow-visible relative isolate z-0 mt-2">
+        <TextField
+          label="Nombre"
+          required
+          value={f.nombre}
+          onChange={(e) => onChange("nombre", e.target.value)}
+        />
+        <TextField
+          label="Primer apellido"
+          required
+          value={f.primerApellido}
+          onChange={(e) => onChange("primerApellido", e.target.value)}
+        />
+        <TextField
+          label="Segundo apellido"
+          value={f.segundoApellido}
+          onChange={(e) => onChange("segundoApellido", e.target.value)}
+        />
+        <TextField
+          label="Cédula"
+          required
+          value={f.cedula}
+          onChange={(e) => onChange("cedula", e.target.value)}
+        />
+
+        <SelectField
+          label="Género *"
+          value={f.generoId}
+          onChange={(v) => onChange("generoId", v)}
+          list={cat.generos}
+        />
+        <TextField
+          label="Correo"
+          required
+          value={f.correo}
+          onChange={(e) => onChange("correo", e.target.value)}
+        />
+
+        <TextField
+          label="Teléfono"
+          required
+          value={f.telefono}
+          onChange={(e) => onChange("telefono", e.target.value)}
+        />
+        <SelectField
+          label="Provincia *"
+          value={f.provinciaId}
+          onChange={onProvinciaChange}
+          list={cat.provincias}
+        />
+
+        <SelectField
+          label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
+          value={f.cantonId}
+          onChange={(v) => onChange("cantonId", v)}
+          list={cantonesVisibles}
+          disabled={!f.provinciaId}
+        />
+      </div>
+    </SeccionFicha>
+  );
+}
+
+function InformacionDocenteFields({ f, onChange, cat }) {
+  return (
+    <SeccionFicha title="Información Docente">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 overflow-visible relative isolate z-0 mt-2">
+        <SelectField
+          label="Sede"
+          value={f.sedeId}
+          onChange={(v) => onChange("sedeId", v)}
+          list={cat.sedes}
+        />
+        <SelectField
+          label="Periodo de ingreso *"
+          value={f.periodoIngresoId}
+          onChange={(v) => onChange("periodoIngresoId", v)}
+          list={cat.periodos}
+        />
+        <SelectField
+          label="Atestado *"
+          value={f.atestadoId}
+          onChange={(v) => onChange("atestadoId", v)}
+          list={cat.atestados}
+        />
+        <SelectField
+          label="Categoría *"
+          value={f.categoriaId}
+          onChange={(v) => onChange("categoriaId", v)}
+          list={cat.categorias}
+        />
+        <SelectField
+          label="Rol docente *"
+          value={f.rolDocenteId}
+          onChange={(v) => onChange("rolDocenteId", v)}
+          list={cat.roles}
+        />
+        <SelectField
+          label="Tipo de contrato *"
+          value={f.tipoContratoId}
+          onChange={(v) => onChange("tipoContratoId", v)}
+          list={cat.tiposContrato}
+        />
+        <SelectField
+          label="Estado persona *"
+          value={f.estadoPersonaId}
+          onChange={(v) => onChange("estadoPersonaId", v)}
+          list={cat.estados}
+        />
+      </div>
+    </SeccionFicha>
+  );
+}
+
+function InformacionDesvinculacionFields({ f, onChange, cat }) {
+  return (
+    <SeccionFicha title="Información de Desvinculación">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 overflow-visible relative isolate z-0 mt-2">
+        <SelectField
+          label="Motivo"
+          value={f.motivoDesvinculacionId}
+          onChange={(v) => onChange("motivoDesvinculacionId", v)}
+          list={cat.motivos}
+        />
+        <SelectField
+          label="Periodo"
+          value={f.periodoDesvinculacionId}
+          onChange={(v) => onChange("periodoDesvinculacionId", v)}
+          list={cat.periodos}
+        />
+        <div className="md:col-span-2">
+          <TextAreaField
+            label="Comentario"
+            value={f.comentarios}
+            onChange={(e) => onChange("comentarios", e.target.value)}
+          />
+        </div>
+      </div>
+    </SeccionFicha>
+  );
+}
+
+/* ===================== HOOK REUTILIZABLE ===================== */
+function useDocenteCatalogs(open) {
+  const [cat, setCat] = useState(EMPTY_CATALOGS);
+  const [cantonesByProv, setCantonesByProv] = useState({});
+  const [loadingCantones, setLoadingCantones] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+
+    (async () => {
+      try {
+        const data = await loadCatalogs();
+        if (!live) return;
+        setCat(data);
+      } catch (e) {
+        console.error("catálogos:", e);
+        if (live) setCat(EMPTY_CATALOGS);
+      } finally {
+        if (live) setReady(true);
+      }
+    })();
+
+    return () => {
+      live = false;
+    };
+  }, [open]);
+
+  const loadCantones = async (provIdStr) => {
+    if (!provIdStr) return [];
+    const pid = String(provIdStr);
+
+    if (cantonesByProv[pid]) return cantonesByProv[pid];
+
+    setLoadingCantones(true);
+    try {
+      const lista = await fetchArray(URL.cantones(pid));
+      const filtered = lista.filter((c) => {
+        const raw = c.__raw ?? {};
+        const cid =
+          raw.provinciaId ??
+          raw.provincia_id ??
+          raw.ProvinciaId ??
+          raw.ProvinciaID ??
+          raw.provincia?.id ??
+          raw.provinciaIdFk ??
+          null;
+
+        return cid == null ? true : String(cid) === pid;
+      });
+
+      const final = filtered.length ? filtered : lista;
+      setCantonesByProv((prev) => ({ ...prev, [pid]: final }));
+      return final;
+    } catch (e) {
+      console.error("cantones:", e);
+      setCantonesByProv((prev) => ({ ...prev, [pid]: [] }));
+      return [];
+    } finally {
+      setLoadingCantones(false);
+    }
+  };
+
+  return { cat, ready, cantonesByProv, loadingCantones, loadCantones };
+}
+
+/* ===================== VER FICHA DOCENTE ===================== */
 function FichaDocente({ open, onClose, id }) {
   const [loading, setLoading] = useState(false);
   const [p, setP] = useState(null);
   const [error, setError] = useState("");
-
   const [periodoIngresoNombre, setPeriodoIngresoNombre] = useState("—");
   const [periodoDesvNombre, setPeriodoDesvNombre] = useState("—");
   const [motivoNombre, setMotivoNombre] = useState("—");
 
-
-  // pestañas internas
-  const [activeTab, setActiveTab] = useState("ficha"); // "ficha" | "constelacion"
-  const navigate = useNavigate();
-
-  // 1) Cargar persona
   useEffect(() => {
     let live = true;
+
     const load = async () => {
       if (!open || !id) return;
       setLoading(true);
       setError("");
       setP(null);
+
       try {
         const r = await apiFetch(URL.personaById(id));
         if (!r.ok) throw new Error("GET persona");
         const x = await r.json();
         if (!live) return;
         setP(x);
-      } catch (e) {
-        if (live) setError("No fue posible cargar la ficha.");
+      } catch {
+        if (live) { alertService.Error("Error", "No fue posible cargar la ficha."); onClose?.(); }
       } finally {
         if (live) setLoading(false);
       }
     };
+
     load();
     return () => {
       live = false;
@@ -220,46 +748,29 @@ function FichaDocente({ open, onClose, id }) {
     const loadPeriodos = async () => {
       if (!p) return;
 
-      const getNombrePeriodo = async (id, fallback) => {
-        if (!id) return fallback || "—";
+      const getNombrePeriodo = async (periodoId, fallback) => {
+        if (!periodoId) return fallback || "—";
         try {
           const r = await apiFetch(URL.periodoById(id));
           if (!r.ok) throw new Error("GET periodo");
           const j = await r.json();
-          const label = buildPeriodoLabel(j);
-          return label || fallback || "—";
+          return buildPeriodoLabel(j) || fallback || "—";
         } catch {
           return fallback || "—";
         }
       };
 
       const ingresoId =
-        p.periodoIngresoId ??
-        p.periodoIngreso?.id ??
-        p.periodoIngreso?.periodoId ??
-        null;
-
+        p.periodoIngresoId ?? p.periodoIngreso?.id ?? p.periodoIngreso?.periodoId ?? null;
       const desvId =
         p.periodoDesvinculacionId ??
         p.periodoDesvinculacion?.id ??
         p.periodoDesvinculacion?.periodoId ??
         null;
 
-      const ingresoFallback =
-        buildPeriodoLabel(p.periodoIngreso) ||
-        p.periodoIngreso?.nombre ||
-        p.periodoIngreso ||
-        "";
-
-      const desvFallback =
-        buildPeriodoLabel(p.periodoDesvinculacion) ||
-        p.periodoDesvinculacion?.nombre ||
-        p.periodoDesvinculacion ||
-        "";
-
       const [ingresoNombre, desvNombre] = await Promise.all([
-        getNombrePeriodo(ingresoId, ingresoFallback),
-        getNombrePeriodo(desvId, desvFallback),
+        getNombrePeriodo(ingresoId, getPeriodoFallback(p.periodoIngreso)),
+        getNombrePeriodo(desvId, getPeriodoFallback(p.periodoDesvinculacion)),
       ]);
 
       if (!live) return;
@@ -300,7 +811,9 @@ function FichaDocente({ open, onClose, id }) {
     };
 
     loadMotivo();
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [p]);
 
   const provincia = p?.provincia?.nombre ?? p?.provincia;
@@ -309,901 +822,113 @@ function FichaDocente({ open, onClose, id }) {
   const atestadoTxt = p?.atestado?.nombre ?? p?.atestado;
   const categoriaTxt = p?.categoria?.nombre ?? p?.categoria;
   const contratoTxt = p?.tipoContrato?.nombre ?? p?.tipoContrato;
-  const estadoTxt =
-    typeof p?.estado === "boolean"
-      ? p.estado
-        ? "Activo"
-        : "Inactivo"
-      : p?.estadoPersona?.nombre ?? p?.estado;
+  const estadoTxt = getEstadoText(p);
   const rolTxt = p?.rolDocente?.nombre ?? p?.rol ?? p?.rolDocente ?? "—";
-  const motivoTxt = p?.motivoDesvinculacion?.nombre ?? p?.motivoDesvinculacion ?? "—";
   const sedeTxt = p?.sede?.nombre ?? p?.sede ?? "—";
-  const enLineaTxt = p?.enLinea ? "Sí" : "No";
 
-  // clases para las pestañas (como el ejemplo Ofertas / Docentes)
-  const tabBase =
-    "flex-1 text-center py-2 text-sm font-semibold rounded-xl transition-colors";
-  const tabActive = "bg-[#2B338C] text-white shadow";
-  const tabInactive = "bg-white text-[#2B338C]";
+  const title = p?.nombre
+    ? `Ficha del Docente - ${[p?.nombre, p?.primerApellido, p?.segundoApellido]
+      .filter(Boolean)
+      .join(" ")}`
+    : "Ficha del Docente";
 
   return (
-    <Dialog open={open} handler={onClose} size="lg">
-      <DialogHeader className="flex flex-col gap-3 text-[#2B338C]">
-        <span>Ficha del docente</span>
-        {/* barra de pestañas */}
-        <div className="flex w-full rounded-2xl bg-blue-gray-50 p-1">
-          <button
-            type="button"
-            className={`${tabBase} ${activeTab === "ficha" ? tabActive : tabInactive
-              }`}
-            onClick={() => setActiveTab("ficha")}
-          >
-            Ficha docente
-          </button>
-          <button
-            type="button"
-            className={`${tabBase} ${activeTab === "constelacion" ? tabActive : tabInactive
-              }`}
-            onClick={() => setActiveTab("constelacion")}
-          >
-            Constelación docente
-          </button>
-        </div>
-      </DialogHeader>
-
-      <DialogBody className="space-y-4">
-        {loading && <p className="text-blue-gray-600">Cargando…</p>}
-        {error && !loading && <p className="text-red-600">{error}</p>}
-        {!loading && !error && !p && (
-          <p className="text-blue-gray-600">No hay datos.</p>
-        )}
-
-        {/* TAB 1: FICHA DOCENTE (contenido actual) */}
-        {!loading && !!p && activeTab === "ficha" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <RowInfo label="Nombre" value={p.nombre} />
-            <RowInfo label="Primer apellido" value={p.primerApellido} />
-            <RowInfo label="Segundo apellido" value={p.segundoApellido} />
-            <RowInfo label="Cédula" value={p.cedula} />
-            <RowInfo label="Género" value={generoTxt} />
-            <RowInfo label="Correo" value={p.correo} />
-            <RowInfo label="Teléfono" value={p.telefono} />
-            <RowInfo label="Provincia" value={provincia} />
-            <RowInfo label="Cantón" value={canton} />
-            <RowInfo label="Sede" value={sedeTxt} />
-            <RowInfo label="Periodo de ingreso" value={periodoIngresoNombre} />
-            <RowInfo label="Atestado" value={atestadoTxt} />
-            <RowInfo label="Categoría" value={categoriaTxt} />
-            <RowInfo label="Rol docente" value={rolTxt} />
-            <RowInfo
-              label="Estado persona"
-              value={<EstadoChip value={estadoTxt} />}
-            />
-            <RowInfo label="Tipo de contrato" value={contratoTxt} />
-            <RowInfo label="Motivo de desvinculación" value={motivoNombre} />
-            <RowInfo
-              label="Periodo de desvinculación"
-              value={periodoDesvNombre}
-            />
-            <div className="md:col-span-2">
-              <RowInfo label="Comentario" value={p.comentarios} />
-            </div>
-            {/* RowInfo label="En línea" value={enLineaTxt} */}
-          </div>
-        )}
-
-        {/* TAB 2: CONSTELACIÓN DOCENTE */}
-        {!loading && !!p && activeTab === "constelacion" && (
-          <div className="space-y-4">
-            <Typography className="text-blue-gray-700">
-              Aquí irá la información de constelación docente (asignaciones,
-              carga, etc.). Por el momento este espacio se deja reservado.
-            </Typography>
-
-
-          </div>
-        )}
-      </DialogBody>
-
-      <DialogFooter>
+    <AppModal
+      open={open}
+      onClose={onClose}
+      size="lg"
+      title={title}
+      footer={
         <Button
-          variant="text"
-          className="bg-[#FFDA00] text-[#2B338C]"
+          className="bg-[#FFDA00] text-[#2B338C] text-md font-semibold px-6 py-2 rounded-md shadow-md hover:shadow-md hover:bg-[#FFD700] transition-all"
           onClick={onClose}
         >
           Cerrar
         </Button>
-      </DialogFooter>
-    </Dialog>
+      }
+    >
+      {loading && (
+        <Typography className="text-blue-gray-600 text-center py-4">
+          Cargando información...
+        </Typography>
+      )}
+
+      {error && (
+        <Typography className="text-red-600 text-center py-4">
+          {error}
+        </Typography>
+      )}
+
+      {!loading && !error && !p && (
+        <Typography className="text-blue-gray-600 text-center py-4">
+          No hay datos.
+        </Typography>
+      )}
+
+      {!loading && !error && !!p && (
+        <div className="max-h-[70vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar">
+          <div className="flex flex-col gap-6 py-1">
+            <BloqueResumenDocente
+              p={p}
+              estadoTxt={estadoTxt}
+              categoriaTxt={categoriaTxt}
+              rolTxt={rolTxt}
+              sedeTxt={sedeTxt}
+              periodoIngresoNombre={periodoIngresoNombre}
+            />
+
+            <SeccionFicha title="Información General">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+                <Campo label="Nombre" value={p.nombre} />
+                <Campo label="Primer Apellido" value={p.primerApellido} />
+                <Campo label="Segundo Apellido" value={p.segundoApellido} />
+                <Campo label="Cédula" value={p.cedula} />
+                <Campo label="Género" value={generoTxt} />
+                <Campo label="Correo" value={p.correo} />
+                <Campo label="Teléfono" value={p.telefono} />
+                <Campo label="Provincia" value={provincia} />
+                <Campo label="Cantón" value={canton} />
+              </div>
+            </SeccionFicha>
+
+            <SeccionFicha title="Información Docente">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+                <Campo label="Sede" value={sedeTxt} />
+                <Campo label="Periodo de ingreso" value={periodoIngresoNombre} />
+                <Campo label="Atestado" value={atestadoTxt} />
+                <Campo label="Categoría" value={categoriaTxt} />
+                <Campo label="Rol docente" value={rolTxt} />
+                <Campo label="Tipo de contrato" value={contratoTxt} />
+                <Campo label="Estado" value={<EstadoChip value={estadoTxt} />} chip />
+              </div>
+            </SeccionFicha>
+
+            <SeccionFicha title="Información de Desvinculación">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-2">
+                <Campo label="Motivo" value={motivoNombre} />
+                <Campo label="Periodo" value={periodoDesvNombre} />
+                <div className="md:col-span-2">
+                  <Campo
+                    label="Comentario"
+                    value={p.comentarios || "No cuenta con comentarios."}
+                  />
+                </div>
+              </div>
+            </SeccionFicha>
+          </div>
+        </div>
+      )}
+    </AppModal>
   );
 }
 
 /* ===================== AGREGAR DOCENTE ===================== */
 function AgregarDocente({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
+  const [f, setF] = useState(EMPTY_FORM);
+  const { cat, cantonesByProv, loadingCantones, loadCantones } = useDocenteCatalogs(open);
 
-  const [f, setF] = useState({
-    nombre: "",
-    primerApellido: "",
-    segundoApellido: "",
-    generoId: "",
-    cedula: "",
-    correo: "",
-    telefono: "",
-    provinciaId: "",
-    cantonId: "",
-    sedeId: "",
-    periodoIngresoId: "",
-    atestadoId: "",
-    categoriaId: "",
-    tipoContratoId: "",
-    estadoPersonaId: "",
-    rolDocenteId: "",
-    motivoDesvinculacionId: "",
-    periodoDesvinculacionId: "",
-    enLinea: false,
-    comentarios: "",
-  });
   const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
-
-  const [cat, setCat] = useState({
-    generos: [],
-    provincias: [],
-    categorias: [],
-    estados: [],
-    tiposContrato: [],
-    atestados: [],
-    roles: [],
-    sedes: [],
-    periodos: [],
-    motivos: [],
-  });
-
-  const [cantonesByProv, setCantonesByProv] = useState({});
-  const [loadingCantones, setLoadingCantones] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    let live = true;
-    (async () => {
-      try {
-        const [
-          generos,
-          provincias,
-          categorias,
-          estados,
-          tiposContrato,
-          atestados,
-          roles,
-          sedes,
-          periodos,
-          motivos,
-        ] = await Promise.all([
-          fetchArray(URL.generos),
-          fetchArray(URL.provincias),
-          fetchArray(URL.categorias),
-          fetchArray(URL.estados),
-          fetchArray(URL.tiposContrato),
-          fetchArray(URL.atestados),
-          fetchArray(URL.roles),
-          fetchArray(URL.sedes),
-          fetchPeriodosOrdered(),
-          fetchArray(URL.motivos),
-        ]);
-        if (!live) return;
-        const norm = (a) =>
-          a.map((x) => ({ id: String(x.id), nombre: String(x.nombre) }));
-        setCat({
-          generos: norm(generos),
-          provincias: norm(provincias),
-          categorias: norm(categorias),
-          estados: norm(estados),
-          tiposContrato: norm(tiposContrato),
-          atestados: norm(atestados),
-          roles: norm(roles),
-          sedes: norm(sedes),
-          periodos: norm(periodos),
-          motivos: norm(motivos),
-        });
-      } catch (e) {
-        console.error("catálogos:", e);
-      }
-    })();
-    return () => {
-      live = false;
-    };
-  }, [open]);
-
-  const loadCantones = async (provIdStr) => {
-    if (!provIdStr) return [];
-    const pid = String(provIdStr);
-    if (cantonesByProv[pid]) return cantonesByProv[pid];
-    setLoadingCantones(true);
-    try {
-      const lista = await fetchArray(URL.cantones(pid));
-      const filtered = lista.filter((c) => {
-        const raw = c.__raw ?? {};
-        const cid =
-          raw.provinciaId ?? raw.provincia_id ?? raw.ProvinciaId ?? raw.ProvinciaID ??
-          raw.provincia?.id ?? raw.provinciaIdFk ?? null;
-        return cid == null ? true : String(cid) === pid;
-      });
-      const final = filtered.length ? filtered : lista;
-      setCantonesByProv((prev) => ({ ...prev, [pid]: final }));
-      return final;
-    } catch (e) {
-      console.error("cantones:", e);
-      setCantonesByProv((prev) => ({ ...prev, [pid]: [] }));
-      return [];
-    } finally {
-      setLoadingCantones(false);
-    }
-  };
-
-  const onProvinciaChange = (pid) => {
-    const val = String(pid ?? "");
-    onChange("provinciaId", val);
-    onChange("cantonId", "");
-    loadCantones(val);
-  };
-
-  const cantonesVisibles = cantonesByProv[String(f.provinciaId)] ?? [];
-
-  const validar = () => {
-    const req = [
-      ["nombre", f.nombre],
-      ["primerApellido", f.primerApellido],
-      ["generoId", f.generoId],
-      ["cedula", f.cedula],
-      ["correo", f.correo],
-      ["telefono", f.telefono],
-      ["provinciaId", f.provinciaId],
-      ["cantonId", f.cantonId],
-      ["periodoIngresoId", f.periodoIngresoId],
-      ["atestadoId", f.atestadoId],
-      ["categoriaId", f.categoriaId],
-      ["tipoContratoId", f.tipoContratoId],
-      ["estadoPersonaId", f.estadoPersonaId],
-      ["rolDocenteId", f.rolDocenteId],
-    ];
-    if (req.some(([_, v]) => !v)) {
-      alert("Completa los campos obligatorios.");
-      return false;
-    }
-    return true;
-  };
-
-  const submit = async () => {
-    if (!validar()) return;
-    setSaving(true);
-    try {
-      const body = {
-        nombre: f.nombre,
-        primerApellido: f.primerApellido,
-        segundoApellido: f.segundoApellido,
-        generoId: Number(f.generoId),
-        cedula: f.cedula,
-        correo: f.correo,
-        telefono: f.telefono,
-        provinciaId: Number(f.provinciaId),
-        cantonId: Number(f.cantonId),
-        sedeId: f.sedeId ? Number(f.sedeId) : null,
-        periodoIngresoId: f.periodoIngresoId ? Number(f.periodoIngresoId) : null,
-        atestadoId: Number(f.atestadoId),
-        categoriaId: Number(f.categoriaId),
-        tipoContratoId: Number(f.tipoContratoId),
-        estadoPersonaId: Number(f.estadoPersonaId),
-        rolDocenteId: Number(f.rolDocenteId),
-        motivoDesvinculacionId: f.motivoDesvinculacionId
-          ? Number(f.motivoDesvinculacionId)
-          : null,
-        periodoDesvinculacionId: f.periodoDesvinculacionId
-          ? Number(f.periodoDesvinculacionId)
-          : null,
-        enLinea: !!f.enLinea,
-        comentarios: f.comentarios ?? "",
-      };
-      const r = await apiFetch(URL.personas, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!r.ok) throw new Error("POST persona");
-
-      let newId = null;
-      try {
-        const txt = await r.text();
-        if (txt) {
-          const j = JSON.parse(txt);
-          newId =
-            j?.id ?? j?.data?.id ?? j?.result?.id ??
-            j?.personaId ?? j?.data?.personaId ?? null;
-        }
-      } catch { }
-      if (!newId) {
-        const loc = r.headers.get("Location");
-        if (loc) newId = loc.split("/").pop();
-      }
-
-      onSaved && onSaved(newId);
-      onClose && onClose();
-    } catch (e) {
-      console.error(e);
-      alert("No fue posible guardar.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!open) {
-      setF({
-        nombre: "",
-        primerApellido: "",
-        segundoApellido: "",
-        generoId: "",
-        cedula: "",
-        correo: "",
-        telefono: "",
-        provinciaId: "",
-        cantonId: "",
-        sedeId: "",
-        periodoIngresoId: "",
-        atestadoId: "",
-        categoriaId: "",
-        tipoContratoId: "",
-        estadoPersonaId: "",
-        rolDocenteId: "",
-        motivoDesvinculacionId: "",
-        periodoDesvinculacionId: "",
-        enLinea: false,
-        comentarios: "",
-      });
-    }
-  }, [open]);
-
-  return (
-    <Dialog
-      open={open}
-      handler={onClose}
-      size="lg"
-      className="z-[2147482000]"
-      overlayProps={{ className: "z-[2147481000]" }}
-      containerProps={{ className: "z-[2147481500]" }}
-    >
-      <DialogHeader className="text-[#2B338C]">Agregar docente</DialogHeader>
-
-      <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
-        {/* Nombre, apellidos */}
-        <Field>
-          <Input
-            label="Nombre *"
-            value={f.nombre}
-            onChange={(e) => onChange("nombre", e.target.value)}
-            crossOrigin=""
-          />
-        </Field>
-        <Field>
-          <Input
-            label="Primer apellido *"
-            value={f.primerApellido}
-            onChange={(e) =>
-              onChange("primerApellido", e.target.value)
-            }
-            crossOrigin=""
-          />
-        </Field>
-        <Field>
-          <Input
-            label="Segundo apellido"
-            value={f.segundoApellido}
-            onChange={(e) =>
-              onChange("segundoApellido", e.target.value)
-            }
-            crossOrigin=""
-          />
-        </Field>
-        <Field>
-          <Input
-            label="Cédula *"
-            value={f.cedula}
-            onChange={(e) => onChange("cedula", e.target.value)}
-            crossOrigin=""
-          />
-        </Field>
-
-        {/* Género, correo */}
-        <Field>
-          <Select
-            label="Género *"
-            value={f.generoId}
-            onChange={(v) => onChange("generoId", String(v ?? ""))}
-            selected={() => findLabel(cat.generos, f.generoId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.generos.map((g) => (
-              <Option key={g.id} value={g.id} className="bg-white">
-                {g.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Input
-            label="Correo *"
-            value={f.correo}
-            onChange={(e) => onChange("correo", e.target.value)}
-            crossOrigin=""
-          />
-        </Field>
-
-        {/* Teléfono, provincia */}
-        <Field>
-          <Input
-            label="Teléfono *"
-            value={f.telefono}
-            onChange={(e) => onChange("telefono", e.target.value)}
-            crossOrigin=""
-          />
-        </Field>
-        <Field>
-          <Select
-            label="Provincia *"
-            value={f.provinciaId}
-            onChange={(v) => onProvinciaChange(String(v ?? ""))}
-            selected={() => findLabel(cat.provincias, f.provinciaId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.provincias.map((p) => (
-              <Option key={p.id} value={p.id} className="bg-white">
-                {p.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Cantón, sede */}
-        <Field>
-          <Select
-            label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
-            value={f.cantonId}
-            onChange={(v) => onChange("cantonId", String(v ?? ""))}
-            selected={() => findLabel(cantonesVisibles, f.cantonId)}
-            disabled={!f.provinciaId}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cantonesVisibles.map((c) => (
-              <Option key={c.id} value={c.id} className="bg-white">
-                {c.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Select
-            label="Sede"
-            value={f.sedeId}
-            onChange={(v) => onChange("sedeId", String(v ?? ""))}
-            selected={() => findLabel(cat.sedes, f.sedeId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.sedes.map((s) => (
-              <Option key={s.id} value={s.id} className="bg-white">
-                {s.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Periodo ingreso, atestado */}
-        <Field>
-          <Select
-            label="Periodo de ingreso *"
-            value={f.periodoIngresoId}
-            onChange={(v) =>
-              onChange("periodoIngresoId", String(v ?? ""))
-            }
-            selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.periodos.map((p) => (
-              <Option key={p.id} value={p.id} className="bg-white">
-                {p.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Select
-            label="Atestado *"
-            value={f.atestadoId}
-            onChange={(v) => onChange("atestadoId", String(v ?? ""))}
-            selected={() => findLabel(cat.atestados, f.atestadoId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.atestados.map((a) => (
-              <Option key={a.id} value={a.id} className="bg-white">
-                {a.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Categoría, rol docente */}
-        <Field>
-          <Select
-            label="Categoría *"
-            value={f.categoriaId}
-            onChange={(v) => onChange("categoriaId", String(v ?? ""))}
-            selected={() => findLabel(cat.categorias, f.categoriaId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.categorias.map((c) => (
-              <Option key={c.id} value={c.id} className="bg-white">
-                {c.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Select
-            label="Rol docente *"
-            value={f.rolDocenteId}
-            onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
-            selected={() => findLabel(cat.roles, f.rolDocenteId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.roles.map((r) => (
-              <Option key={r.id} value={r.id} className="bg-white">
-                {r.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Estado persona, tipo contrato */}
-        <Field>
-          <Select
-            label="Estado persona *"
-            value={f.estadoPersonaId}
-            onChange={(v) =>
-              onChange("estadoPersonaId", String(v ?? ""))
-            }
-            selected={() => findLabel(cat.estados, f.estadoPersonaId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.estados.map((e) => (
-              <Option key={e.id} value={e.id} className="bg-white">
-                {e.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Select
-            label="Tipo de contrato *"
-            value={f.tipoContratoId}
-            onChange={(v) =>
-              onChange("tipoContratoId", String(v ?? ""))
-            }
-            selected={() => findLabel(cat.tiposContrato, f.tipoContratoId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.tiposContrato.map((t) => (
-              <Option key={t.id} value={t.id} className="bg-white">
-                {t.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Motivo y periodo de desvinculación */}
-        <Field>
-          <Select
-            label="Motivo de desvinculación"
-            value={f.motivoDesvinculacionId}
-            onChange={(v) =>
-              onChange("motivoDesvinculacionId", String(v ?? ""))
-            }
-            selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.motivos.map((m) => (
-              <Option key={m.id} value={m.id} className="bg-white">
-                {m.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-        <Field>
-          <Select
-            label="Periodo de desvinculación"
-            value={f.periodoDesvinculacionId}
-            onChange={(v) =>
-              onChange("periodoDesvinculacionId", String(v ?? ""))
-            }
-            selected={() => findLabel(cat.periodos, f.periodoDesvinculacionId)}
-            menuProps={{
-              className: MENU_CLS,
-              keepMounted: true,
-              placement: "bottom-start",
-            }}
-            containerProps={{ className: CONT_CLS }}
-          >
-            {cat.periodos.map((p) => (
-              <Option key={p.id} value={p.id} className="bg-white">
-                {p.nombre}
-              </Option>
-            ))}
-          </Select>
-        </Field>
-
-        {/* Comentario */}
-        <div className="md:col-span-2">
-          <Field>
-            <Input
-              label="Comentario"
-              value={f.comentarios}
-              onChange={(e) => onChange("comentarios", e.target.value)}
-              crossOrigin=""
-            />
-          </Field>
-        </div>
-
-        {/* En línea 
-        <div className="md:col-span-2 flex items-center gap-3">
-          <Typography className="text-blue-gray-700 font-medium">
-            ¿El docente imparte clases 100% en línea?
-          </Typography>
-          <Switch
-            checked={!!f.enLinea}
-            onChange={(e) => onChange("enLinea", !!e.target.checked)}
-            label={f.enLinea ? "Sí" : "No"}
-            ripple={false}
-          />
-        </div> */}
-      </DialogBody>
-
-      <DialogFooter className="gap-2">
-        <Button
-          variant="outlined"
-          className="border-blue-gray-300 text-blue-gray-700"
-          onClick={onClose}
-        >
-          Cancelar
-        </Button>
-        <Button
-          className="bg-[#FFDA00] text-[#2B338C]"
-          onClick={submit}
-          disabled={saving}
-        >
-          {saving ? "Guardando..." : "Guardar"}
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-/* ===================== EDITAR DOCENTE ===================== */
-function EditarDocente({ open, onClose, id, onSaved }) {
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const [f, setF] = useState({
-    nombre: "",
-    primerApellido: "",
-    segundoApellido: "",
-    generoId: "",
-    cedula: "",
-    correo: "",
-    telefono: "",
-    provinciaId: "",
-    cantonId: "",
-    sedeId: "",
-    periodoIngresoId: "",
-    atestadoId: "",
-    categoriaId: "",
-    tipoContratoId: "",
-    estadoPersonaId: "",
-    rolDocenteId: "",
-    motivoDesvinculacionId: "",
-    periodoDesvinculacionId: "",
-    enLinea: false,
-    comentarios: "",
-  });
-  const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
-
-  const [cat, setCat] = useState({
-    generos: [],
-    provincias: [],
-    categorias: [],
-    estados: [],
-    tiposContrato: [],
-    atestados: [],
-    roles: [],
-    sedes: [],
-    periodos: [],
-    motivos: [],
-  });
-
-  const [cantonesByProv, setCantonesByProv] = useState({});
-  const [loadingCantones, setLoadingCantones] = useState(false);
-  const [catsReady, setCatsReady] = useState(false);
-
-  const pickId = (obj, ...paths) => {
-    for (const p of paths) {
-      const v = p.split(".").reduce((a, k) => (a ? a[k] : undefined), obj);
-      if (v != null && v !== "") return String(v);
-    }
-    return "";
-  };
-  const byNombre = (arr, nombre) =>
-    (arr || []).find(
-      (x) =>
-        String(x.nombre).toLowerCase() ===
-        String(nombre ?? "").toLowerCase()
-    );
-  const findIdByNombre = (arr, nombre) => byNombre(arr, nombre)?.id ?? "";
-  const mapEstadoToId = (estados, x) => {
-    const idDirecto = pickId(x, "estadoPersonaId", "estadoPersona.id");
-    if (idDirecto) return String(idDirecto);
-    const boolNombre =
-      typeof x?.estado === "boolean"
-        ? x.estado
-          ? "Activo"
-          : "Inactivo"
-        : "";
-    const nombre =
-      x?.estadoPersona?.nombre ?? x?.estado ?? boolNombre ?? "";
-    return nombre ? findIdByNombre(estados, nombre) || "" : "";
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    let live = true;
-    (async () => {
-      try {
-        const [
-          generos,
-          provincias,
-          categorias,
-          estados,
-          tiposContrato,
-          atestados,
-          roles,
-          sedes,
-          periodos,
-          motivos,
-        ] = await Promise.all([
-          fetchArray(URL.generos),
-          fetchArray(URL.provincias),
-          fetchArray(URL.categorias),
-          fetchArray(URL.estados),
-          fetchArray(URL.tiposContrato),
-          fetchArray(URL.atestados),
-          fetchArray(URL.roles),
-          fetchArray(URL.sedes),
-          fetchPeriodosOrdered(),
-          fetchArray(URL.motivos),
-        ]);
-        if (!live) return;
-        const norm = (a) =>
-          a.map((x) => ({ id: String(x.id), nombre: String(x.nombre) }));
-        setCat({
-          generos: norm(generos),
-          provincias: norm(provincias),
-          categorias: norm(categorias),
-          estados: norm(estados),
-          tiposContrato: norm(tiposContrato),
-          atestados: norm(atestados),
-          roles: norm(roles),
-          sedes: norm(sedes),
-          periodos: norm(periodos),
-          motivos: norm(motivos),
-        });
-      } catch (e) {
-        console.error("catálogos (editar):", e);
-        setCat({
-          generos: [],
-          provincias: [],
-          categorias: [],
-          estados: [],
-          tiposContrato: [],
-          atestados: [],
-          roles: [],
-          sedes: [],
-          periodos: [],
-          motivos: [],
-        });
-      } finally {
-        if (live) setCatsReady(true);
-      }
-    })();
-    return () => {
-      live = false;
-    };
-  }, [open]);
-
-  const loadCantones = async (provIdStr) => {
-    if (!provIdStr) return [];
-    const pid = String(provIdStr);
-    if (cantonesByProv[pid]) return cantonesByProv[pid];
-    setLoadingCantones(true);
-    try {
-      const lista = await fetchArray(URL.cantones(pid));
-      const filtered = lista.filter((c) => {
-        const raw = c.__raw ?? {};
-        const cid =
-          raw.provinciaId ?? raw.provincia_id ?? raw.ProvinciaId ?? raw.ProvinciaID ??
-          raw.provincia?.id ?? raw.provinciaIdFk ?? null;
-        return cid == null ? true : String(cid) === pid;
-      });
-      const final = filtered.length ? filtered : lista;
-      setCantonesByProv((prev) => ({ ...prev, [pid]: final }));
-      return final;
-    } catch (e) {
-      console.error("cantones (editar):", e);
-      setCantonesByProv((prev) => ({ ...prev, [pid]: [] }));
-      return [];
-    } finally {
-      setLoadingCantones(false);
-    }
-  };
 
   const onProvinciaChange = async (pid) => {
     const val = String(pid ?? "");
@@ -1214,111 +939,217 @@ function EditarDocente({ open, onClose, id, onSaved }) {
 
   const cantonesVisibles = cantonesByProv[String(f.provinciaId)] ?? [];
 
+  const submit = async () => {
+    if (!validateForm(f)) {
+      alertService.error("Validación", "Completa los campos obligatorios.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      alertService.loading("Guardando...", "Registrando docente")
+      const r = await apiFetch(URL.personas, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload(f)),
+      });
+
+      if (!r.ok) throw new Error("POST persona");
+
+      let newId = null;
+      try {
+        const txt = await r.text();
+        if (txt) {
+          const j = JSON.parse(txt);
+          newId =
+            j?.id ??
+            j?.data?.id ??
+            j?.result?.id ??
+            j?.personaId ??
+            j?.data?.personaId ??
+            null;
+        }
+      } catch { }
+
+      if (!newId) {
+        const loc = r.headers.get("Location");
+        if (loc) newId = loc.split("/").pop();
+      }
+
+      alertService.close();
+      alertService.toastSuccess("Docente agregado correctamente.");
+
+      onSaved?.(newId);
+      onClose?.();
+    } catch (e) {
+      alertService.close();
+      alertService.error("Error", "No fue posible guardar el docente.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!open) setF(EMPTY_FORM);
+  }, [open]);
+
+  return (
+    <AppModal
+      open={open}
+      onClose={onClose}
+      size="lg"
+      title="Agregar Docente"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 w-full border-t border-blue-gray-50 pt-4">
+          <Button
+            variant="text"
+            color="blue-gray"
+            onClick={onClose}
+            disabled={saving}
+            className="w-full sm:w-auto capitalize font-bold"
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="bg-[#FFDA00] text-[#2B338C] shadow-md hover:shadow-lg active:opacity-[0.85] w-full sm:w-auto px-8 py-3 flex items-center justify-center gap-2"
+            onClick={submit}
+            disabled={saving}
+          >
+            <span className="font-bold">{saving ? "Guardando..." : "Guardar"}</span>
+          </Button>
+        </div>
+      }
+    >
+      <div className="max-h-[70vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar">
+        <div className="flex flex-col gap-6 py-1">
+          <BloqueResumenDocente
+            p={f}
+            estadoTxt=""
+            categoriaTxt={findLabel(cat.categorias, f.categoriaId)}
+            rolTxt={findLabel(cat.roles, f.rolDocenteId)}
+            sedeTxt={findLabel(cat.sedes, f.sedeId)}
+            periodoIngresoNombre={findLabel(cat.periodos, f.periodoIngresoId)}
+            subtitle="Completa la información para crear la ficha docente."
+          />
+
+          <InformacionGeneralFields
+            f={f}
+            onChange={onChange}
+            cat={cat}
+            cantonesVisibles={cantonesVisibles}
+            loadingCantones={loadingCantones}
+            onProvinciaChange={onProvinciaChange}
+          />
+
+          <InformacionDocenteFields f={f} onChange={onChange} cat={cat} />
+
+          <InformacionDesvinculacionFields f={f} onChange={onChange} cat={cat} />
+        </div>
+      </div>
+    </AppModal>
+  );
+}
+
+/* ===================== EDITAR DOCENTE ===================== */
+function EditarDocente({ open, onClose, id, onSaved }) {
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [f, setF] = useState(EMPTY_FORM);
+  const [originalData, setOriginalData] = useState(null);
+
+  const { cat, ready, cantonesByProv, loadingCantones, loadCantones } =
+    useDocenteCatalogs(open);
+
+  const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
+
+  const onProvinciaChange = async (pid) => {
+    const val = String(pid ?? "");
+    onChange("provinciaId", val);
+    onChange("cantonId", "");
+    await loadCantones(val);
+  };
+  useEffect(() => {
+    if (!open) return;
+
+    setLoading(true);
+    setOriginalData(null);
+    setF(EMPTY_FORM);
+  }, [open, id]);
+
+  const cantonesVisibles = cantonesByProv[String(f.provinciaId)] ?? [];
+
   useEffect(() => {
     let live = true;
+
     const load = async () => {
-      if (!open || !id || !catsReady) return;
+      if (!open || !id || !ready) return;
+
       setLoading(true);
       try {
         const r = await apiFetch(URL.personaById(id));
         if (!r.ok) throw new Error("GET persona");
         const x = await r.json();
+        if (!live) return;
+
+        setOriginalData(x);
 
         const generoId =
           pickId(x, "generoId", "genero.id") ||
-          findIdByNombre(
-            cat.generos,
-            x?.genero?.nombre ?? x?.genero ?? ""
-          );
+          findIdByNombre(cat.generos, x?.genero?.nombre ?? x?.genero ?? "");
 
         const provinciaId =
           pickId(x, "provinciaId", "provincia.id", "provinciaIdFk") ||
-          findIdByNombre(
-            cat.provincias,
-            x?.provincia?.nombre ?? x?.provincia ?? ""
-          );
+          findIdByNombre(cat.provincias, x?.provincia?.nombre ?? x?.provincia ?? "");
 
         const atestadoId =
           pickId(x, "atestadoId", "atestado.id") ||
-          findIdByNombre(
-            cat.atestados,
-            x?.atestado?.nombre ?? x?.atestado ?? ""
-          );
+          findIdByNombre(cat.atestados, x?.atestado?.nombre ?? x?.atestado ?? "");
 
         const categoriaId =
           pickId(x, "categoriaId", "categoria.id") ||
-          findIdByNombre(
-            cat.categorias,
-            x?.categoria?.nombre ?? x?.categoria ?? ""
-          );
+          findIdByNombre(cat.categorias, x?.categoria?.nombre ?? x?.categoria ?? "");
 
         const tipoContratoId =
           pickId(x, "tipoContratoId", "tipoContrato.id") ||
-          findIdByNombre(
-            cat.tiposContrato,
-            x?.tipoContrato?.nombre ?? x?.tipoContrato ?? ""
-          );
+          findIdByNombre(cat.tiposContrato, x?.tipoContrato?.nombre ?? x?.tipoContrato ?? "");
 
-        const estadoPersonaId = mapEstadoToId(cat.estados, x);
+        const estadoPersonaId =
+          pickId(x, "estadoPersonaId", "estadoPersona.id") ||
+          findIdByNombre(cat.estados, getEstadoText(x));
 
         const rolDocenteId =
           pickId(x, "rolDocenteId", "rolId", "rolDocente.id") ||
-          findIdByNombre(
-            cat.roles,
-            x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? ""
-          );
+          findIdByNombre(cat.roles, x?.rolDocente?.nombre ?? x?.rol ?? x?.rolDocente ?? "");
 
         const sedeId =
           pickId(x, "sedeId", "sede.id") ||
-          findIdByNombre(
-            cat.sedes,
-            x?.sede?.nombre ?? x?.sede ?? ""
-          );
-
-        const periodoIngresoLabel =
-          buildPeriodoLabel(x?.periodoIngreso) ||
-          x?.periodoIngreso?.nombre ||
-          x?.periodoIngreso ||
-          "";
+          findIdByNombre(cat.sedes, x?.sede?.nombre ?? x?.sede ?? "");
 
         const periodoIngresoId =
           pickId(x, "periodoIngresoId", "periodoIngreso.id") ||
-          findIdByNombre(cat.periodos, periodoIngresoLabel);
+          findIdByNombre(cat.periodos, getPeriodoFallback(x?.periodoIngreso));
 
         const motivoDesvinculacionId =
           pickId(x, "motivoDesvinculacionId", "motivoDesvinculacion.id") ||
           findIdByNombre(
             cat.motivos,
-            x?.motivoDesvinculacion?.nombre ||
-            x?.motivoDesvinculacion ||
-            ""
+            x?.motivoDesvinculacion?.nombre || x?.motivoDesvinculacion || ""
           );
 
-        const periodoDesvinculacionLabel =
-          buildPeriodoLabel(x?.periodoDesvinculacion) ||
-          x?.periodoDesvinculacion?.nombre ||
-          x?.periodoDesvinculacion ||
-          "";
-
         const periodoDesvinculacionId =
-          pickId(
-            x,
-            "periodoDesvinculacionId",
-            "periodoDesvinculacion.id"
-          ) || findIdByNombre(cat.periodos, periodoDesvinculacionLabel);
+          pickId(x, "periodoDesvinculacionId", "periodoDesvinculacion.id") ||
+          findIdByNombre(cat.periodos, getPeriodoFallback(x?.periodoDesvinculacion));
 
         let cantonId = "";
         if (provinciaId) {
           const cantonesList = await loadCantones(provinciaId);
           cantonId =
             pickId(x, "cantonId", "canton.id") ||
-            findIdByNombre(
-              cantonesList,
-              x?.canton?.nombre ?? x?.canton ?? ""
-            );
+            findIdByNombre(cantonesList, x?.canton?.nombre ?? x?.canton ?? "");
         }
 
         if (!live) return;
+
         setF({
           nombre: x?.nombre ?? "",
           primerApellido: x?.primerApellido ?? "",
@@ -1343,484 +1174,187 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         });
       } catch (e) {
         console.error("editar GET:", e);
-        alert("No fue posible cargar la información del docente.");
-        onClose && onClose();
+        alertService.error("Error", "No fue posible cargar la información del docente.");
+
+        onClose?.();
       } finally {
         if (live) setLoading(false);
       }
     };
+
     load();
     return () => {
       live = false;
     };
-  }, [open, id, catsReady]);
+  }, [open, id, ready]);
 
-  const validar = () => {
-    const req = [
-      ["nombre", f.nombre],
-      ["primerApellido", f.primerApellido],
-      ["generoId", f.generoId],
-      ["cedula", f.cedula],
-      ["correo", f.correo],
-      ["telefono", f.telefono],
-      ["provinciaId", f.provinciaId],
-      ["cantonId", f.cantonId],
-      ["periodoIngresoId", f.periodoIngresoId],
-      ["atestadoId", f.atestadoId],
-      ["categoriaId", f.categoriaId],
-      ["tipoContratoId", f.tipoContratoId],
-      ["estadoPersonaId", f.estadoPersonaId],
-      ["rolDocenteId", f.rolDocenteId],
-    ];
-    if (req.some(([_, v]) => !v)) {
-      alert("Completa los campos obligatorios.");
-      return false;
-    }
-    return true;
-  };
+  const hasChanges = useMemo(() => {
+    if (!originalData) return false;
+
+    const base = {
+      nombre: String(originalData?.nombre ?? ""),
+      primerApellido: String(originalData?.primerApellido ?? ""),
+      segundoApellido: String(originalData?.segundoApellido ?? ""),
+      generoId: String(
+        pickId(originalData, "generoId", "genero.id") ||
+        findIdByNombre(cat.generos, originalData?.genero?.nombre ?? originalData?.genero ?? "")
+      ),
+      cedula: String(originalData?.cedula ?? ""),
+      correo: String(originalData?.correo ?? ""),
+      telefono: String(originalData?.telefono ?? ""),
+      provinciaId: String(
+        pickId(originalData, "provinciaId", "provincia.id", "provinciaIdFk") ||
+        findIdByNombre(cat.provincias, originalData?.provincia?.nombre ?? originalData?.provincia ?? "")
+      ),
+      cantonId: String(
+        pickId(originalData, "cantonId", "canton.id") || f.cantonId || ""
+      ),
+      sedeId: String(
+        pickId(originalData, "sedeId", "sede.id") ||
+        findIdByNombre(cat.sedes, originalData?.sede?.nombre ?? originalData?.sede ?? "")
+      ),
+      periodoIngresoId: String(
+        pickId(originalData, "periodoIngresoId", "periodoIngreso.id") ||
+        findIdByNombre(cat.periodos, getPeriodoFallback(originalData?.periodoIngreso))
+      ),
+      atestadoId: String(
+        pickId(originalData, "atestadoId", "atestado.id") ||
+        findIdByNombre(cat.atestados, originalData?.atestado?.nombre ?? originalData?.atestado ?? "")
+      ),
+      categoriaId: String(
+        pickId(originalData, "categoriaId", "categoria.id") ||
+        findIdByNombre(cat.categorias, originalData?.categoria?.nombre ?? originalData?.categoria ?? "")
+      ),
+      tipoContratoId: String(
+        pickId(originalData, "tipoContratoId", "tipoContrato.id") ||
+        findIdByNombre(cat.tiposContrato, originalData?.tipoContrato?.nombre ?? originalData?.tipoContrato ?? "")
+      ),
+      estadoPersonaId: String(
+        pickId(originalData, "estadoPersonaId", "estadoPersona.id") ||
+        findIdByNombre(cat.estados, getEstadoText(originalData))
+      ),
+      rolDocenteId: String(
+        pickId(originalData, "rolDocenteId", "rolId", "rolDocente.id") ||
+        findIdByNombre(
+          cat.roles,
+          originalData?.rolDocente?.nombre ?? originalData?.rol ?? originalData?.rolDocente ?? ""
+        )
+      ),
+      motivoDesvinculacionId: String(
+        pickId(originalData, "motivoDesvinculacionId", "motivoDesvinculacion.id") ||
+        findIdByNombre(
+          cat.motivos,
+          originalData?.motivoDesvinculacion?.nombre ?? originalData?.motivoDesvinculacion ?? ""
+        )
+      ),
+      periodoDesvinculacionId: String(
+        pickId(originalData, "periodoDesvinculacionId", "periodoDesvinculacion.id") ||
+        findIdByNombre(cat.periodos, getPeriodoFallback(originalData?.periodoDesvinculacion))
+      ),
+      comentarios: String(originalData?.comentarios ?? ""),
+    };
+
+    return Object.keys(base).some((key) => String(f[key] ?? "") !== String(base[key] ?? ""));
+  }, [f, originalData, cat, pickId, findIdByNombre]);
 
   const submit = async () => {
-    if (!validar()) return;
-    setSaving(true);
+    if (!validateForm(f)) {
+      alertService.error("Validación", "Completa los campos obligatorios.");
+      return;
+    }
     try {
-      const body = {
-        id: Number(id),
-        personaId: Number(id),
-        nombre: f.nombre,
-        primerApellido: f.primerApellido,
-        segundoApellido: f.segundoApellido,
-        generoId: Number(f.generoId),
-        cedula: f.cedula,
-        correo: f.correo,
-        telefono: f.telefono,
-        provinciaId: Number(f.provinciaId),
-        cantonId: Number(f.cantonId),
-        sedeId: f.sedeId ? Number(f.sedeId) : null,
-        periodoIngresoId: f.periodoIngresoId
-          ? Number(f.periodoIngresoId)
-          : null,
-        atestadoId: Number(f.atestadoId),
-        categoriaId: Number(f.categoriaId),
-        tipoContratoId: Number(f.tipoContratoId),
-        estadoPersonaId: Number(f.estadoPersonaId),
-        rolDocenteId: Number(f.rolDocenteId),
-        motivoDesvinculacionId: f.motivoDesvinculacionId
-          ? Number(f.motivoDesvinculacionId)
-          : null,
-        periodoDesvinculacionId: f.periodoDesvinculacionId
-          ? Number(f.periodoDesvinculacionId)
-          : null,
-        enLinea: !!f.enLinea,
-        comentarios: f.comentarios ?? "",
-      };
-      const r = await apiFetch(URL.personaById(id), {
+      setSaving(true);
+      alertService.loading("Actualizando...", "Aplicando cambios.");
+
+      const r = await apifetch(URL.personaById(id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(buildPayload(f, id)),
       });
+
       if (!r.ok) throw new Error("PUT persona");
-      onSaved && onSaved(id);
-      onClose && onClose();
+
+      alertService.close();
+      alertService.toastSuccess("Docente actualizado correctamente.");
+
+      onSaved?.(id);
+      onClose?.();
     } catch (e) {
-      console.error("editar PUT:", e);
-      alert("No fue posible guardar los cambios.");
+      console.error(e);
+      alertService.close();
+      alertService.error("Error", "No fue posible guardar los cambios.");
+
     } finally {
       setSaving(false);
     }
   };
 
+  const nombreCompleto = [f.nombre, f.primerApellido, f.segundoApellido]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <Dialog
+    <AppModal
       open={open}
-      handler={onClose}
+      onClose={onClose}
       size="lg"
-      className="z-[2147482000]"
-      overlayProps={{ className: "z-[2147481000]" }}
-      containerProps={{ className: "z-[2147481500]" }}
+      title={`Editar Docente${nombreCompleto ? ` - ${nombreCompleto}` : ""}`}
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 w-full border-t border-blue-gray-50 pt-4">
+          <Button
+            variant="text"
+            color="blue-gray"
+            onClick={onClose}
+            disabled={loading || saving}
+            className="w-full sm:w-auto capitalize font-bold"
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="bg-[#FFDA00] text-[#2B338C] shadow-md hover:shadow-lg active:opacity-[0.85] w-full sm:w-auto px-8 py-3 flex items-center justify-center gap-2"
+            onClick={submit}
+            disabled={saving || loading || !hasChanges}
+          >
+            <span className="font-bold">
+              {saving ? "Guardando..." : "Guardar cambios"}
+            </span>
+          </Button>
+        </div>
+      }
     >
-      <DialogHeader className="text-[#2B338C]">Editar docente</DialogHeader>
-
-      <DialogBody className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible relative isolate z-0">
+      <div className="max-h-[70vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar">
         {loading ? (
-          <div className="md:col-span-2 text-blue-gray-600">
-            Cargando…
-          </div>
+          <div className="text-blue-gray-600 py-4">Cargando…</div>
         ) : (
-          <>
-            {/* Nombre, apellidos */}
-            <Field>
-              <Input
-                label="Nombre *"
-                value={f.nombre}
-                onChange={(e) => onChange("nombre", e.target.value)}
-                crossOrigin=""
-              />
-            </Field>
-            <Field>
-              <Input
-                label="Primer apellido *"
-                value={f.primerApellido}
-                onChange={(e) =>
-                  onChange("primerApellido", e.target.value)
-                }
-                crossOrigin=""
-              />
-            </Field>
-            <Field>
-              <Input
-                label="Segundo apellido"
-                value={f.segundoApellido}
-                onChange={(e) =>
-                  onChange("segundoApellido", e.target.value)
-                }
-                crossOrigin=""
-              />
-            </Field>
-            <Field>
-              <Input
-                label="Cédula *"
-                value={f.cedula}
-                onChange={(e) => onChange("cedula", e.target.value)}
-                crossOrigin=""
-              />
-            </Field>
+          <div className="flex flex-col gap-6 py-1">
+            <BloqueResumenDocente
+              p={f}
+              estadoTxt={findLabel(cat.estados, f.estadoPersonaId)}
+              categoriaTxt={findLabel(cat.categorias, f.categoriaId)}
+              rolTxt={findLabel(cat.roles, f.rolDocenteId)}
+              sedeTxt={findLabel(cat.sedes, f.sedeId)}
+              periodoIngresoNombre={findLabel(cat.periodos, f.periodoIngresoId)}
+              subtitle="Modifica la información del docente por secciones."
+              showDirty={hasChanges}
+            />
 
-            {/* Género, correo */}
-            <Field>
-              <Select
-                label="Género *"
-                value={f.generoId}
-                onChange={(v) => onChange("generoId", String(v ?? ""))}
-                selected={() => findLabel(cat.generos, f.generoId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.generos.map((g) => (
-                  <Option key={g.id} value={g.id} className="bg-white">
-                    {g.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Input
-                label="Correo *"
-                value={f.correo}
-                onChange={(e) => onChange("correo", e.target.value)}
-                crossOrigin=""
-              />
-            </Field>
+            <InformacionGeneralFields
+              f={f}
+              onChange={onChange}
+              cat={cat}
+              cantonesVisibles={cantonesVisibles}
+              loadingCantones={loadingCantones}
+              onProvinciaChange={onProvinciaChange}
+            />
 
-            {/* Teléfono, provincia */}
-            <Field>
-              <Input
-                label="Teléfono *"
-                value={f.telefono}
-                onChange={(e) => onChange("telefono", e.target.value)}
-                crossOrigin=""
-              />
-            </Field>
-            <Field>
-              <Select
-                label="Provincia *"
-                value={f.provinciaId}
-                onChange={(v) => onProvinciaChange(String(v ?? ""))}
-                selected={() => findLabel(cat.provincias, f.provinciaId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.provincias.map((p) => (
-                  <Option key={p.id} value={p.id} className="bg-white">
-                    {p.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
+            <InformacionDocenteFields f={f} onChange={onChange} cat={cat} />
 
-            {/* Cantón, sede */}
-            <Field>
-              <Select
-                label={loadingCantones ? "Cantón (cargando…)" : "Cantón *"}
-                value={f.cantonId}
-                onChange={(v) => onChange("cantonId", String(v ?? ""))}
-                selected={() => findLabel(cantonesVisibles, f.cantonId)}
-                disabled={!f.provinciaId}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cantonesVisibles.map((c) => (
-                  <Option key={c.id} value={c.id} className="bg-white">
-                    {c.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Select
-                label="Sede"
-                value={f.sedeId}
-                onChange={(v) => onChange("sedeId", String(v ?? ""))}
-                selected={() => findLabel(cat.sedes, f.sedeId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.sedes.map((s) => (
-                  <Option key={s.id} value={s.id} className="bg-white">
-                    {s.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-
-            {/* Periodo ingreso, atestado */}
-            <Field>
-              <Select
-                label="Periodo de ingreso *"
-                value={f.periodoIngresoId}
-                onChange={(v) =>
-                  onChange("periodoIngresoId", String(v ?? ""))
-                }
-                selected={() => findLabel(cat.periodos, f.periodoIngresoId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.periodos.map((p) => (
-                  <Option key={p.id} value={p.id} className="bg-white">
-                    {p.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Select
-                label="Atestado *"
-                value={f.atestadoId}
-                onChange={(v) => onChange("atestadoId", String(v ?? ""))}
-                selected={() => findLabel(cat.atestados, f.atestadoId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.atestados.map((a) => (
-                  <Option key={a.id} value={a.id} className="bg-white">
-                    {a.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-
-            {/* Categoría, rol docente */}
-            <Field>
-              <Select
-                label="Categoría *"
-                value={f.categoriaId}
-                onChange={(v) => onChange("categoriaId", String(v ?? ""))}
-                selected={() => findLabel(cat.categorias, f.categoriaId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.categorias.map((c) => (
-                  <Option key={c.id} value={c.id} className="bg-white">
-                    {c.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Select
-                label="Rol docente *"
-                value={f.rolDocenteId}
-                onChange={(v) => onChange("rolDocenteId", String(v ?? ""))}
-                selected={() => findLabel(cat.roles, f.rolDocenteId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.roles.map((r) => (
-                  <Option key={r.id} value={r.id} className="bg-white">
-                    {r.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-
-            {/* Estado persona, tipo contrato */}
-            <Field>
-              <Select
-                label="Estado persona *"
-                value={f.estadoPersonaId}
-                onChange={(v) =>
-                  onChange("estadoPersonaId", String(v ?? ""))
-                }
-                selected={() => findLabel(cat.estados, f.estadoPersonaId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.estados.map((e) => (
-                  <Option key={e.id} value={e.id} className="bg-white">
-                    {e.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Select
-                label="Tipo de contrato *"
-                value={f.tipoContratoId}
-                onChange={(v) =>
-                  onChange("tipoContratoId", String(v ?? ""))
-                }
-                selected={() =>
-                  findLabel(cat.tiposContrato, f.tipoContratoId)
-                }
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.tiposContrato.map((t) => (
-                  <Option key={t.id} value={t.id} className="bg-white">
-                    {t.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-
-            {/* Motivo y periodo de desvinculación */}
-            <Field>
-              <Select
-                label="Motivo de desvinculación"
-                value={f.motivoDesvinculacionId}
-                onChange={(v) =>
-                  onChange("motivoDesvinculacionId", String(v ?? ""))
-                }
-                selected={() => findLabel(cat.motivos, f.motivoDesvinculacionId)}
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.motivos.map((m) => (
-                  <Option key={m.id} value={m.id} className="bg-white">
-                    {m.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-            <Field>
-              <Select
-                label="Periodo de desvinculación"
-                value={f.periodoDesvinculacionId}
-                onChange={(v) =>
-                  onChange("periodoDesvinculacionId", String(v ?? ""))
-                }
-                selected={() =>
-                  findLabel(cat.periodos, f.periodoDesvinculacionId)
-                }
-                menuProps={{
-                  className: MENU_CLS,
-                  keepMounted: true,
-                  placement: "bottom-start",
-                }}
-                containerProps={{ className: CONT_CLS }}
-              >
-                {cat.periodos.map((p) => (
-                  <Option key={p.id} value={p.id} className="bg-white">
-                    {p.nombre}
-                  </Option>
-                ))}
-              </Select>
-            </Field>
-
-            {/* Comentario */}
-            <div className="md:col-span-2">
-              <Field>
-                <Input
-                  label="Comentario"
-                  value={f.comentarios}
-                  onChange={(e) =>
-                    onChange("comentarios", e.target.value)
-                  }
-                  crossOrigin=""
-                />
-              </Field>
-            </div>
-
-            {/* En línea 
-            <div className="md:col-span-2 flex items-center gap-3">
-              <Typography className="text-blue-gray-700 font-medium">
-                ¿El docente imparte clases 100% en línea?
-              </Typography>
-              <Switch
-                checked={!!f.enLinea}
-                onChange={(e) =>
-                  onChange("enLinea", !!e.target.checked)
-                }
-                label={f.enLinea ? "Sí" : "No"}
-                ripple={false}
-              />
-            </div>*/}
-          </>
+            <InformacionDesvinculacionFields f={f} onChange={onChange} cat={cat} />
+          </div>
         )}
-      </DialogBody>
-
-      <DialogFooter className="gap-2">
-        <Button
-          variant="outlined"
-          className="border-blue-gray-300 text-blue-gray-700"
-          onClick={onClose}
-        >
-          Cancelar
-        </Button>
-        <Button
-          className="bg-[#FFDA00] text-[#2B338C]"
-          onClick={submit}
-          disabled={saving || loading}
-        >
-          {saving ? "Guardando..." : "Guardar cambios"}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+      </div>
+    </AppModal>
   );
 }
 
-/* exports */
 export { FichaDocente, AgregarDocente, EditarDocente };

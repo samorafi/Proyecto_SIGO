@@ -1,14 +1,16 @@
 // src/pages/docentes/DocentesPage.jsx
 import { useEffect, useMemo, useState } from "react";
 import {
-  Card, Button, Input, Select, Option, Typography, Tooltip,
+  Card, Button, Input, Select, Option, Typography, Tooltip, Textarea
 } from "@material-tailwind/react";
 import {
   MagnifyingGlassIcon, EyeIcon, PencilSquareIcon,
-  ChevronLeftIcon, ChevronRightIcon, PlusIcon,
+  ChevronLeftIcon, ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 
 import { FormButton } from "@/components/ui/Buttons";
+import { apiFetch } from "@/services/apiClientService";
+
 
 
 import {
@@ -37,7 +39,7 @@ const URL = {
 
 /* ===================== HELPERS ===================== */
 async function fetchArray(url) {
-  const r = await fetch(url);
+  const r = await apiFetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
   const txt = await r.text();
   if (!txt) return [];
@@ -98,7 +100,7 @@ const buildPeriodoLabel = (x) => {
 
 async function fetchPeriodosOrdered() {
   const url = URL.periodos;
-  const r = await fetch(url);
+  const r = await apiFetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
   const txt = await r.text();
   if (!txt) return [];
@@ -217,7 +219,7 @@ function Docentes() {
   const loadRows = async () => {
     setLoading(true); setError("");
     try {
-      const r = await fetch(URL.personas);
+      const r = await apiFetch(URL.personas);
       if (!r.ok) throw new Error("GET personas");
       const json = await r.json();
       const arr = Array.isArray(json)
