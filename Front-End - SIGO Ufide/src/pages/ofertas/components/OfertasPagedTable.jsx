@@ -995,15 +995,21 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
                       <th key={h.id} className="p-3 align-top">
                         <div className="flex items-center justify-between">
                           <div
-                            onClick={() => {
+                            onClick={(e) => {
                               const sorted = h.column.getIsSorted();
+                              const isMulti = e.shiftKey;
 
                               if (!sorted) {
-                                h.column.toggleSorting(false); // asc (A-Z)
+                                h.column.toggleSorting(false, isMulti); // asc
                               } else if (sorted === "asc") {
-                                h.column.toggleSorting(true); // desc (Z-A)
+                                h.column.toggleSorting(true, isMulti); // desc
                               } else {
-                                setSorting([]); // reset
+                                if (isMulti) {
+                                  setSorting(prev => prev.filter(s => s.id !== h.column.id));
+                                } else {
+                                  // reset total
+                                  setSorting([]);
+                                }
                               }
                             }}
                             className="cursor-pointer select-none flex items-center gap-1 hover:text-blue-600 transition"
@@ -1015,6 +1021,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
                             {/* Iconos */}
                             {(() => {
                               const sorted = h.column.getIsSorted();
+                              const sortIndex = sorting.findIndex(s => s.id === h.column.id);
 
                               if (!sorted) {
                                 return (
@@ -1024,13 +1031,23 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
                               if (sorted === "asc") {
                                 return (
-                                  <ChevronUpIcon className="h-3 w-3 text-blue-600" />
+                                  <div className="flex items-center gap-1">
+                                    <ChevronUpIcon className="h-3 w-3 text-blue-600" />
+                                    {sorting.length > 1 && (
+                                      <span className="text-[10px] text-blue-600">{sortIndex + 1}</span>
+                                    )}
+                                  </div>
                                 );
                               }
 
                               if (sorted === "desc") {
                                 return (
-                                  <ChevronDownIcon className="h-3 w-3 text-blue-600" />
+                                  <div className="flex items-center gap-1">
+                                    <ChevronDownIcon className="h-3 w-3 text-blue-600" />
+                                    {sorting.length > 1 && (
+                                      <span className="text-[10px] text-blue-600">{sortIndex + 1}</span>
+                                    )}
+                                  </div>
                                 );
                               }
 
