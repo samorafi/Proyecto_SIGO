@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card, Typography, Select, Option, Button, Tooltip, Input } from "@material-tailwind/react";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table";
+import { ArrowPathIcon, ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender, getSortedRowModel } from "@tanstack/react-table";
 
 // Componente: UI
 import PageTitle from "@/components/ui/Title/PageTitle";
@@ -408,6 +408,9 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
   const [openEditar, setOpenEditar] = useState(false);
   const [ofertaIdEditar, setOfertaIdEditar] = useState(null);
 
+  // Filtros de columnas
+  const [columnFilters, setColumnFilters] = useState([]);
+
   // Al hacer click en editar, se abre el modal y se pasa el ID de la oferta a editar
   const handleEditar = (id) => {
     setOfertaIdEditar(id);
@@ -507,30 +510,43 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     },
   });
 
+  const [sorting, setSorting] = useState([]);
+
+  const multiSelectFilter = (row, columnId, filterValues) => {
+    if (!filterValues || filterValues.length === 0) return true;
+
+    const value = row.getValue(columnId);
+    return filterValues.includes(value);
+  };
+
   // Validación de categoría (para evitar errores en caso de que se use el componente sin pasar una categoría o con una categoría inválida)
   const catHistorico = isHistorico(category);
 
   // Columnas de la tabla (Memorizadas para no recrearlas en cada render)
   const columns = useMemo(() => [
-    { accessorKey: "sede", header: "Sede" },
-    { accessorKey: "cursoid", header: "Código Curso" },
-    { accessorKey: "curso", header: "Nombre Curso" },
-    { accessorKey: "grupo", header: "Grupo" },
-    { accessorKey: "horarioDia", header: "Día" },
-    { accessorKey: "horarioHora", header: "Horario" },
-    { accessorKey: "periodo", header: "Periodo" },
-    { accessorKey: "coordinador", header: "Coordinador" },
-    { accessorKey: "modalidad", header: "Modalidad" },
+    { accessorKey: "sede", header: "Sede", filterFn: multiSelectFilter },
+    { accessorKey: "cursoid", header: "Código Curso", filterFn: multiSelectFilter },
+    { accessorKey: "curso", header: "Nombre Curso", filterFn: multiSelectFilter },
+    { accessorKey: "grupo", header: "Grupo", filterFn: multiSelectFilter },
+    { accessorKey: "horarioDia", header: "Día", filterFn: multiSelectFilter },
+    { accessorKey: "horarioHora", header: "Horario", filterFn: multiSelectFilter },
+    { accessorKey: "periodo", header: "Periodo", filterFn: multiSelectFilter },
+    { accessorKey: "coordinador", header: "Coordinador", filterFn: multiSelectFilter },
+    { accessorKey: "modalidad", header: "Modalidad", filterFn: multiSelectFilter },
+
     {
       accessorKey: "accion",
       header: "Acciones",
+      filterFn: multiSelectFilter,
       cell: ({ getValue }) => accionChips(getValue()),
     },
     {
       accessorKey: "estado",
       header: "Estado Oferta",
+      filterFn: multiSelectFilter,
       cell: ({ getValue }) => estadoChips(getValue()),
     },
+
     {
       id: "opciones",
       header: "Opciones",
@@ -577,17 +593,34 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
         );
       },
     }
-    ,
   ], []);
 
   // Configuración de la tabla con React Table
   const table = useReactTable({
     data: items,
     columns,
+
+    state: {
+      columnFilters,
+      sorting,
+    },
+
+    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+
     manualPagination: true,
-    pageCount: totalPages,
   });
+
+  const getUniqueValues = (data, key) => {
+    return [...new Set(data.map(item => item[key]).filter(Boolean))];
+  };
+
+  const [columnFilterValues, setColumnFilterValues] = useState({});
+  const [columnSearch, setColumnSearch] = useState({});
 
   return (
     <>
@@ -823,6 +856,10 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
                   accionId: "",
                   estadoOfertaId: "",
                 });
+                setColumnFilters([]);
+                setColumnFilterValues({});
+                setColumnSearch({});
+
                 setPage(1);
                 refresh();
               }}
@@ -853,7 +890,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
       <ResumenEstadosChips data={summary} />
 
       {/* Tabla */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-visible">
 
         {/* Modo: Mobile */}
         <div className="md:hidden p-3 space-y-3">
@@ -948,13 +985,156 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
             <thead className="bg-blue-gray-50 text-blue-gray-700">
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id}>
-                  {hg.headers.map((h) => (
-                    <th key={h.id} className="p-3">
-                      <Typography variant="small" className="font-bold">
-                        {flexRender(h.column.columnDef.header, h.getContext())}
-                      </Typography>
-                    </th>
-                  ))}
+                  {hg.headers.map((h) => {
+                    const columnId = h.column.id;
+                    const accessor = h.column.columnDef.accessorKey;
+                    const uniqueValues = accessor ? getUniqueValues(items, accessor) : [];
+                    const selectedValues = columnFilterValues[columnId] || [];
+
+                    return (
+                      <th key={h.id} className="p-3 align-top">
+                        <div className="flex items-center justify-between">
+                          <div
+                            onClick={() => {
+                              const sorted = h.column.getIsSorted();
+
+                              if (!sorted) {
+                                h.column.toggleSorting(false); // asc (A-Z)
+                              } else if (sorted === "asc") {
+                                h.column.toggleSorting(true); // desc (Z-A)
+                              } else {
+                                setSorting([]); // reset
+                              }
+                            }}
+                            className="cursor-pointer select-none flex items-center gap-1 hover:text-blue-600 transition"
+                          >
+                            <Typography variant="small" className="font-bold">
+                              {flexRender(h.column.columnDef.header, h.getContext())}
+                            </Typography>
+
+                            {/* Iconos */}
+                            {(() => {
+                              const sorted = h.column.getIsSorted();
+
+                              if (!sorted) {
+                                return (
+                                  <ChevronUpDownIcon className="h-3 w-3 text-gray-400" />
+                                );
+                              }
+
+                              if (sorted === "asc") {
+                                return (
+                                  <ChevronUpIcon className="h-3 w-3 text-blue-600" />
+                                );
+                              }
+
+                              if (sorted === "desc") {
+                                return (
+                                  <ChevronDownIcon className="h-3 w-3 text-blue-600" />
+                                );
+                              }
+
+                              return null;
+                            })()}
+                          </div>
+
+                          {/* 🔽 Botón dropdown */}
+                          {h.column.columnDef.enableColumnFilter !== false &&
+                            h.column.id !== "opciones" && (
+                              <div className="relative group">
+                                <button className="text-xs px-1">🔽</button>
+
+                                <div className="absolute left-0 z-50 hidden group-hover:block bg-white border rounded shadow-lg p-2 w-52">
+
+                                  {/* 🔎 BUSCADOR */}
+                                  <input
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    value={columnSearch[columnId] || ""}
+                                    onChange={(e) =>
+                                      setColumnSearch(prev => ({
+                                        ...prev,
+                                        [columnId]: e.target.value,
+                                      }))
+                                    }
+                                    className="w-full mb-2 border rounded px-2 py-1 text-xs"
+                                  />
+
+                                  <div className="max-h-48 overflow-auto">
+
+                                    {/* FILTRAR VALORES */}
+                                    {(() => {
+                                      const accessor = h.column.columnDef.accessorKey;
+                                      let uniqueValues = accessor ? getUniqueValues(items, accessor) : [];
+
+                                      const search = (columnSearch[columnId] || "").toLowerCase();
+
+                                      if (search) {
+                                        uniqueValues = uniqueValues.filter(v =>
+                                          String(v).toLowerCase().includes(search)
+                                        );
+                                      }
+
+                                      const selectedValues = columnFilterValues[columnId] || [];
+
+                                      return (
+                                        <>
+                                          {/* Seleccionar todo */}
+                                          <label className="flex items-center gap-2 text-xs mb-1">
+                                            <input
+                                              type="checkbox"
+                                              checked={selectedValues.length === uniqueValues.length && uniqueValues.length > 0}
+                                              onChange={(e) => {
+                                                const newValues = e.target.checked ? uniqueValues : [];
+
+                                                setColumnFilterValues(prev => ({
+                                                  ...prev,
+                                                  [columnId]: newValues,
+                                                }));
+
+                                                h.column.setFilterValue(newValues);
+                                              }}
+                                            />
+                                            (Todos)
+                                          </label>
+
+                                          {/* Valores */}
+                                          {uniqueValues.map((val) => (
+                                            <label key={val} className="flex items-center gap-2 text-xs">
+                                              <input
+                                                type="checkbox"
+                                                checked={selectedValues.includes(val)}
+                                                onChange={(e) => {
+                                                  let newValues;
+
+                                                  if (e.target.checked) {
+                                                    newValues = [...selectedValues, val];
+                                                  } else {
+                                                    newValues = selectedValues.filter(v => v !== val);
+                                                  }
+
+                                                  setColumnFilterValues(prev => ({
+                                                    ...prev,
+                                                    [columnId]: newValues,
+                                                  }));
+
+                                                  h.column.setFilterValue(newValues);
+                                                }}
+                                              />
+                                              {val}
+                                            </label>
+                                          ))}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
