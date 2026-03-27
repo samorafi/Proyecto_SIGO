@@ -15,9 +15,7 @@ using SIGO.Application.Features.Roles.Queries.GetUsuariosAsignadosARol;
 
 namespace SIGO.Api.Controllers
 {
-    [Authorize]
     [ApiController]
-    [HasPermission("ADMIN_VIEW")]
     [Route("api/[controller]")]
     public class RolesController : ControllerBase
     {
@@ -81,7 +79,6 @@ namespace SIGO.Api.Controllers
         }
 
         [Authorize]
-        [HasPermission("ADMIN_VIEW")]
         [HttpGet("usuario/{id}/permisos")]
         public async Task<IActionResult> GetRolesPermisos(int id)
         {

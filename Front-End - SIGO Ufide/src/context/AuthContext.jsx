@@ -46,19 +46,14 @@ export const AuthProvider = ({ children }) => {
     setLoadingPermisos(true);
 
     try {
-      let res = await apiFetch("/api/Roles/me/permisos");
+      const id = extractUserId(u);
 
-      // Fallback temporal mientras exista endpoint por id
-      if (!res.ok) {
-        const id = extractUserId(u);
-
-        if (!id) {
-          setPermisos(new Set());
-          return;
-        }
-
-        res = await apiFetch(`/api/Roles/usuario/${id}/permisos`);
+      if (!id) {
+        setPermisos(new Set());
+        return;
       }
+
+      const res = await apiFetch(`/api/Roles/usuario/${id}/permisos`);
 
       if (!res.ok) {
         setPermisos(new Set());
