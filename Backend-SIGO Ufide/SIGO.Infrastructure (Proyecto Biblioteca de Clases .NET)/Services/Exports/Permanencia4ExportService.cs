@@ -20,24 +20,21 @@ namespace SIGO.Infrastructure.Services.Exports
 
             // Título
             ws.Cell(1, 1).Value = "DOCENTES CON MÁS DE 4 AÑOS DE PERMANENCIA";
-            ws.Range(1, 1, 1, 4).Merge();
-            ws.Range(1, 1, 1, 4).Style.Font.Bold = true;
-            ws.Range(1, 1, 1, 4).Style.Font.FontSize = 14;
-            ws.Range(1, 1, 1, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Range(1, 1, 1, 3).Merge();
+            ws.Range(1, 1, 1, 3).Style.Font.Bold = true;
+            ws.Range(1, 1, 1, 3).Style.Font.FontSize = 14;
+            ws.Range(1, 1, 1, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            // Total registros
             ws.Cell(2, 1).Value = $"Total registros: {meta.TotalRegistros}";
-            ws.Range(2, 1, 2, 4).Merge();
-            ws.Range(2, 1, 2, 4).Style.Font.Bold = true;
+            ws.Range(2, 1, 2, 3).Merge();
+            ws.Range(2, 1, 2, 3).Style.Font.Bold = true;
 
-            // Header tabla
             var headerRow = 4;
             ws.Cell(headerRow, 1).Value = "Nombre del docente";
             ws.Cell(headerRow, 2).Value = "Periodo de ingreso";
-            ws.Cell(headerRow, 3).Value = "Periodo de desvinculación";
-            ws.Cell(headerRow, 4).Value = "Años de permanencia";
+            ws.Cell(headerRow, 3).Value = "Años de permanencia";
 
-            var header = ws.Range(headerRow, 1, headerRow, 4);
+            var header = ws.Range(headerRow, 1, headerRow, 3);
             header.Style.Fill.BackgroundColor = XLColor.FromHtml(Azul);
             header.Style.Font.FontColor = XLColor.White;
             header.Style.Font.Bold = true;
@@ -51,11 +48,10 @@ namespace SIGO.Infrastructure.Services.Exports
             {
                 ws.Cell(r, 1).Value = row.NombreCompleto;
                 ws.Cell(r, 2).Value = row.PeriodoIngreso;
-                ws.Cell(r, 3).Value = string.IsNullOrWhiteSpace(row.PeriodoDesvinculacion) ? "—" : row.PeriodoDesvinculacion;
-                ws.Cell(r, 4).Value = row.AniosPermanencia;
+                ws.Cell(r, 3).Value = row.AniosPermanencia;
 
-                ws.Range(r, 1, r, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                ws.Range(r, 1, r, 4).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                ws.Range(r, 1, r, 3).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                ws.Range(r, 1, r, 3).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                 r++;
             }
@@ -114,17 +110,15 @@ namespace SIGO.Infrastructure.Services.Exports
                         {
                             table.ColumnsDefinition(c =>
                             {
-                                c.RelativeColumn(4);     // Nombre
-                                c.RelativeColumn(2);     // Ingreso
-                                c.RelativeColumn(2.5f);  // Desv
-                                c.RelativeColumn(1.5f);  // Años
+                                c.RelativeColumn(5);   // Nombre
+                                c.RelativeColumn(2.5f); // Ingreso
+                                c.RelativeColumn(1.5f); // Años
                             });
 
                             table.Header(h =>
                             {
                                 h.Cell().Element(HeadCell).Text("Nombre del docente");
                                 h.Cell().Element(HeadCell).AlignCenter().Text("Periodo de\n ingreso");
-                                h.Cell().Element(HeadCell).AlignCenter().Text("Periodo de\n desvinculación");
                                 h.Cell().Element(HeadCell).AlignCenter().Text("Años de\n permanencia");
                             });
 
@@ -135,15 +129,11 @@ namespace SIGO.Infrastructure.Services.Exports
                                 var alt = (i % 2 == 1);
 
                                 table.Cell().Element(x => BodyCell(x, alt))
-                                    .Text(r.NombreCompleto ?? "");
+     .Text(r.NombreCompleto ?? "");
 
                                 table.Cell().Element(x => BodyCell(x, alt))
                                     .AlignCenter()
                                     .Text(string.IsNullOrWhiteSpace(r.PeriodoIngreso) ? "—" : r.PeriodoIngreso);
-
-                                table.Cell().Element(x => BodyCell(x, alt))
-                                    .AlignCenter()
-                                    .Text(string.IsNullOrWhiteSpace(r.PeriodoDesvinculacion) ? "—" : r.PeriodoDesvinculacion);
 
                                 table.Cell().Element(x => BodyCell(x, alt))
                                     .AlignCenter()

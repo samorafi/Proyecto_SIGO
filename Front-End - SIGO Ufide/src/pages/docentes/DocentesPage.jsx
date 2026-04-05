@@ -102,24 +102,41 @@ async function fetchPeriodosOrdered() {
   const url = URL.periodos;
   const r = await apiFetch(url);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+
   const txt = await r.text();
   if (!txt) return [];
-  let j; try { j = JSON.parse(txt); } catch { return []; }
+
+  let j;
+  try {
+    j = JSON.parse(txt);
+  } catch {
+    return [];
+  }
 
   let arr = Array.isArray(j)
     ? j
-    : (j.data ?? j.items ?? j.result ?? j.results ?? []);
+    : j.data ?? j.items ?? j.result ?? j.results ?? [];
 
   if (!Array.isArray(arr)) arr = [];
 
-
   arr.sort((a, b) => {
+    const aAnio = Number(a.anio ?? a.Anio ?? a.anioAcademico ?? a.year ?? 0);
+    const bAnio = Number(b.anio ?? b.Anio ?? b.anioAcademico ?? b.year ?? 0);
+
+    if (bAnio !== aAnio) return bAnio - aAnio;
+
+    const aNumero = Number(a.numero ?? a.Numero ?? a.num ?? a.Num ?? 0);
+    const bNumero = Number(b.numero ?? b.Numero ?? b.num ?? b.Num ?? 0);
+
+    if (bNumero !== aNumero) return bNumero - aNumero;
+
     const aId = Number(a.periodoId ?? a.id ?? a.Id ?? a.ID ?? 0);
     const bId = Number(b.periodoId ?? b.id ?? b.Id ?? b.ID ?? 0);
+
     return bId - aId;
   });
 
-  return arr.map(x => ({
+  return arr.map((x) => ({
     id: String(x.periodoId ?? x.id ?? x.Id ?? x.ID),
     nombre: buildPeriodoLabel(x),
     __raw: x,
@@ -235,7 +252,7 @@ function Docentes() {
         ? periodoMap
         : Object.fromEntries((cats?.periodos ?? []).map(p => [String(p.id), p.nombre]));
 
-      let mapped = safe.map(x => {
+            let mapped = safe.map(x => {
         const provinciaId = x.provinciaId ?? x?.provincia?.id ?? null;
         const provinciaNombre =
           x.provinciaNombre ?? x?.provincia?.nombre ?? x.provincia ??
@@ -272,7 +289,6 @@ function Docentes() {
           x?.periodoIngreso ??
           (periodoIngresoId != null ? perById[String(periodoIngresoId)] ?? "" : "");
 
-
         return {
           id: x.id ?? x.personaId,
           nombre: x.nombre ?? x.nombreCompleto,
@@ -290,12 +306,14 @@ function Docentes() {
         };
       });
 
+      mapped.sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0));
+
       if (lastTouchedId != null) {
         const lid = String(lastTouchedId);
         mapped.sort((a, b) => {
           if (String(a.id) === lid) return -1;
           if (String(b.id) === lid) return 1;
-          return 0;
+          return Number(b.id ?? 0) - Number(a.id ?? 0);
         });
       }
 
@@ -636,7 +654,7 @@ function Docentes() {
       <AgregarDocente
         open={openAdd}
         onClose={() => setOpenAdd(false)}
-        onSaved={(newId) => { setLastTouchedId(newId ?? null); loadRows(); }}
+        onSaved={(newId) => {setLastTouchedId(newId ?? null);setPage(1);loadRows();}}
       />
       <FichaDocente
         open={openFicha}
@@ -647,7 +665,7 @@ function Docentes() {
         open={openEdit}
         onClose={() => setOpenEdit(false)}
         id={editId}
-        onSaved={(savedId) => { setLastTouchedId(savedId ?? null); loadRows(); }}
+        onSaved={(savedId) => {setLastTouchedId(savedId ?? null);setPage(1);loadRows();}}
       />
     </div>
   );
