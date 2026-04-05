@@ -187,8 +187,19 @@ async function fetchPeriodosOrdered() {
   if (!Array.isArray(arr)) arr = [];
 
   arr.sort((a, b) => {
+    const aAnio = Number(a.anio ?? a.Anio ?? a.anioAcademico ?? a.year ?? 0);
+    const bAnio = Number(b.anio ?? b.Anio ?? b.anioAcademico ?? b.year ?? 0);
+
+    if (bAnio !== aAnio) return bAnio - aAnio;
+
+    const aNumero = Number(a.numero ?? a.Numero ?? a.num ?? a.Num ?? 0);
+    const bNumero = Number(b.numero ?? b.Numero ?? b.num ?? b.Num ?? 0);
+
+    if (bNumero !== aNumero) return bNumero - aNumero;
+
     const aId = Number(a.periodoId ?? a.id ?? a.Id ?? a.ID ?? 0);
     const bId = Number(b.periodoId ?? b.id ?? b.Id ?? b.ID ?? 0);
+
     return bId - aId;
   });
 
@@ -751,7 +762,7 @@ function FichaDocente({ open, onClose, id }) {
       const getNombrePeriodo = async (periodoId, fallback) => {
         if (!periodoId) return fallback || "—";
         try {
-          const r = await apiFetch(URL.periodoById(id));
+          const r = await apiFetch(URL.periodoById(periodoId));
           if (!r.ok) throw new Error("GET periodo");
           const j = await r.json();
           return buildPeriodoLabel(j) || fallback || "—";
@@ -1207,7 +1218,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
         findIdByNombre(cat.provincias, originalData?.provincia?.nombre ?? originalData?.provincia ?? "")
       ),
       cantonId: String(
-        pickId(originalData, "cantonId", "canton.id") || f.cantonId || ""
+        pickId(originalData, "cantonId", "canton.id") || ""
       ),
       sedeId: String(
         pickId(originalData, "sedeId", "sede.id") ||
@@ -1266,7 +1277,7 @@ function EditarDocente({ open, onClose, id, onSaved }) {
       setSaving(true);
       alertService.loading("Actualizando...", "Aplicando cambios.");
 
-      const r = await apifetch(URL.personaById(id), {
+      const r = await apiFetch(URL.personaById(id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload(f, id)),
