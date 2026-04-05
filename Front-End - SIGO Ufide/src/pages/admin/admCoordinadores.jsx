@@ -433,24 +433,7 @@ function CoordinacionForm({
                         </Select>
                     </div>
 
-                    {/* Carrera */}
-                    <div className="relative z-0 focus-within:z-[500] overflow-visible">
-                        <Typography variant="small" className="text-blue-gray-500 mb-1">Carrera</Typography>
-                        <Select
-                            label="Selecciona carrera (opcional)"
-                            value={carreraId}
-                            onChange={(v) => setCarreraId(v)}
-                            containerProps={{ className: CONT_CLS }}
-                            menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
-                        >
-                            <Option value="">Todas</Option>
-                            {carreras.map((c) => (
-                                <Option key={String(c.carreraId ?? c.id)} value={String(c.carreraId ?? c.id)}>
-                                    {carreraLabel(c)}
-                                </Option>
-                            ))}
-                        </Select>
-                    </div>
+                    
 
                     {/* Estado */}
                     <div className="flex items-center gap-4 mt-2">
@@ -473,13 +456,7 @@ function CoordinacionForm({
                         </Typography>
                     </div>
 
-                    <Card className="mt-3 p-3 border border-blue-gray-100 shadow-sm bg-blue-gray-50 overflow-visible">
-                        <Typography className="text-blue-gray-600 text-sm">
-                            {carreraId
-                                ? "Mostrando cursos de la carrera seleccionada."
-                                : "Mostrando cursos de todas las carreras (opcional: selecciona carrera para filtrar)."}
-                        </Typography>
-                    </Card>
+                    
 
                     <div className="mt-2">
                         <Input
