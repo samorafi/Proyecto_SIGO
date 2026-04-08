@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { alertService } from "@/services/alert.service";
 import { importarOfertasService } from "@/services/importarOfertas.service";
 
@@ -6,6 +6,22 @@ export const useExcelUpload = () => {
     const [isDragActive, setIsDragActive] = useState(false);
     const [file, setFile] = useState(null);
     const fileInputRef = useRef(null);
+
+    // Previene que el navegador abra el archivo si el usuario lo suelta
+    // fuera de la zona de drop (evita el page reload / "archivo corrompido").
+    useEffect(() => {
+        const preventBrowserOpen = (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "none";
+        };
+        document.addEventListener("dragover", preventBrowserOpen);
+        document.addEventListener("drop", preventBrowserOpen);
+        return () => {
+            document.removeEventListener("dragover", preventBrowserOpen);
+            document.removeEventListener("drop", preventBrowserOpen);
+        };
+    }, []);
+
 
     // Drag Handlers
     const handleDragEnter = (e) => {
@@ -97,9 +113,10 @@ export const useExcelUpload = () => {
                 let errorMessage = "Ocurrió un error al procesar el archivo.";
                 try {
                     const errorData = await response.json();
-                    if (errorData.message) errorMessage = errorData.message;
-                    if (errorData.errores && Array.isArray(errorData.errores)) {
-                        errorMessage = errorData.errores.join("<br/>");
+                    if (errorData.message || errorData.Message) errorMessage = errorData.message ?? errorData.Message;
+                    const errList = errorData.errores ?? errorData.Errores;
+                    if (errList && Array.isArray(errList)) {
+                        errorMessage = errList.join("<br/>");
                     }
                 } catch (e) {
                     // Response body empty or not json.

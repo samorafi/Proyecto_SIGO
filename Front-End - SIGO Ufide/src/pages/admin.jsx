@@ -5,6 +5,7 @@ import {
   ShieldCheckIcon,
   UsersIcon,
   InboxArrowDownIcon,
+  ArrowDownTrayIcon,
   Cog6ToothIcon,
   DocumentMagnifyingGlassIcon,
   BellAlertIcon,
@@ -50,6 +51,12 @@ const tiles = [
     title: "Importación de datos",
     desc: "Importar datos en tablas del sistema.",
     Icon: InboxArrowDownIcon,
+  },
+  {
+    to: "/dashboard/admin/exportarDatos",
+    title: "Exportación de datos",
+    desc: "Exportar ofertas académicas a Excel por período.",
+    Icon: ArrowDownTrayIcon,
   },
   {
     to: "/dashboard/admin/admCoordinadores",

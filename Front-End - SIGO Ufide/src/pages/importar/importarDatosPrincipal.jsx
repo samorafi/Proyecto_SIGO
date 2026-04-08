@@ -23,7 +23,12 @@ export default function ImportarDatosPrincipal() {
         handleUpload,
     } = useExcelUpload();
 
-    if (!hasPermission("ADMIN_VIEW")) {
+    const canImport =
+        hasPermission("ADMIN_VIEW") ||
+        hasPermission("OFERTAS_PRESENCIAL_EN_LINEA_VIEW") ||
+        hasPermission("OFERTAS_VIRTUALES_VIEW");
+
+    if (!canImport) {
         return (
             <div className="flex flex-col items-center justify-center p-8 mt-10">
                 <Typography variant="h4" color="red" className="mb-2">

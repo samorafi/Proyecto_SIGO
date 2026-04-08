@@ -8,10 +8,10 @@ export const importarOfertasService = {
      */
     async uploadExcel(file) {
         const formData = new FormData();
-        formData.append("archivo", file);
+        formData.append("ArchivoExcel", file);
 
         // Ajustar el endpoint según configuración de la API actual.
-        return apiFetch("/api/Ofertas/importar", {
+        return apiFetch("/api/Ofertas/importar-presencial", {
             method: "POST",
             body: formData,
             credentials: "include", // Usualmente requerido para manejo de cookies / tokens jwt
