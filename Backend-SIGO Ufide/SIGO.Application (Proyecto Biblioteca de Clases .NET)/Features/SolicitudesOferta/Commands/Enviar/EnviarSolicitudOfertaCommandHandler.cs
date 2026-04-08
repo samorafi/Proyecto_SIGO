@@ -96,6 +96,17 @@ public class EnviarSolicitudOfertaCommandHandler
 
         var sedeTxt = oferta.Sede?.Nombre ?? "—";
         var modalidadTxt = oferta.Modalidad?.Nombre ?? "—";
+
+        var esEnLinea = string.Equals(modalidadTxt?.Trim(), "En Línea", StringComparison.OrdinalIgnoreCase);
+
+        var horarioHeaderTxt = esEnLinea
+            ? "Horario Sesión Sincrónica"
+            : "Horario";
+
+        var mensajeConfirmacionFinal = esEnLinea
+            ? "Favor confirmar horario sincrónico."
+            : "Quedo atenta a su confirmación.";
+
         var periodoTxt = oferta.Periodo?.Etiqueta ?? "—";
 
         var horarioTxt = oferta.Horario is null
@@ -158,7 +169,7 @@ public class EnviarSolicitudOfertaCommandHandler
         <tr>
           {Th("Grado")}{Th("Carrera")}{Th("Sede")}{Th("Periodo")}
           {Th("Código")}{Th("Materia")}{Th("Grupo")}{Th("Día")}
-          {Th("Horario")}{Th("Matrícula")}{Th("Acción")}{Th("Profesor")}
+          {Th(horarioHeaderTxt)}{Th("Matrícula")}{Th("Acción")}{Th("Profesor")}
           <th style=""border-top:1px solid #374151;border-bottom:1px solid #374151;border-right:1px solid #374151;background:#1F2937;""></th>
         </tr>
       </thead>
@@ -183,7 +194,7 @@ public class EnviarSolicitudOfertaCommandHandler
       {Li("La asignación de los cursos es enviada a Procesos Académicos, departamento encargado de gestionar la asignación a nivel de sistema, cuando esto suceda usted podrá visualizar los cursos en el SAM y Campus Virtual.")}
     </ul>
 
-    <div style=""margin-top:14px;"">Quedo atenta a su confirmación.</div>
+    <div style=""margin-top:14px;"">{Html(mensajeConfirmacionFinal)}</div>
     <div style=""margin-top:8px;"">Saludos cordiales,</div>
     <div style=""font-weight:600;color:#F9FAFB;"">Coordinación Académica</div>
 
@@ -194,10 +205,6 @@ public class EnviarSolicitudOfertaCommandHandler
       <a href=""{HtmlAttr(rechazarUrl)}"" style=""background:#dc2626;color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700;font-size:13px;"">
         Rechazar oferta
       </a>
-    </div>
-
-    <div style=""margin-top:10px;font-size:12px;color:#9CA3AF;"">
-      Nota: En el correo real se incluirán los enlaces para aceptar o rechazar la oferta.
     </div>
   </div>
 </div>";

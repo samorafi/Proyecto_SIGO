@@ -195,7 +195,11 @@ function CorreoPreview({
   accionTxt,
   profesorTxt,
   evalPeriodoTxt,
+  modalidadTxt,
 }) {
+  const esEnLinea = String(modalidadTxt || "").trim().toLowerCase() === "en línea";
+  const horarioHeader = esEnLinea ? "Horario Sesión Sincrónica" : "Horario";
+
   return (
     <div
       className="rounded-lg p-4"
@@ -222,7 +226,7 @@ function CorreoPreview({
         <table className="w-full text-xs" style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: 760 }}>
           <thead>
             <tr>
-              {["Grado", "Carrera", "Sede", "Periodo", "Código", "Materia", "Grupo", "Día", "Horario", "Matrícula", "Acción", "Profesor"].map((h) => (
+              {["Grado", "Carrera", "Sede", "Periodo", "Código", "Materia", "Grupo", "Día", horarioHeader, "Matrícula", "Acción", "Profesor"].map((h) => (
                 <th
                   key={h}
                   style={{
@@ -296,7 +300,9 @@ function CorreoPreview({
           ))}
         </ul>
 
-        <div className="mt-4">Quedo atenta a su confirmación.</div>
+        <div className="mt-4">
+          {esEnLinea ? "Favor confirmar horario sincrónico." : "Quedo atenta a su confirmación."}
+        </div>
         <div className="mt-2">Saludos cordiales,</div>
         <div className="font-semibold" style={{ color: "#F9FAFB" }}>
           Coordinación Académica
