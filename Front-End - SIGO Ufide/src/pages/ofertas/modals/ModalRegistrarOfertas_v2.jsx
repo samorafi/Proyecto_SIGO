@@ -14,9 +14,7 @@ export default function ModalRegistrarOfertas_v2({
   open,
   onClose,
   loading,
-
   category,
-
   form,
   setForm,
   onRegistrar,
@@ -30,10 +28,9 @@ export default function ModalRegistrarOfertas_v2({
 }) {
   const { periodosOrdenados } = usePeriodos(periodos, form?.tipoPeriodo);
 
-  // reglas por categoría
   const mostrarModalidad = !isHistorico(category);
   const modalidadesPermitidas = modalidadesPermitidasPorCategoria(category);
-  const fija = modalidadFija(category); // 3 si EnLinea, null si no
+  const fija = modalidadFija(category);
 
   const modalidadesFiltradas = useMemo(() => {
     let base = modalidades ?? [];
@@ -43,9 +40,6 @@ export default function ModalRegistrarOfertas_v2({
     return base;
   }, [modalidades, modalidadesPermitidas]);
 
-  // Autoselección de modalidad:
-  // - EnLinea => fija
-  // - o si solo queda una opción en el filtro
   useEffect(() => {
     if (!mostrarModalidad) return;
 
@@ -57,12 +51,16 @@ export default function ModalRegistrarOfertas_v2({
     }
   }, [mostrarModalidad, fija, modalidadesFiltradas, form?.modalidadId, setForm]);
 
-  // Deshabilitar si:
-  // - EnLinea (fija), o
-  // - no requiere elección (por seguridad), o
-  // - solo hay una opción
   const bloquearModalidad =
     fija !== null || !requiereModalidad(category) || modalidadesFiltradas.length <= 1;
+
+  const menuPropsSafe = {
+    className:
+      "z-[99999] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)]",
+    placement: "bottom-start",
+  };
+
+  const containerPropsSafe = { className: "min-w-0" };
 
   return (
     <AppModal
@@ -100,7 +98,14 @@ export default function ModalRegistrarOfertas_v2({
           <Select
             label="Curso"
             value={form.cursoId ? String(form.cursoId) : ""}
-            onChange={(v) => setForm((p) => ({ ...p, cursoId: Number(v) }))}
+            onChange={(v) => setForm((p) => ({ ...p, cursoId: v ? Number(v) : "" }))}
+            selected={() => {
+              if (!form.cursoId) return undefined;
+              const sel = cursos.find((x) => String(x.cursoId) === String(form.cursoId));
+              return sel?.nombre;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             {cursos.map((c) => (
               <Option key={c.cursoId} value={String(c.cursoId)}>
@@ -112,7 +117,14 @@ export default function ModalRegistrarOfertas_v2({
           <Select
             label="Sede"
             value={form.sedeId ? String(form.sedeId) : ""}
-            onChange={(v) => setForm((p) => ({ ...p, sedeId: Number(v) }))}
+            onChange={(v) => setForm((p) => ({ ...p, sedeId: v ? Number(v) : "" }))}
+            selected={() => {
+              if (!form.sedeId) return undefined;
+              const sel = sedes.find((x) => String(x.sedeId) === String(form.sedeId));
+              return sel?.nombre;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             {sedes.map((s) => (
               <Option key={s.sedeId} value={String(s.sedeId)}>
@@ -128,9 +140,18 @@ export default function ModalRegistrarOfertas_v2({
               setForm((prev) => ({
                 ...prev,
                 tipoPeriodo: v || "",
-                periodoId: "", // reset limpio
+                periodoId: "",
               }))
             }
+            selected={() => {
+              if (!form.tipoPeriodo) return undefined;
+              if (form.tipoPeriodo === "C") return "Cuatrimestre";
+              if (form.tipoPeriodo === "T") return "Trimestre";
+              if (form.tipoPeriodo === "P") return "Periodo Mensual";
+              return undefined;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             <Option value="C">Cuatrimestre (C)</Option>
             <Option value="T">Trimestre (T)</Option>
@@ -139,21 +160,19 @@ export default function ModalRegistrarOfertas_v2({
 
           <Select
             label="Periodo"
-            key={`periodo-${form.tipoPeriodo}-${periodosOrdenados.map(p => p.periodoId).join(",")}`}
+            key={`periodo-${form.tipoPeriodo}-${periodosOrdenados.map((p) => p.periodoId).join(",")}`}
             value={form.periodoId ? String(form.periodoId) : ""}
             disabled={!form.tipoPeriodo}
             onChange={(v) => setForm((prev) => ({ ...prev, periodoId: v || "" }))}
             selected={() => {
-              if (!form.periodoId) return "Seleccione";
-              const sel = periodosOrdenados.find(x => String(x.periodoId) === String(form.periodoId));
-              return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : "Seleccione";
+              if (!form.periodoId) return undefined;
+              const sel = periodosOrdenados.find(
+                (x) => String(x.periodoId) === String(form.periodoId)
+              );
+              return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : undefined;
             }}
-            containerProps={{ className: "min-w-0" }}
-            menuProps={{
-              className:
-                "z-[99999] bg-white border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)]",
-              placement: "bottom-start",
-            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             <Option value="">Seleccione</Option>
             {periodosOrdenados.map((p) => (
@@ -163,11 +182,17 @@ export default function ModalRegistrarOfertas_v2({
             ))}
           </Select>
 
-
           <Select
             label="Horario"
             value={form.horarioId ? String(form.horarioId) : ""}
-            onChange={(v) => setForm((p) => ({ ...p, horarioId: Number(v) }))}
+            onChange={(v) => setForm((p) => ({ ...p, horarioId: v ? Number(v) : "" }))}
+            selected={() => {
+              if (!form.horarioId) return undefined;
+              const sel = horarios.find((x) => String(x.horarioId) === String(form.horarioId));
+              return sel ? `${sel.dia} - ${sel.rango}` : undefined;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             {horarios.map((h) => (
               <Option key={h.horarioId} value={String(h.horarioId)}>
@@ -179,7 +204,16 @@ export default function ModalRegistrarOfertas_v2({
           <Select
             label="Coordinador"
             value={form.coordinadorId ? String(form.coordinadorId) : ""}
-            onChange={(v) => setForm((p) => ({ ...p, coordinadorId: Number(v) }))}
+            onChange={(v) => setForm((p) => ({ ...p, coordinadorId: v ? Number(v) : "" }))}
+            selected={() => {
+              if (!form.coordinadorId) return undefined;
+              const sel = coordinadores.find((x) => String(x.id) === String(form.coordinadorId));
+              return sel
+                ? `${sel.nombre} ${sel.primerApellido} ${sel.segundoApellido}`.trim()
+                : undefined;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             {coordinadores.map((c) => (
               <Option key={c.id} value={String(c.id)}>
@@ -189,7 +223,6 @@ export default function ModalRegistrarOfertas_v2({
           </Select>
         </div>
 
-        {/* ---------------- MODALIDAD ---------------- */}
         {mostrarModalidad && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-4">
             <div>
@@ -201,7 +234,16 @@ export default function ModalRegistrarOfertas_v2({
                 label="Modalidad"
                 value={form.modalidadId ? String(form.modalidadId) : ""}
                 disabled={bloquearModalidad}
-                onChange={(v) => setForm((p) => ({ ...p, modalidadId: Number(v) }))}
+                onChange={(v) => setForm((p) => ({ ...p, modalidadId: v ? Number(v) : "" }))}
+                selected={() => {
+                  if (!form.modalidadId) return undefined;
+                  const sel = modalidadesFiltradas.find(
+                    (x) => String(x.modalidadId) === String(form.modalidadId)
+                  );
+                  return sel?.nombre;
+                }}
+                containerProps={containerPropsSafe}
+                menuProps={menuPropsSafe}
               >
                 {modalidadesFiltradas.map((m) => (
                   <Option key={m.modalidadId} value={String(m.modalidadId)}>
@@ -213,7 +255,6 @@ export default function ModalRegistrarOfertas_v2({
           </div>
         )}
 
-        {/* ---------------- CUPO Y MATRICULADOS ---------------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-10 mt-4">
           <div>
             <p className="text-[#2B338C] font-bold text-md mb-1">Cupo</p>
@@ -248,12 +289,18 @@ export default function ModalRegistrarOfertas_v2({
           </div>
         </div>
 
-        {/* ---------------- ACCIÓN ---------------- */}
         <div className="mt-4">
           <Select
             label="Acción"
             value={form.accionId ? String(form.accionId) : ""}
-            onChange={(v) => setForm((p) => ({ ...p, accionId: Number(v) }))}
+            onChange={(v) => setForm((p) => ({ ...p, accionId: v ? Number(v) : "" }))}
+            selected={() => {
+              if (!form.accionId) return undefined;
+              const sel = estados.find((x) => String(x.accionId) === String(form.accionId));
+              return sel?.nombre;
+            }}
+            containerProps={containerPropsSafe}
+            menuProps={menuPropsSafe}
           >
             {estados.map((e) => (
               <Option key={e.accionId} value={String(e.accionId)}>
@@ -263,7 +310,6 @@ export default function ModalRegistrarOfertas_v2({
           </Select>
         </div>
 
-        {/* ---------------- COMENTARIOS ---------------- */}
         <div className="mt-4">
           <Input
             label="Comentarios"

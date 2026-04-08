@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Typography, Select, Option, Button, Tooltip, Input } from "@material-tailwind/react";
 import { ArrowPathIcon, ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender, getSortedRowModel } from "@tanstack/react-table";
@@ -36,7 +37,15 @@ import {
   isHistorico
 } from "../constants/OfertaCategory";
 
-export default function OfertasPagedTable({ category, title = "Ofertas" }) {
+export default function OfertasPagedTable({
+  category,
+  title = "Ofertas",
+  initialPeriodoId = "",
+  lockPeriodoFilter = false,
+  backPath = "",
+}) {
+
+  const navigate = useNavigate();
 
   // Filtros de búsqueda
   const [filters, setFilters] = useState({
@@ -44,7 +53,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     sedeId: "",
     modalidadId: "",
     tipoPeriodo: "",
-    periodoId: "",
+    periodoId: initialPeriodoId ? String(initialPeriodoId) : "",
     dia: "",
     horarioId: "",
     accionId: "",
@@ -73,6 +82,16 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     setPage(1);
   };
 
+  useEffect(() => {
+    if (!initialPeriodoId) return;
+
+    setFilters((prev) => ({
+      ...prev,
+      periodoId: String(initialPeriodoId),
+    }));
+    setPage(1);
+  }, [initialPeriodoId, setPage]);
+
   // Resumen de estados de las ofertas.
   const {
     data: summary,
@@ -89,7 +108,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
   };
 
   // Título dinámico según la categoría seleccionada.
-  const OfertaTitle = TITLE_BY_CATEGORY[category] ?? "Ofertas";
+  const OfertaTitle = title || TITLE_BY_CATEGORY[category] || "Ofertas";
 
   // Componente helper para mostrar información en modo mobile (tarjeta) de forma más visual.
   const InfoMini = ({ label, value }) => (
@@ -105,6 +124,21 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
   // Filtrado de periodos
   const { periodos, loading: loadingPeriodos } = usePeriodosApi();
   const { periodosOrdenados } = usePeriodos(periodos, filters.tipoPeriodo);
+
+  const periodoSeleccionado = useMemo(() => {
+    if (!filters.periodoId) return null;
+    return periodos.find((x) => String(x.periodoId) === String(filters.periodoId)) ?? null;
+  }, [filters.periodoId, periodos]);
+
+  useEffect(() => {
+    if (!lockPeriodoFilter || !periodoSeleccionado) return;
+
+    setFilters((prev) => ({
+      ...prev,
+      tipoPeriodo: periodoSeleccionado.tipo || prev.tipoPeriodo || "",
+      periodoId: String(periodoSeleccionado.periodoId),
+    }));
+  }, [lockPeriodoFilter, periodoSeleccionado]);
 
   // Filtado de Sedes
   const SEDES = [
@@ -305,7 +339,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
     cursoId: "",
     sedeId: "",
     horarioId: "",
-    periodoId: "",
+    periodoId: initialPeriodoId ? String(initialPeriodoId) : "",
     tipoPeriodo: "",
     coordinadorId: "",
     comentarios: "",
@@ -323,7 +357,7 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
       cursoId: "",
       sedeId: "",
       horarioId: "",
-      periodoId: "",
+      periodoId: initialPeriodoId ? String(initialPeriodoId) : "",
       tipoPeriodo: "",
       coordinadorId: "",
       comentarios: "",
@@ -629,7 +663,21 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
 
         {/* Título: Centrado en móvil, a la izquierda en escritorio */}
         <div className="text-center sm:text-left">
+          {backPath ? (
+            <button
+              type="button"
+              onClick={() => navigate(backPath)}
+              className="mb-2 text-sm font-semibold text-[#2B338C] hover:underline"
+            >
+              ← Volver a períodos
+            </button>
+          ) : null}
           <PageTitle>{OfertaTitle}</PageTitle>
+          {lockPeriodoFilter && periodoSeleccionado ? (
+            <Typography className="mt-1 text-blue-gray-600">
+              Período seleccionado: {periodoSeleccionado.numero}{periodoSeleccionado.tipo} - {periodoSeleccionado.anio}
+            </Typography>
+          ) : null}
         </div>
 
         {/* Contenedor de Botones: Wrap para que bajen si no caben, y scroll horizontal si es necesario */}
@@ -685,7 +733,9 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
             <Select
               label="Tipo de período"
               value={filters.tipoPeriodo}
+              disabled={lockPeriodoFilter}
               onChange={(v) => {
+                if (lockPeriodoFilter) return;
                 const tipo = v || "";
                 setFilters((prev) => ({ ...prev, tipoPeriodo: tipo, periodoId: "" }));
                 setPage(1);
@@ -714,8 +764,9 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
             <Select
               label="Periodo"
               value={filters.periodoId}
-              disabled={!filters.tipoPeriodo}
+              disabled={!filters.tipoPeriodo || lockPeriodoFilter}
               onChange={(v) => {
+                if (lockPeriodoFilter) return;
                 setFilters((prev) => ({ ...prev, periodoId: v || "" }));
                 setPage(1);
               }}
@@ -849,8 +900,8 @@ export default function OfertasPagedTable({ category, title = "Ofertas" }) {
                   buscar: "",
                   sedeId: "",
                   modalidadId: "",
-                  tipoPeriodo: "",
-                  periodoId: "",
+                  tipoPeriodo: lockPeriodoFilter && periodoSeleccionado ? periodoSeleccionado.tipo : "",
+                  periodoId: initialPeriodoId ? String(initialPeriodoId) : "",
                   dia: "",
                   horarioId: "",
                   accionId: "",

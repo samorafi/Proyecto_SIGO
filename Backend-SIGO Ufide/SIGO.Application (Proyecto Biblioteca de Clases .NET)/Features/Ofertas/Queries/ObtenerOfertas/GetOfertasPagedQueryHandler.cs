@@ -20,12 +20,10 @@ public sealed class GetOfertasPagedQueryHandler
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = AllowedPageSizes.Contains(request.PageSize) ? request.PageSize : 10;
 
-        // Base query
         var query = _db.Ofertas
             .AsNoTracking()
             .AsQueryable();
 
-        // Filtro por categoría (IDs de modalidad)
         query = request.Category switch
         {
             OfertaCategory.PresencialVirtual => query.Where(o =>
@@ -40,7 +38,6 @@ public sealed class GetOfertasPagedQueryHandler
             _ => query
         };
 
-        // Filtros
         if (!string.IsNullOrWhiteSpace(request.Buscar))
         {
             var q = request.Buscar.Trim();
@@ -58,7 +55,6 @@ public sealed class GetOfertasPagedQueryHandler
                      (o.Coordinador.PrimerApellido ?? "") + " " +
                      (o.Coordinador.SegundoApellido ?? ""))
                     .Contains(q)
-
             );
         }
 
@@ -89,13 +85,10 @@ public sealed class GetOfertasPagedQueryHandler
         if (!string.IsNullOrWhiteSpace(request.Dia))
             query = query.Where(o => o.Horario != null && o.Horario.Dia.StartsWith(request.Dia));
 
-        // Total filtrado
         var totalCount = await query.CountAsync(ct);
 
-        // Orden
         query = query.OrderByDescending(o => o.OfertaId);
 
-        // Página + Proyección
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -113,7 +106,9 @@ public sealed class GetOfertasPagedQueryHandler
                     : null,
                 HorarioHora = o.Horario != null ? o.Horario.Rango : null,
 
+                PeriodoId = o.PeriodoId,
                 Periodo = o.Periodo != null ? o.Periodo.Etiqueta : null,
+
                 Accion = o.Accion != null ? o.Accion.Nombre : null,
 
                 CoordinadorId = o.CoordinadorId,
@@ -135,5 +130,4 @@ public sealed class GetOfertasPagedQueryHandler
 
         return new PagedResult<OfertaResponseDto>(items, page, pageSize, totalCount);
     }
-
 }

@@ -17,7 +17,7 @@ export function useEnviarOfertaDocente({
   const [enviando, setEnviando] = useState(false);
   const [docentesError, setDocentesError] = useState("");
   const [tipoPeriodo, setTipoPeriodo] = useState("");
-  const { periodosFuturos } = usePeriodos(periodos, tipoPeriodo);
+  const { periodosOrdenados } = usePeriodos(periodos, tipoPeriodo);
 
   const abrir = () => setOpenEnviar(true);
 
@@ -152,7 +152,7 @@ export function useEnviarOfertaDocente({
       setEvalPeriodoId,
       tipoPeriodo,
       setTipoPeriodo,
-      periodosFuturos,
+      periodosOrdenados,
       docentesError,
       enviando,
       docentesFiltrados,

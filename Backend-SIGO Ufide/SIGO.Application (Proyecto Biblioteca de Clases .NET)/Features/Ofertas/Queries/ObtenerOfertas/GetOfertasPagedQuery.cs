@@ -19,6 +19,4 @@ public sealed record GetOfertasPagedQuery(
     public int? HorarioId { get; init; }
     public int? AccionId { get; init; }
     public int? EstadoOfertaId { get; init; }
-
-
 }

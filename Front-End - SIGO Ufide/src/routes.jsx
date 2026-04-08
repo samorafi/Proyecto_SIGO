@@ -34,6 +34,8 @@ import ConfiguracionCorreo from "@/pages/admin/admSMTP";
 // Módulo de Ofertas En Línea
 import OfertasEnLinea from "@/pages/ofertas/OfertasEnLinea";
 import OfertasPresencialesVirtuales from "@/pages/ofertas/OfertasPresencialesVirtuales";
+import OfertasEnLineaDetalle from "@/pages/ofertas/OfertasEnLineaDetalle";
+import OfertasPresencialesVirtualesDetalle from "@/pages/ofertas/OfertasPresencialesVirtualesDetalle";
 import OfertasHistorico from "@/pages/ofertas/OfertasHistorico";
 
 
@@ -69,6 +71,8 @@ export const routes = [
       { name: "Carreras", path: "catalogos/carreras", element: <CatalogoCarreras />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Cursos", path: "catalogos/cursos", element: <CatalogoCursos />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Periodos", path: "catalogos/periodos", element: <CatalogoPeriodos />, hidden: true, permiso: "ADMIN_VIEW" },
+      { name: "Ofertas 100% Virtual por período", path: "/ofertas/OfertasEnLineaV2/periodo/:periodoId", element: <OfertasEnLineaDetalle />, hidden: true, permiso: "OFERTAS_VIRTUALES_VIEW" },
+      { name: "Ofertas Presencial y En Línea por período", path: "/ofertas/OfertasPresencialesVirtualesV2/periodo/:periodoId", element: <OfertasPresencialesVirtualesDetalle />, hidden: true, permiso: "OFERTAS_PRESENCIAL_EN_LINEA_VIEW" },
       { name: "Configuración SMTP", path: "/admin/admSMTP", element: <ConfiguracionCorreo />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Bitácoras", path: "/bitacoras", element: <BitacoraAuditoria />, hidden: true, permiso: "ADMIN_VIEW" },
       { name: "Importar Datos", path: "/admin/importarDatos", element: <ImportarDatosPrincipal />, hidden: true, permiso: "ADMIN_VIEW" },

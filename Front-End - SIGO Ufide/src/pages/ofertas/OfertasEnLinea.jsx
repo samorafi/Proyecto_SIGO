@@ -1,5 +1,5 @@
-import OfertasPagedTable from "./components/OfertasPagedTable";
+import OfertasByPeriodoPage from "./OfertasByPeriodoPage";
 
 export default function OfertasEnLinea() {
-  return <OfertasPagedTable category={2} title="100% Virtual" />;
+  return <OfertasByPeriodoPage category={2} title="Ofertas 100% Virtual" />;
 }

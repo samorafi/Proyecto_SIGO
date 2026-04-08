@@ -27,7 +27,7 @@ export default function ModalEnviarOfertaDocente_v2({
   setEvalPeriodoId,
   tipoPeriodo,
   setTipoPeriodo,
-  periodosFuturos = [],
+  periodosOrdenados = [],
   docentesError,
   enviando,
 
@@ -124,19 +124,19 @@ export default function ModalEnviarOfertaDocente_v2({
 
               <Select
                 label="Periodo (Evaluación docente)"
-                key={`eval-periodo-${tipoPeriodo}-${periodosFuturos.map((p) => p.periodoId).join(",")}`}
+                key={`eval-periodo-${tipoPeriodo}-${periodosOrdenados.map((p) => p.periodoId).join(",")}`}
                 value={evalPeriodoId ? String(evalPeriodoId) : ""}
                 disabled={!tipoPeriodo}
                 onChange={(v) => setEvalPeriodoId(v || "")}
                 selected={() => {
                   if (!evalPeriodoId) return "Seleccione";
-                  const sel = periodosFuturos.find((x) => String(x.periodoId) === String(evalPeriodoId));
+                  const sel = periodosOrdenados.find((x) => String(x.periodoId) === String(evalPeriodoId));
                   return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : "Seleccione";
                 }}
                 menuProps={menuPropsSafe}
               >
                 <Option value="">Seleccione</Option>
-                {periodosFuturos.map((p) => (
+                {periodosOrdenados.map((p) => (
                   <Option key={p.periodoId} value={String(p.periodoId)}>
                     {`${p.numero}${p.tipo} - ${p.anio}`}
                   </Option>

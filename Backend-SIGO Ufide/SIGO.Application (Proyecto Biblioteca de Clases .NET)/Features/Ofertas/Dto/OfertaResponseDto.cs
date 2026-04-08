@@ -7,7 +7,10 @@ public class OfertaResponseDto
     public string? Sede { get; set; }
     public string? Modalidad { get; set; }
     public int HorarioId { get; set; }
+
+    public int? PeriodoId { get; set; }
     public string? Periodo { get; set; }
+
     public string? Accion { get; set; }
     public int? CoordinadorId { get; set; }
     public string? Comentarios { get; set; }
@@ -15,7 +18,7 @@ public class OfertaResponseDto
     public int Grupo { get; set; }
     public int? Cupo { get; set; }
     public int? Matriculados { get; set; }
-    public Boolean? Archivados { get; set; }
+    public bool? Archivados { get; set; }
     public int? PersonaId { get; set; }
     public string? HorarioDia { get; set; }
     public string? HorarioHora { get; set; }
@@ -31,6 +34,7 @@ public class OfertaResponseDto
         Sede = o.Sede?.Nombre,
         Modalidad = o.Modalidad?.Nombre,
         HorarioId = o.HorarioId,
+        PeriodoId = o.PeriodoId,
         Periodo = o.Periodo?.Etiqueta,
         Accion = o.Accion?.Nombre,
         CoordinadorId = o.CoordinadorId,
