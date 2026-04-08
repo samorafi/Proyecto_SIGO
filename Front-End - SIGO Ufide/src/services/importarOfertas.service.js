@@ -9,6 +9,7 @@ export const importarOfertasService = {
     async uploadExcel(file) {
         const formData = new FormData();
         formData.append("ArchivoExcel", file);
+        formData.append("PeriodoId", "1"); // Valor dummy para satisfacer el Command del backend
 
         // Ajustar el endpoint según configuración de la API actual.
         return apiFetch("/api/Ofertas/importar-presencial", {

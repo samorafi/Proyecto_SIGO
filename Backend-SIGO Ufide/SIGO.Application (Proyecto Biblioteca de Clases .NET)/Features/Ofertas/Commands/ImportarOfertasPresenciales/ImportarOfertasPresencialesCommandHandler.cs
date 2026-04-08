@@ -1,4 +1,4 @@
-﻿using ExcelDataReader;
+using ExcelDataReader;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
@@ -204,8 +204,12 @@ namespace SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales
                         EstadoOfertaId = 6, // Estado "Importada"
                         Comentarios = "Carga Masiva Automática",
 
-                        // Lógica Modalidad: Si la sede dice "Virtual" es ID 2, sino ID 1 (Presencial)
-                        ModalidadId = sedeRaw.Contains("Virtual", StringComparison.OrdinalIgnoreCase) ? 2 : 1
+                        // Lógica Modalidad: "En Línea/Online" -> 3, "Virtual" -> 2, "Presencial" -> 1
+                        ModalidadId = sedeRaw.Contains("100% En Línea", StringComparison.OrdinalIgnoreCase) || 
+                                      sedeRaw.Contains("100% en linea", StringComparison.OrdinalIgnoreCase) || 
+                                      sedeRaw.Contains("En Linea", StringComparison.OrdinalIgnoreCase) 
+                                      ? 3 
+                                      : sedeRaw.Contains("Virtual", StringComparison.OrdinalIgnoreCase) ? 2 : 1
                     };
 
                     nuevasOfertas.Add(oferta);
@@ -363,7 +367,7 @@ namespace SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales
 
             AddSyn("Sede Heredia", "Heredia", "1. Heredia");
             AddSyn("Sede San Pedro", "San Pedro", "San Jose", "Central", "3. San Pedro");
-            AddSyn("Campus Virtual", "Virtual", "Sede Virtual", "2. Virtual", "FideVirtual");
+            AddSyn("Campus Virtual", "Virtual", "Sede Virtual", "2. Virtual", "FideVirtual", "100% en linea", "100% en linea", "en linea", "en línea");
         }
 
         private string LimpiarNombreSede(string raw)
