@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
     Select,
     Option,
     Input,
     Button,
     Typography,
-    Card,
     Textarea,
 } from "@material-tailwind/react";
 
@@ -14,7 +13,8 @@ import EditarFichaOferta from "@/pages/ofertas/functions/EditarFichaOferta_v2";
 import { alertService } from "@/services/alert.service";
 import VerOfertaEditar from "../functions/VerFichaOferta_v2";
 import { entityConfirm } from "@/services/entityConfirm.service";
-
+import AgregarAsistenteOferta from "@/pages/ofertas/functions/AgregarAsistenteOferta";
+import QuitarAsistenteOferta from "@/pages/ofertas/functions/QuitarAsistenteOferta";
 
 const emptyForm = {
     accionId: "",
@@ -34,63 +34,77 @@ export default function ModalEditarOferta_v2({
     horarios = [],
     acciones = [],
     coordinadores = [],
+    docentes = [],
 }) {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [originalData, setOriginalData] = useState(null);
     const [form, setForm] = useState(emptyForm);
 
-    // Reset cuando se cierra
+    const [selectedAsistenteId, setSelectedAsistenteId] = useState("");
+    const [savingAsistente, setSavingAsistente] = useState(false);
+    const [filtroDocenteAsistente, setFiltroDocenteAsistente] = useState("");
+
     useEffect(() => {
         if (!open) {
             setLoading(false);
             setSaving(false);
             setOriginalData(null);
             setForm(emptyForm);
+            setSelectedAsistenteId("");
+            setSavingAsistente(false);
+            setFiltroDocenteAsistente("");
         }
     }, [open]);
+
+    const cargarOferta = useCallback(async () => {
+        if (!ofertaId) return;
+
+        const res = await VerOfertaEditar(ofertaId);
+
+        if (res.ok) {
+            const d = res.data;
+            setOriginalData(d);
+
+            setForm({
+                accionId: d.accionId ? String(d.accionId) : "",
+                horarioId: d.horarioId ? String(d.horarioId) : "",
+                coordinadorId: d.coordinadorId ? String(d.coordinadorId) : "",
+                cupo: d.cupo ?? "",
+                matriculados: d.matriculados ?? "",
+                grupo: d.grupo ?? "",
+                comentarios: d.comentarios ?? "",
+            });
+        } else {
+            throw new Error(res.error || "No se pudo obtener la información.");
+        }
+    }, [ofertaId]);
 
     useEffect(() => {
         if (!open || !ofertaId) return;
 
         let cancelled = false;
 
-        const cargarDatos = async () => {
+        const run = async () => {
             try {
                 setLoading(true);
-                const res = await VerOfertaEditar(ofertaId);
-                if (cancelled) return;
-
-                if (res.ok) {
-                    const d = res.data;
-                    setOriginalData(d);
-
-                    setForm({
-                        accionId: d.accionId ? String(d.accionId) : "",
-                        horarioId: d.horarioId ? String(d.horarioId) : "",
-                        coordinadorId: d.coordinadorId ? String(d.coordinadorId) : "",
-                        cupo: d.cupo ?? "",
-                        matriculados: d.matriculados ?? "",
-                        grupo: d.grupo ?? "",
-                        comentarios: d.comentarios ?? "",
-                    });
-                } else {
-                    alertService.error("Error", res.error || "No se pudo obtener la información.");
+                await cargarOferta();
+            } catch (e) {
+                if (!cancelled) {
+                    alertService.error("Error", e.message || "Falló la carga de la oferta.");
                     onClose?.();
                 }
-            } catch (e) {
-                alertService.error("Error", "Falló la carga de la oferta.");
-                onClose?.();
             } finally {
                 if (!cancelled) setLoading(false);
             }
         };
 
-        cargarDatos();
+        run();
+
         return () => {
             cancelled = true;
         };
-    }, [open, ofertaId, onClose]);
+    }, [open, ofertaId, onClose, cargarOferta]);
 
     const hasChanges = useMemo(() => {
         if (!originalData) return false;
@@ -120,7 +134,68 @@ export default function ModalEditarOferta_v2({
         String(originalData?.estadoOfertaId) === "5" ||
         String(originalData?.estado ?? "").toLowerCase().trim() === "cancelada";
 
+    const modalidadTexto = String(originalData?.modalidad ?? "")
+        .trim()
+        .toLowerCase();
+
+    const esOfertaVirtual100 =
+        modalidadTexto === "en linea" ||
+        modalidadTexto === "en línea";
+
     const disabledFields = loading || saving || isCancelada;
+
+    const asistentes = useMemo(() => originalData?.asistentes ?? [], [originalData]);
+
+    const asistentesIds = useMemo(
+        () => new Set(asistentes.map((a) => Number(a.personaId))),
+        [asistentes]
+    );
+
+    const docentePrincipalId = useMemo(() => {
+        return Number(
+            originalData?.personaId ??
+            originalData?.docenteId ??
+            originalData?.profesorId ??
+            0
+        );
+    }, [originalData]);
+
+    const docentesDisponiblesComoAsistentes = useMemo(() => {
+        return (docentes || []).filter((d) => {
+            const id = Number(d?.personaId ?? d?.id);
+            if (!id) return false;
+            if (asistentesIds.has(id)) return false;
+            if (docentePrincipalId && id === docentePrincipalId) return false;
+            return true;
+        });
+    }, [docentes, asistentesIds, docentePrincipalId]);
+
+    const docentesFiltradosAsistentes = useMemo(() => {
+        const q = String(filtroDocenteAsistente || "").trim().toLowerCase();
+        if (!q) return docentesDisponiblesComoAsistentes;
+
+        return docentesDisponiblesComoAsistentes.filter((d) => {
+            const nombre = String(d?.nombre ?? "").toLowerCase();
+            const apellido1 = String(d?.apellido1 ?? d?.primerApellido ?? "").toLowerCase();
+            const apellido2 = String(d?.apellido2 ?? d?.segundoApellido ?? "").toLowerCase();
+            const cedula = String(d?.cedula ?? d?.identificacion ?? "").toLowerCase();
+
+            const texto = `${nombre} ${apellido1} ${apellido2} ${cedula}`.trim();
+            return texto.includes(q);
+        });
+    }, [docentesDisponiblesComoAsistentes, filtroDocenteAsistente]);
+
+    const menuPropsSafe = {
+        className:
+            "z-[99999] max-h-64 overflow-auto bg-white border border-blue-gray-100 rounded-md shadow-xl",
+    };
+
+    useEffect(() => {
+        if (!esOfertaVirtual100) {
+            setSelectedAsistenteId("");
+            setFiltroDocenteAsistente("");
+        }
+    }, [esOfertaVirtual100]);
 
     const validate = () => {
         const cupo = form.cupo === "" ? null : Number(form.cupo);
@@ -130,7 +205,6 @@ export default function ModalEditarOferta_v2({
         if (!Number.isFinite(grupo) || grupo <= 0) {
             return "Grupo es requerido y debe ser mayor a 0.";
         }
-
 
         if (cupo != null && (Number.isNaN(cupo) || cupo < 0)) {
             return "El cupo debe ser un número válido mayor o igual a 0.";
@@ -182,12 +256,86 @@ export default function ModalEditarOferta_v2({
             } else {
                 alertService.error("Error", res.error || "No se pudo actualizar la oferta.");
             }
-
         } catch (e) {
             alertService.close();
             alertService.error("Error", "Falló la actualización.");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleAgregarAsistente = async () => {
+        if (!ofertaId) return;
+
+        if (!selectedAsistenteId) {
+            alertService.warning("Atención", "Seleccione un asistente.");
+            return;
+        }
+
+        const yaExiste = asistentes.some(
+            (a) => Number(a.personaId) === Number(selectedAsistenteId)
+        );
+
+        if (yaExiste) {
+            alertService.warning("Atención", "Ese docente ya está asignado como asistente.");
+            return;
+        }
+
+        try {
+            setSavingAsistente(true);
+            alertService.loading("Agregando asistente...", "Por favor espera");
+
+            const res = await AgregarAsistenteOferta(ofertaId, selectedAsistenteId);
+
+            alertService.close();
+
+            if (!res.ok) {
+                alertService.error("Error", res.error || "No se pudo agregar el asistente.");
+                return;
+            }
+
+            await cargarOferta();
+            setSelectedAsistenteId("");
+            setFiltroDocenteAsistente("");
+            alertService.toastSuccess("Asistente agregado correctamente");
+        } catch (e) {
+            alertService.close();
+            alertService.error("Error", "Falló la asignación del asistente.");
+        } finally {
+            setSavingAsistente(false);
+        }
+    };
+
+    const handleQuitarAsistente = async (personaId, nombre) => {
+        const ok = await alertService.confirm({
+            title: "¿Quitar asistente?",
+            text: `Se quitará a ${nombre || "este asistente"} de la oferta.`,
+            confirmText: "Sí, quitar",
+            cancelText: "Cancelar",
+        });
+
+        if (!ok) return;
+
+        try {
+            setSavingAsistente(true);
+            alertService.loading("Quitando asistente...", "Por favor espera");
+
+            const res = await QuitarAsistenteOferta(ofertaId, personaId);
+
+            alertService.close();
+
+            if (!res.ok) {
+                alertService.error("Error", res.error || "No se pudo quitar el asistente.");
+                return;
+            }
+
+            await cargarOferta();
+            alertService.toastSuccess("Asistente quitado correctamente");
+        } catch (e) {
+            alertService.close();
+            alertService.error("Error", "Falló la eliminación del asistente.");
+        } finally {
+            setSavingAsistente(false);
         }
     };
 
@@ -207,7 +355,7 @@ export default function ModalEditarOferta_v2({
                         variant="text"
                         color="blue-gray"
                         onClick={onClose}
-                        disabled={loading || saving}
+                        disabled={loading || saving || savingAsistente}
                         className="w-full sm:w-auto capitalize font-bold"
                     >
                         Cancelar
@@ -216,7 +364,7 @@ export default function ModalEditarOferta_v2({
                     <Button
                         className="bg-[#FFDA00] text-[#2B338C] shadow-md hover:shadow-lg active:opacity-[0.85] w-full sm:w-auto px-8 py-3 flex items-center justify-center gap-2"
                         onClick={handleGuardar}
-                        disabled={loading || saving || !originalData || !hasChanges}
+                        disabled={loading || saving || savingAsistente || !originalData || !hasChanges}
                     >
                         {(loading || saving) && (
                             <div className="h-4 w-4 border-2 border-[#2B338C]/30 border-t-[#2B338C] rounded-full animate-spin" />
@@ -228,7 +376,6 @@ export default function ModalEditarOferta_v2({
                 </div>
             }
         >
-            {/* Contenedor de Scroll: Mantiene el modal dentro del área visible */}
             <div className="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
                 <div className="flex flex-col gap-6 py-1">
                     <div className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white p-5 shadow-sm">
@@ -281,7 +428,9 @@ export default function ModalEditarOferta_v2({
                                 disabled={disabledFields}
                             >
                                 {acciones.map((a) => (
-                                    <Option key={a.accionId} value={String(a.accionId)}>{a.nombre}</Option>
+                                    <Option key={a.accionId} value={String(a.accionId)}>
+                                        {a.nombre}
+                                    </Option>
                                 ))}
                             </Select>
 
@@ -325,7 +474,12 @@ export default function ModalEditarOferta_v2({
                                         type="number"
                                         label="Cupo Máx."
                                         value={form.cupo}
-                                        onChange={(e) => setForm((p) => ({ ...p, cupo: e.target.value === "" ? "" : Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                cupo: e.target.value === "" ? "" : Number(e.target.value),
+                                            }))
+                                        }
                                         disabled={disabledFields}
                                         crossOrigin={undefined}
                                         className="h-12"
@@ -336,7 +490,12 @@ export default function ModalEditarOferta_v2({
                                         type="number"
                                         label="Matriculados"
                                         value={form.matriculados}
-                                        onChange={(e) => setForm((p) => ({ ...p, matriculados: e.target.value === "" ? "" : Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                matriculados: e.target.value === "" ? "" : Number(e.target.value),
+                                            }))
+                                        }
                                         disabled={disabledFields}
                                         crossOrigin={undefined}
                                         className="h-12"
@@ -349,11 +508,150 @@ export default function ModalEditarOferta_v2({
                                     label="Comentarios"
                                     value={form.comentarios}
                                     onChange={(e) => setForm((p) => ({ ...p, comentarios: e.target.value }))}
-                                    disabled={loading || saving}
+                                    disabled={loading || saving || savingAsistente}
                                 />
                             </div>
                         </div>
                     </div>
+
+                    {esOfertaVirtual100 && (
+                        <div className="space-y-5 px-1 pt-2">
+                            <div className="flex items-center justify-between border-b border-blue-gray-50 pb-2">
+                                <Typography className="text-[#2B338C] font-extrabold text-sm uppercase tracking-wider">
+                                    Profesores Asistentes
+                                </Typography>
+
+                                {!!asistentes.length && (
+                                    <span className="text-xs font-bold text-blue-gray-500">
+                                        {asistentes.length} asignado(s)
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                <Input
+                                    label="Buscar docente por nombre, apellidos o cédula"
+                                    value={filtroDocenteAsistente}
+                                    onChange={(e) => setFiltroDocenteAsistente(e.target.value)}
+                                    disabled={loading || saving || savingAsistente || isCancelada}
+                                    crossOrigin={undefined}
+                                />
+
+                                <Select
+                                    key={`asistente-${selectedAsistenteId || "none"}`}
+                                    label="Seleccionar asistente"
+                                    value={selectedAsistenteId}
+                                    onChange={(v) => setSelectedAsistenteId(v || "")}
+                                    disabled={loading || saving || savingAsistente || isCancelada}
+                                    menuProps={menuPropsSafe}
+                                    selected={() => {
+                                        const d = (docentesFiltradosAsistentes || []).find(
+                                            (x) => String(x?.personaId ?? x?.id) === String(selectedAsistenteId)
+                                        );
+                                        if (!d) return "";
+                                        const nombre = `${d?.nombre ?? ""} ${d?.apellido1 ?? d?.primerApellido ?? ""} ${d?.apellido2 ?? d?.segundoApellido ?? ""}`.trim();
+                                        const ced = d?.cedula ?? d?.identificacion ?? "";
+                                        return `${nombre}${ced ? ` - ${ced}` : ""}`;
+                                    }}
+                                >
+                                    {!docentesFiltradosAsistentes.length ? (
+                                        <Option disabled>No hay docentes disponibles</Option>
+                                    ) : (
+                                        docentesFiltradosAsistentes.map((d) => {
+                                            const id = d?.personaId ?? d?.id;
+                                            const nombre = `${d?.nombre ?? ""} ${d?.apellido1 ?? d?.primerApellido ?? ""} ${d?.apellido2 ?? d?.segundoApellido ?? ""}`.trim();
+                                            const ced = d?.cedula ?? d?.identificacion ?? "";
+
+                                            return (
+                                                <Option key={id} value={String(id)}>
+                                                    {nombre} {ced ? `- ${ced}` : ""}
+                                                </Option>
+                                            );
+                                        })
+                                    )}
+                                </Select>
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        className="bg-[#2B338C] text-white w-full md:w-auto"
+                                        onClick={handleAgregarAsistente}
+                                        disabled={
+                                            loading ||
+                                            saving ||
+                                            savingAsistente ||
+                                            isCancelada ||
+                                            !selectedAsistenteId
+                                        }
+                                    >
+                                        {savingAsistente ? "Agregando..." : "Agregar asistente"}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-blue-gray-100 overflow-hidden">
+                                {!asistentes.length ? (
+                                    <div className="p-4 text-sm text-blue-gray-500">
+                                        No hay asistentes asignados a esta oferta.
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-blue-gray-50">
+                                        {asistentes.map((a) => {
+                                            const nombreCompleto =
+                                                a.nombreCompleto ||
+                                                [a.nombre, a.primerApellido, a.segundoApellido]
+                                                    .filter(Boolean)
+                                                    .join(" ");
+
+                                            return (
+                                                <div
+                                                    key={`${a.personaId}-${a.correo || nombreCompleto}`}
+                                                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 bg-white"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <Typography className="font-bold text-[#2B338C] text-sm">
+                                                            {nombreCompleto || "Sin nombre"}
+                                                        </Typography>
+
+                                                        <Typography className="text-xs text-blue-gray-500 truncate">
+                                                            {a.correo || "Sin correo"}
+                                                        </Typography>
+                                                    </div>
+
+                                                    <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outlined"
+                                                            className="border-[#2B338C] text-[#2B338C]"
+                                                            disabled
+                                                        >
+                                                            Enviar oferta
+                                                        </Button>
+
+                                                        <Button
+                                                            size="sm"
+                                                            color="red"
+                                                            variant="outlined"
+                                                            onClick={() =>
+                                                                handleQuitarAsistente(a.personaId, nombreCompleto)
+                                                            }
+                                                            disabled={
+                                                                loading ||
+                                                                saving ||
+                                                                savingAsistente ||
+                                                                isCancelada
+                                                            }
+                                                        >
+                                                            Quitar
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </AppModal>

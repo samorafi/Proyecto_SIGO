@@ -26,6 +26,7 @@ public class OfertaResponseDto
     public string? Cursoid { get; internal set; }
     public int? AccionId { get; internal set; }
     public string? Persona { get; internal set; }
+    public List<OfertaAsistenteDto> Asistentes { get; set; } = new();
 
     public static OfertaResponseDto FromEntity(SIGO.Domain.Entities.Oferta o) => new()
     {
@@ -44,6 +45,12 @@ public class OfertaResponseDto
         Cupo = o.Cupo,
         Matriculados = o.Matriculados,
         Archivados = o.Archivados,
-        PersonaId = o.PersonaId
+        PersonaId = o.PersonaId,
+        Asistentes = o.OfertaAsistentes?.Select(a => new OfertaAsistenteDto
+        {
+            PersonaId = a.PersonaId,
+            NombreCompleto = $"{a.Persona?.Nombre} {a.Persona?.PrimerApellido} {a.Persona?.SegundoApellido}".Trim(),
+            Correo = a.Persona?.Correo
+        }).ToList() ?? new List<OfertaAsistenteDto>()
     };
 }

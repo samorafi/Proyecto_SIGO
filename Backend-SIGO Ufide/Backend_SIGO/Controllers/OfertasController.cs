@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
+using SIGO.Application.Features.Ofertas.Commands.AgregarAsistenteOferta;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
+using SIGO.Application.Features.Ofertas.Commands.AsignarAsistentes;
 using SIGO.Application.Features.Ofertas.Commands.Cancelar;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
+using SIGO.Application.Features.Ofertas.Commands.QuitarAsistenteOferta;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Enums;
@@ -91,7 +94,7 @@ public class OfertasController : ControllerBase
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<OfertaResponseDto>> GetById(int id, CancellationToken ct)
-        => Ok(await _mediator.Send(new GetOfertaNotificacionesQuery(id), ct));
+        => Ok(await _mediator.Send(new GetOfertaByIdQuery(id), ct));
 
     [HttpGet("{id:int}/ficha")]
     public async Task<ActionResult<OfertaResponseDto>> GetFicha(int id, CancellationToken ct)
@@ -220,5 +223,40 @@ public class OfertasController : ControllerBase
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName
         );
+    }
+
+    [HttpPut("{ofertaId:int}/asistentes")]
+    public async Task<IActionResult> AsignarAsistentes(
+    int ofertaId,
+    [FromBody] AsignarAsistentesOfertaRequest request)
+    {
+        await _mediator.Send(new AsignarAsistentesOfertaCommand(
+            ofertaId,
+            request.PersonaIds ?? new List<int>()
+        ));
+
+        return NoContent();
+    }
+
+    [HttpPost("{ofertaId:int}/asistentes")]
+    public async Task<IActionResult> AgregarAsistente(int ofertaId, [FromBody] AgregarAsistenteOfertaCommand command)
+    {
+        if (ofertaId != command.OfertaId)
+            return BadRequest("El ofertaId de la ruta no coincide con el del cuerpo.");
+
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpDelete("{ofertaId:int}/asistentes/{personaId:int}")]
+    public async Task<IActionResult> QuitarAsistente(int ofertaId, int personaId)
+    {
+        await _mediator.Send(new QuitarAsistenteOfertaCommand
+        {
+            OfertaId = ofertaId,
+            PersonaId = personaId
+        });
+
+        return NoContent();
     }
 }

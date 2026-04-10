@@ -42,6 +42,7 @@ namespace SIGO.Infrastructure.Persistence
         public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
         public DbSet<PasswordResetOtp> PasswordResetOtps => Set<PasswordResetOtp>();
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+        public DbSet<OfertaAsistente> OfertaAsistentes => Set<OfertaAsistente>();
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

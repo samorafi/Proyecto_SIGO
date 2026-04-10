@@ -1320,6 +1320,7 @@ export default function OfertasPagedTable({
         }}
         horarios={horarios}
         coordinadores={coordinadores}
+        docentes={docentesNormalized}
         acciones={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
       />
 

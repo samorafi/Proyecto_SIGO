@@ -30,9 +30,12 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
                     : null,
                 HorarioHora = o.Horario != null ? o.Horario.Rango : null,
 
+                PeriodoId = o.PeriodoId,
                 Periodo = o.Periodo != null ? o.Periodo.Etiqueta : null,
+
                 Accion = o.Accion != null ? o.Accion.Nombre : null,
                 AccionId = o.AccionId,
+
                 CoordinadorId = o.CoordinadorId,
                 Coordinador = o.Coordinador != null
                     ? ((o.Coordinador.Nombre ?? "") + " " +
@@ -46,17 +49,37 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
                 Cupo = o.Cupo,
                 Matriculados = o.Matriculados,
                 Archivados = o.Archivados,
+
                 PersonaId = o.PersonaId,
                 Persona = o.Persona != null
                     ? ((o.Persona.Nombre ?? "") + " " +
                        (o.Persona.PrimerApellido ?? "") + " " +
                        (o.Persona.SegundoApellido ?? "")).Trim()
-                    : null,
-
+                    : null
             })
             .FirstOrDefaultAsync(ct);
 
-        if (dto is null) throw new NotFoundException("Oferta", request.OfertaId);
+        if (dto is null)
+            throw new NotFoundException("Oferta", request.OfertaId);
+
+        dto.Asistentes = await _db.OfertaAsistentes
+            .AsNoTracking()
+            .Where(a => a.OfertaId == request.OfertaId)
+            .Join(
+                _db.Personas.AsNoTracking(),
+                a => a.PersonaId,
+                p => p.Id,
+                (a, p) => new OfertaAsistenteDto
+                {
+                    PersonaId = p.Id,
+                    NombreCompleto = ((p.Nombre ?? "") + " " +
+                                      (p.PrimerApellido ?? "") + " " +
+                                      (p.SegundoApellido ?? "")).Trim(),
+                    Correo = p.Correo
+                })
+            .OrderBy(a => a.NombreCompleto)
+            .ToListAsync(ct);
+
         return dto;
     }
 }

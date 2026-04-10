@@ -1,20 +1,28 @@
-import { Typography, Button, Input } from "@material-tailwind/react";
+import { Typography, Button } from "@material-tailwind/react";
 import AppModal from "@/components/ui/Modals/AppModal";
 
 export default function ModalVerOferta_v2({
   open,
   onClose,
-
   loading,
   error,
-  data, // fichaData
-
+  data,
   accionChips,
   estadoChips,
 }) {
   const title = data?.curso
     ? `Ficha de Oferta - ${data.curso} - ${data.sede} - ${data.periodo}`
     : "Ficha de Oferta";
+
+  const modalidadTexto = String(data?.modalidad ?? "")
+    .trim()
+    .toLowerCase();
+
+  const esOfertaVirtual100 =
+    modalidadTexto === "en linea" ||
+    modalidadTexto === "en línea";
+
+  const asistentes = data?.asistentes ?? [];
 
   return (
     <AppModal
@@ -44,7 +52,6 @@ export default function ModalVerOferta_v2({
       )}
 
       {!loading && !error && (
-        
         <div className="max-h-[70vh] overflow-y-auto overscroll-contain">
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md text-[15px] leading-tight">
             <h2 className="text-[#2B338C] font-bold text-base mb-2 border-b border-gray-300 pb-1">
@@ -84,6 +91,58 @@ export default function ModalVerOferta_v2({
               <Campo label="Coordinador" value={data?.coordinador ?? "Sin asignar"} />
               <Campo label="Profesor" value={data?.persona ?? "Sin asignar"} />
             </div>
+
+            {esOfertaVirtual100 && (
+              <>
+                <hr className="my-4 border-gray-300" />
+
+                <div className="mt-2">
+                  <div className="flex items-center justify-between border-b border-gray-300 pb-1 mb-3">
+                    <h2 className="text-[#2B338C] font-bold text-base">
+                      Profesores Asistentes
+                    </h2>
+
+                    {!!asistentes.length && (
+                      <span className="text-xs font-bold text-blue-gray-500">
+                        {asistentes.length} asignado(s)
+                      </span>
+                    )}
+                  </div>
+
+                  {!asistentes.length ? (
+                    <p className="text-gray-700 text-md leading-relaxed border border-gray-100 rounded-md p-3 bg-gray-50">
+                      No hay asistentes asignados a esta oferta.
+                    </p>
+                  ) : (
+                    <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                      <div className="divide-y divide-gray-200">
+                        {asistentes.map((a) => {
+                          const nombreCompleto =
+                            a.nombreCompleto ||
+                            [a.nombre, a.primerApellido, a.segundoApellido]
+                              .filter(Boolean)
+                              .join(" ");
+
+                          return (
+                            <div
+                              key={`${a.personaId}-${a.correo || nombreCompleto}`}
+                              className="px-4 py-3 flex flex-col gap-1 bg-gray-50"
+                            >
+                              <p className="text-[#2B338C] font-bold text-sm">
+                                {nombreCompleto || "Sin nombre"}
+                              </p>
+                              <p className="text-gray-700 text-sm">
+                                {a.correo || "Sin correo"}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <hr className="my-4 border-gray-300" />
 
