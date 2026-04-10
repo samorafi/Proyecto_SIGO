@@ -1,0 +1,47 @@
+CREATE TABLE universidad.oferta_asistente (
+    oferta_asistente_id SERIAL PRIMARY KEY,
+    oferta_id INTEGER NOT NULL,
+    persona_id INTEGER NOT NULL,
+    CONSTRAINT fk_oferta_asistente_oferta
+        FOREIGN KEY (oferta_id) REFERENCES universidad.oferta(oferta_id),
+    CONSTRAINT fk_oferta_asistente_persona
+        FOREIGN KEY (persona_id) REFERENCES universidad.persona(persona_id)
+);
+
+CREATE UNIQUE INDEX ux_oferta_asistente_oferta_persona
+ON universidad.oferta_asistente(oferta_id, persona_id);
+
+-- ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- ------------------------------------------------------------
+
+CREATE TABLE universidad.oferta_asistente_solicitud (
+    oferta_asistente_solicitud_id SERIAL PRIMARY KEY,
+    oferta_id INT NOT NULL,
+    persona_id INT NOT NULL,
+    destinatario_email VARCHAR(255) NOT NULL,
+    asunto TEXT NOT NULL,
+    cuerpo TEXT NOT NULL,
+    estado_solicitud SMALLINT NOT NULL DEFAULT 0, -- 0 Pendiente, 1 Aceptada, 2 Rechazada
+    fecha_envio TIMESTAMP NOT NULL,
+    fecha_respuesta TIMESTAMP NULL,
+    token VARCHAR(200) NOT NULL,
+    estado_envio SMALLINT NOT NULL DEFAULT 0,     -- 0 Pendiente, 1 Enviado OK, 2 Error
+    error_envio TEXT NULL
+);
+
+ALTER TABLE universidad.oferta_asistente_solicitud
+ADD CONSTRAINT fk_oas_oferta
+FOREIGN KEY (oferta_id)
+REFERENCES universidad.oferta(oferta_id);
+
+ALTER TABLE universidad.oferta_asistente_solicitud
+ADD CONSTRAINT fk_oas_persona
+FOREIGN KEY (persona_id)
+REFERENCES universidad.persona(persona_id);
+
+CREATE UNIQUE INDEX ux_oas_token
+ON universidad.oferta_asistente_solicitud(token);
+
+CREATE INDEX ix_oas_oferta_persona
+ON universidad.oferta_asistente_solicitud(oferta_id, persona_id);
