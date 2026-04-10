@@ -40,6 +40,7 @@ namespace SIGO.Application.Abstractions
         DbSet<PasswordResetOtp> PasswordResetOtps { get; }
         DbSet<PasswordResetToken> PasswordResetTokens { get; }
         DbSet<OfertaAsistente> OfertaAsistentes { get; }
+        DbSet<OfertaAsistenteSolicitud> OfertaAsistenteSolicitudes { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
         Task<List<T>> SqlQueryAsync<T>(FormattableString query, CancellationToken cancellationToken = default);

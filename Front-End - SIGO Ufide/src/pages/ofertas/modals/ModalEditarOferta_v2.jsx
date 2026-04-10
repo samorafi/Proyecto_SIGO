@@ -15,6 +15,7 @@ import VerOfertaEditar from "../functions/VerFichaOferta_v2";
 import { entityConfirm } from "@/services/entityConfirm.service";
 import AgregarAsistenteOferta from "@/pages/ofertas/functions/AgregarAsistenteOferta";
 import QuitarAsistenteOferta from "@/pages/ofertas/functions/QuitarAsistenteOferta";
+import EnviarOfertaAsistente from "@/pages/ofertas/functions/EnviarOfertaAsistente";
 
 const emptyForm = {
     accionId: "",
@@ -35,6 +36,7 @@ export default function ModalEditarOferta_v2({
     acciones = [],
     coordinadores = [],
     docentes = [],
+    periodos = [],
 }) {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -44,6 +46,9 @@ export default function ModalEditarOferta_v2({
     const [selectedAsistenteId, setSelectedAsistenteId] = useState("");
     const [savingAsistente, setSavingAsistente] = useState(false);
     const [filtroDocenteAsistente, setFiltroDocenteAsistente] = useState("");
+    const [evalPeriodoAsistenteId, setEvalPeriodoAsistenteId] = useState("");
+
+    const [tipoPeriodoAsistente, setTipoPeriodoAsistente] = useState("");
 
     useEffect(() => {
         if (!open) {
@@ -54,6 +59,8 @@ export default function ModalEditarOferta_v2({
             setSelectedAsistenteId("");
             setSavingAsistente(false);
             setFiltroDocenteAsistente("");
+            setTipoPeriodoAsistente("");
+            setEvalPeriodoAsistenteId("");
         }
     }, [open]);
 
@@ -185,6 +192,25 @@ export default function ModalEditarOferta_v2({
         });
     }, [docentesDisponiblesComoAsistentes, filtroDocenteAsistente]);
 
+    const periodosOrdenadosAsistente = useMemo(() => {
+        const lista = (periodos || []).filter((p) => {
+            if (!tipoPeriodoAsistente) return false;
+            return String(p?.tipo ?? "").toUpperCase() === String(tipoPeriodoAsistente).toUpperCase();
+        });
+
+        return lista.sort((a, b) => {
+            const anioA = Number(a?.anio ?? 0);
+            const anioB = Number(b?.anio ?? 0);
+
+            if (anioB !== anioA) return anioB - anioA;
+
+            const numA = Number(a?.numero ?? 0);
+            const numB = Number(b?.numero ?? 0);
+
+            return numB - numA;
+        });
+    }, [periodos, tipoPeriodoAsistente]);
+
     const menuPropsSafe = {
         className:
             "z-[99999] max-h-64 overflow-auto bg-white border border-blue-gray-100 rounded-md shadow-xl",
@@ -194,6 +220,8 @@ export default function ModalEditarOferta_v2({
         if (!esOfertaVirtual100) {
             setSelectedAsistenteId("");
             setFiltroDocenteAsistente("");
+            setTipoPeriodoAsistente("");
+            setEvalPeriodoAsistenteId("");
         }
     }, [esOfertaVirtual100]);
 
@@ -301,6 +329,56 @@ export default function ModalEditarOferta_v2({
         } catch (e) {
             alertService.close();
             alertService.error("Error", "Falló la asignación del asistente.");
+        } finally {
+            setSavingAsistente(false);
+        }
+    };
+
+    const handleEnviarOfertaAsistente = async (asistente) => {
+        if (!ofertaId || !asistente?.personaId) return;
+
+        const nombre =
+            asistente?.nombreCompleto ||
+            [asistente?.nombre, asistente?.primerApellido, asistente?.segundoApellido]
+                .filter(Boolean)
+                .join(" ") ||
+            "este asistente";
+
+        const ok = await alertService.confirm({
+            title: "¿Enviar oferta al asistente?",
+            text: `Se enviará la oferta a ${nombre}.`,
+            confirmText: "Sí, enviar",
+            cancelText: "Cancelar",
+        });
+
+        if (!ok) return;
+
+        try {
+            setSavingAsistente(true);
+            alertService.loading("Enviando oferta...", "Por favor espera");
+
+            const payload = {
+                ofertaId: Number(ofertaId),
+                personaId: Number(asistente.personaId),
+                evaluacionPeriodoId: evalPeriodoAsistenteId
+                    ? Number(evalPeriodoAsistenteId)
+                    : null,
+            };
+
+            const res = await EnviarOfertaAsistente(payload);
+
+            alertService.close();
+
+            if (!res.ok) {
+                alertService.error("Error", res.error || "No se pudo enviar la oferta al asistente.");
+                return;
+            }
+
+            await cargarOferta();
+            alertService.toastSuccess("Oferta enviada al asistente correctamente");
+        } catch (e) {
+            alertService.close();
+            alertService.error("Error", "Falló el envío de la oferta al asistente.");
         } finally {
             setSavingAsistente(false);
         }
@@ -571,6 +649,48 @@ export default function ModalEditarOferta_v2({
                                     )}
                                 </Select>
 
+                                <Select
+                                    label="Tipo de periodo (Evaluación docente)"
+                                    value={tipoPeriodoAsistente || ""}
+                                    onChange={(v) => {
+                                        setTipoPeriodoAsistente(v || "");
+                                        setEvalPeriodoAsistenteId("");
+                                    }}
+                                    disabled={loading || saving || savingAsistente || isCancelada}
+                                    menuProps={menuPropsSafe}
+                                >
+                                    <Option value="C">Cuatrimestre (C)</Option>
+                                    <Option value="T">Trimestre (T)</Option>
+                                    <Option value="P">Periodo Mensual (P)</Option>
+                                </Select>
+
+                                <Select
+                                    label="Periodo (Evaluación docente)"
+                                    key={`eval-periodo-asistente-${tipoPeriodoAsistente}-${periodosOrdenadosAsistente.map((p) => p.periodoId).join(",")}`}
+                                    value={evalPeriodoAsistenteId ? String(evalPeriodoAsistenteId) : ""}
+                                    disabled={!tipoPeriodoAsistente || loading || saving || savingAsistente || isCancelada}
+                                    onChange={(v) => setEvalPeriodoAsistenteId(v || "")}
+                                    selected={() => {
+                                        if (!evalPeriodoAsistenteId) return "Seleccione";
+                                        const sel = periodosOrdenadosAsistente.find(
+                                            (x) => String(x.periodoId) === String(evalPeriodoAsistenteId)
+                                        );
+                                        return sel ? `${sel.numero}${sel.tipo} - ${sel.anio}` : "Seleccione";
+                                    }}
+                                    menuProps={menuPropsSafe}
+                                >
+                                    <Option value="">Seleccione</Option>
+                                    {periodosOrdenadosAsistente.map((p) => (
+                                        <Option key={p.periodoId} value={String(p.periodoId)}>
+                                            {`${p.numero}${p.tipo} - ${p.anio}`}
+                                        </Option>
+                                    ))}
+                                </Select>
+
+                                <Typography className="text-xs text-blue-gray-600">
+                                    Este valor se usará en el texto: “Sus resultados en la Evaluación Docente del ...”.
+                                </Typography>
+
                                 <div className="flex justify-end">
                                     <Button
                                         className="bg-[#2B338C] text-white w-full md:w-auto"
@@ -615,6 +735,14 @@ export default function ModalEditarOferta_v2({
                                                         <Typography className="text-xs text-blue-gray-500 truncate">
                                                             {a.correo || "Sin correo"}
                                                         </Typography>
+
+                                                        <div className="mt-2">
+                                                            <EstadoSolicitudAsistenteChip
+                                                                estadoSolicitudTexto={a.estadoSolicitudTexto}
+                                                                estadoEnvio={a.estadoEnvio}
+                                                                estadoEnvioTexto={a.estadoEnvioTexto}
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="flex flex-col sm:flex-row gap-2 shrink-0">
@@ -622,9 +750,17 @@ export default function ModalEditarOferta_v2({
                                                             size="sm"
                                                             variant="outlined"
                                                             className="border-[#2B338C] text-[#2B338C]"
-                                                            disabled
+                                                            onClick={() => handleEnviarOfertaAsistente(a)}
+                                                            disabled={
+                                                                loading ||
+                                                                saving ||
+                                                                savingAsistente ||
+                                                                isCancelada ||
+                                                                !a?.personaId ||
+                                                                a?.estadoSolicitudTexto === "Pendiente"
+                                                            }
                                                         >
-                                                            Enviar oferta
+                                                            {savingAsistente ? "Enviando..." : "Enviar oferta"}
                                                         </Button>
 
                                                         <Button
@@ -655,6 +791,36 @@ export default function ModalEditarOferta_v2({
                 </div>
             </div>
         </AppModal>
+    );
+}
+
+function EstadoSolicitudAsistenteChip({ estadoSolicitudTexto, estadoEnvio, estadoEnvioTexto }) {
+    const texto = estadoSolicitudTexto || "No enviada";
+
+    let className =
+        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold border";
+
+    if (texto === "Aceptada") {
+        className += " bg-green-50 text-green-700 border-green-200";
+    } else if (texto === "Rechazada") {
+        className += " bg-red-50 text-red-700 border-red-200";
+    } else if (texto === "Pendiente") {
+        className += " bg-amber-50 text-amber-700 border-amber-200";
+    } else {
+        className += " bg-blue-gray-50 text-blue-gray-600 border-blue-gray-200";
+    }
+
+    return (
+        <div className="flex flex-col items-start gap-1">
+            <span className={className}>{texto}</span>
+
+            {estadoEnvioTexto && (
+                <span className="text-[10px] text-blue-gray-400 font-semibold">
+                    Envío: {estadoEnvioTexto}
+                    {estadoEnvio === 2 ? " ⚠️" : ""}
+                </span>
+            )}
+        </div>
     );
 }
 

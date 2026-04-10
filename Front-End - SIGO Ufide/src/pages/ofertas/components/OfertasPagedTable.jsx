@@ -1322,6 +1322,7 @@ export default function OfertasPagedTable({
         coordinadores={coordinadores}
         docentes={docentesNormalized}
         acciones={ACCIONES.map(a => ({ accionId: a.id, nombre: a.nombre }))}
+        periodos={periodosOrdenados}
       />
 
       <ModalEnviarOfertaDocente_v2

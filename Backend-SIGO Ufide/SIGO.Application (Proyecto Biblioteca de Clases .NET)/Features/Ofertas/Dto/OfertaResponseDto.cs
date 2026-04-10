@@ -50,7 +50,13 @@ public class OfertaResponseDto
         {
             PersonaId = a.PersonaId,
             NombreCompleto = $"{a.Persona?.Nombre} {a.Persona?.PrimerApellido} {a.Persona?.SegundoApellido}".Trim(),
-            Correo = a.Persona?.Correo
+            Correo = a.Persona?.Correo,
+            EstadoSolicitud = null,
+            EstadoSolicitudTexto = "No enviada",
+            EstadoEnvio = null,
+            EstadoEnvioTexto = "No enviada",
+            FechaEnvio = null,
+            FechaRespuesta = null
         }).ToList() ?? new List<OfertaAsistenteDto>()
     };
 }

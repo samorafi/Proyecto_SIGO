@@ -62,14 +62,14 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
         if (dto is null)
             throw new NotFoundException("Oferta", request.OfertaId);
 
-        dto.Asistentes = await _db.OfertaAsistentes
+        var asistentes = await _db.OfertaAsistentes
             .AsNoTracking()
             .Where(a => a.OfertaId == request.OfertaId)
             .Join(
                 _db.Personas.AsNoTracking(),
                 a => a.PersonaId,
                 p => p.Id,
-                (a, p) => new OfertaAsistenteDto
+                (a, p) => new
                 {
                     PersonaId = p.Id,
                     NombreCompleto = ((p.Nombre ?? "") + " " +
@@ -79,6 +79,58 @@ public class GetOfertaByIdQueryHandler : IRequestHandler<GetOfertaByIdQuery, Ofe
                 })
             .OrderBy(a => a.NombreCompleto)
             .ToListAsync(ct);
+
+        var solicitudes = await _db.OfertaAsistenteSolicitudes
+            .AsNoTracking()
+            .Where(x => x.OfertaId == request.OfertaId)
+            .OrderByDescending(x => x.FechaEnvio)
+            .ToListAsync(ct);
+
+        dto.Asistentes = asistentes
+            .Select(a =>
+            {
+                var ultimaSolicitud = solicitudes
+                    .FirstOrDefault(s => s.PersonaId == a.PersonaId);
+
+                return new OfertaAsistenteDto
+                {
+                    PersonaId = a.PersonaId,
+                    NombreCompleto = a.NombreCompleto,
+                    Correo = a.Correo,
+
+                    EstadoSolicitud = ultimaSolicitud == null
+                        ? null
+                        : (int)ultimaSolicitud.EstadoSolicitud,
+
+                    EstadoSolicitudTexto = ultimaSolicitud == null
+                        ? "No enviada"
+                        : ultimaSolicitud.EstadoSolicitud switch
+                        {
+                            0 => "Pendiente",
+                            1 => "Aceptada",
+                            2 => "Rechazada",
+                            _ => "Desconocido"
+                        },
+
+                    EstadoEnvio = ultimaSolicitud == null
+                        ? null
+                        : (int)ultimaSolicitud.EstadoEnvio,
+
+                    EstadoEnvioTexto = ultimaSolicitud == null
+                        ? "No enviada"
+                        : ultimaSolicitud.EstadoEnvio switch
+                        {
+                            0 => "Pendiente",
+                            1 => "Enviado",
+                            2 => "Error",
+                            _ => "Desconocido"
+                        },
+
+                    FechaEnvio = ultimaSolicitud?.FechaEnvio,
+                    FechaRespuesta = ultimaSolicitud?.FechaRespuesta
+                };
+            })
+            .ToList();
 
         return dto;
     }
