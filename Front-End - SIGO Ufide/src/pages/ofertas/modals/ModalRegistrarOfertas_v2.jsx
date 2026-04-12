@@ -259,15 +259,20 @@ export default function ModalRegistrarOfertas_v2({
           <div>
             <p className="text-[#2B338C] font-bold text-md mb-1">Cupo</p>
             <Input
-              type="number"
+              type="text"
               label="Cupo"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={form.cupo ?? ""}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  cupo: e.target.value === "" ? null : Number(e.target.value),
-                }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  setForm((p) => ({
+                    ...p,
+                    cupo: value === "" ? null : Number(value),
+                  }));
+                }
+              }}
             />
           </div>
 
@@ -276,15 +281,20 @@ export default function ModalRegistrarOfertas_v2({
               Estudiantes matriculados
             </p>
             <Input
-              type="number"
+              type="text"
               label="Matriculados"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={form.matriculados ?? ""}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  matriculados: e.target.value === "" ? null : Number(e.target.value),
-                }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  setForm((p) => ({
+                    ...p,
+                    matriculados: value === "" ? null : Number(value),
+                  }));
+                }
+              }}
             />
           </div>
         </div>

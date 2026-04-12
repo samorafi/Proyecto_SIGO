@@ -70,7 +70,7 @@ export default function Sidenav({
             <XMarkIcon className="h-6 w-6 text-white" />
           </IconButton>
         )}
-        <Link to="/dashboard/ofertas" className="flex flex-col items-start gap-2">
+        <Link to="/dashboard" className="flex flex-col items-start gap-2">
           <img src={brandImg} alt="logo" className="h-10 w-auto object-contain" />
           <div className="leading-tight max-w-[180px]">
             <Typography className="font-bold">{brandName?.split(" (")[0] ?? "SIGO"}</Typography>

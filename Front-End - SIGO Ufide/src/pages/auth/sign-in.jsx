@@ -55,7 +55,7 @@ export default function SignIn() {
 
       alert.close();
       alert.toastSuccess("Bienvenido");
-      navigate("/dashboard/ofertas", { replace: true });
+      navigate("/dashboard/", { replace: true });
     } catch (error) {
       alert.close();
       alert.error(

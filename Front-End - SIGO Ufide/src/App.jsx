@@ -3,6 +3,7 @@ import routes from "@/routes";
 import { Dashboard, Auth } from "@/layouts";
 import ProtectedLayout from "@/components/ProtectedLayout";
 import RequirePermission from "@/guards/RequirePermission";
+import HomePage from "@/pages/HomePage";
 
 function wrapWithPermission(element, permiso) {
   if (!permiso) return element;
@@ -43,7 +44,7 @@ export default function App() {
           );
         })}
 
-        <Route index element={<Navigate to="ofertas" replace />} />
+        <Route index element={<HomePage />} />
       </Route>
 
       <Route path="/auth/*" element={<Auth />}>
