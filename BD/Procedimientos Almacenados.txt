@@ -85,7 +85,6 @@ ROWS 1000
 AS $BODY$
 DECLARE
     v_count INT := 0;
-    v_omitidas_canceladas INT := 0;
     v_etq_origen TEXT;
     v_etq_destino TEXT;
 BEGIN
@@ -98,31 +97,23 @@ BEGIN
     FROM universidad.periodo p
     WHERE p.periodo_id = p_periodo_destino;
 
-    -- Contar cuántas canceladas se omiten (estado_oferta_id = 5)
-    SELECT COUNT(*) INTO v_omitidas_canceladas
-    FROM universidad.oferta o
-    WHERE o.periodo_id = p_periodo_origen
-      AND o.modalidad_id = ANY(p_modalidades)
-      AND COALESCE(o.estado_oferta_id, 0) = 5;
-
-    -- Validar si existen ofertas elegibles para duplicar (excluye canceladas)
+    -- Validar si existen ofertas para duplicar
     SELECT COUNT(*) INTO v_count
     FROM universidad.oferta o
     WHERE o.periodo_id = p_periodo_origen
-      AND o.modalidad_id = ANY(p_modalidades)
-      AND COALESCE(o.estado_oferta_id, 0) <> 5;
+      AND o.modalidad_id = ANY(p_modalidades);
 
     IF v_count = 0 THEN
         RETURN QUERY
         SELECT
             0,
-            'No hay ofertas elegibles para duplicar desde "' ||
+            'No hay ofertas para duplicar desde "' ||
             COALESCE(v_etq_origen, 'el período de origen') ||
-            '". Omitidas por estar canceladas: ' || v_omitidas_canceladas || '.';
+            '".';
         RETURN;
     END IF;
 
-    -- Insertar las ofertas duplicadas con grupo incremental por combinación (misma lógica)
+    -- Insertar las ofertas duplicadas con grupo incremental por combinación
     WITH src AS (
         SELECT
             o.curso_id,
@@ -139,7 +130,6 @@ BEGIN
         FROM universidad.oferta o
         WHERE o.periodo_id = p_periodo_origen
           AND o.modalidad_id = ANY(p_modalidades)
-          AND COALESCE(o.estado_oferta_id, 0) <> 5 
     ),
     base AS (
         SELECT
@@ -197,7 +187,7 @@ BEGIN
         COALESCE(v_etq_origen, 'el período de origen') ||
         '" hacia "' ||
         COALESCE(v_etq_destino, 'el período de destino') ||
-        '". Omitidas por estar canceladas: ' || v_omitidas_canceladas || '.';
+        '".';
 END;
 $BODY$;
 
