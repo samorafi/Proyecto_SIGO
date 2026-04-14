@@ -1,370 +1,1104 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
-  Card, Button, Input, Select, Option, Typography, Tooltip,
+  Card, Typography, Button, Input, Select, Option,
 } from "@material-tailwind/react";
 import {
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-  PrinterIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+} from "recharts";
+import { alertService } from "@/services/alert.service";
+import { apiFetch } from "@/services/apiClientService";
 
-/* ------------------ MOCKS (solo UI) ------------------ */
-const DATA_OFERTAS = [
-  { id: 1, estado: "Publicada", sede: "San Pedro", carrera: "Ing. Sistemas", codigo: "ING-101", materia: "Prog I", grupo: "A", periodo: "I-2025", docente: "Ana Sánchez", coordinador: "Karen Rivera" },
-  { id: 2, estado: "Borrador",  sede: "Virtual",   carrera: "Ing. Sistemas", codigo: "ING-250", materia: "Cisco 1", grupo: "B", periodo: "I-2025", docente: "",            coordinador: "Karen Rivera" },
-  { id: 3, estado: "Cerrada",   sede: "Heredia",   carrera: "ADM",           codigo: "ADM-300", materia: "Contab", grupo: "C", periodo: "III-2024", docente: "Carlos Solís", coordinador: "Luis Mora" },
-];
+const API = import.meta.env.VITE_API_BASE ?? "";
+const API_URL = {
+  personas: `${API}/api/personas`,
+  ofertas: `${API}/api/ofertas`,
+  coordinaciones: `${API}/api/coordinaciones`,
+  periodos: `${API}/api/periodos`,
+  motivos: `${API}/api/motivosdesvinculacion`,
 
-const DATA_DOCENTES = [
-  { id: 1, nombre: "Ana Sánchez",   estado: "Activo",   categoria: "Tiempo Parcial", sede: "San Pedro", cursos: 3, asignaciones: 2 },
-  { id: 2, nombre: "Carlos Solís",  estado: "Activo",   categoria: "Catedrático",    sede: "Heredia",   cursos: 4, asignaciones: 4 },
-  { id: 3, nombre: "María López",   estado: "Inactivo", categoria: "Adjunto",        sede: "Virtual",   cursos: 0, asignaciones: 0 },
-];
+  // Nómina
+  nominaExcel: `${API}/api/nomina/docentes/excel`,
+  nominaPdf: `${API}/api/nomina/docentes/pdf`,
 
-const DATA_COORDS = [
-  { id: 1, nombre: "Karen Rivera", sede: "Virtual", ofertas: 12, estado: "Activo" },
-  { id: 2, nombre: "Luis Mora",    sede: "Heredia", ofertas: 7,  estado: "Activo" },
-  { id: 3, nombre: "Paula Rojas",  sede: "San Pedro", ofertas: 5, estado: "Activo" },
-];
+  // Permanencia +4
+  permanenciaExcel: `${API}/api/nomina/docentes/permanencia4/excel`,
+  permanenciaPdf: `${API}/api/nomina/docentes/permanencia4/pdf`,
+};
 
-/* ------------------ Helpers ------------------ */
-const Pill = ({ children, className = "" }) => (
-  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white ${className}`}>
-    {children}
-  </span>
-);
+const COLORS = ["#2B338C", "#FFDA00", "#F97316", "#0EA5E9", "#22C55E"];
 
-const matches = (t, q) => !q || String(t).toLowerCase().includes(q.toLowerCase());
+const MENU_CLS =
+  "z-[2147483647] bg-white/100 border border-blue-gray-100 rounded-md shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-64 overflow-auto";
+const CONT_CLS = "relative z-0";
 
-/* ===================================================== */
+const matches = (t, q) =>
+  !q ||
+  String(t ?? "")
+    .toLowerCase()
+    .includes(String(q ?? "").toLowerCase());
+
+const isBlankOrSinDato = (v) => {
+  const s = String(v ?? "").trim().toLowerCase();
+  if (!s) return true;
+  return ["sin dato", "s/d", "sd", "n/a", "na"].includes(s);
+};
+
+function getYearFromEtiqueta(etq) {
+  if (!etq) return null;
+  const m = /(\d{4})/.exec(String(etq));
+  return m ? Number(m[1]) : null;
+}
+
+function parsePeriodoEtiqueta(etq) {
+  const s = String(etq ?? "").trim();
+  const upper = s.toUpperCase();
+  const year = getYearFromEtiqueta(upper);
+
+  let ciclo = null;
+  let m = /(\d)\s*C\b/.exec(upper);
+  if (m) ciclo = Number(m[1]);
+  if (ciclo == null) {
+    m = /\bC\s*(\d)\b/.exec(upper);
+    if (m) ciclo = Number(m[1]);
+  }
+  if (ciclo == null) ciclo = 99;
+
+  return { year: year ?? 9999, ciclo, label: s };
+}
+
+const buildPeriodoLabel = (x) => {
+  if (!x) return "";
+  if (typeof x === "string") return x;
+
+  const etiqueta =
+    x.etiqueta ??
+    x.Etiqueta ??
+    x.label ??
+    x.nombre ??
+    x.Nombre ??
+    x.descripcion ??
+    x.periodo;
+
+  if (etiqueta) return String(etiqueta);
+
+  const numero = x.numero ?? x.Numero ?? x.num ?? x.Num;
+  const tipo = x.tipo ?? x.Tipo ?? "";
+  const anio = x.anio ?? x.Anio ?? x.anioAcademico ?? x.year;
+
+  const numTipo = [numero, tipo].filter(Boolean).join("");
+  if (numTipo && anio) return `${numTipo}, ${anio}`;
+  if (anio) return String(anio);
+  if (numTipo) return numTipo;
+
+  return "";
+};
+
+function getPeriodoSortKey(x) {
+  const raw = x?.__raw ?? x ?? {};
+
+  const anio = Number(
+    raw.anio ?? raw.Anio ?? raw.anioAcademico ?? raw.year ?? 0
+  );
+
+  const numero = Number(
+    raw.numero ?? raw.Numero ?? raw.num ?? raw.Num ?? 0
+  );
+
+  const id = Number(
+    raw.periodoId ?? raw.id ?? raw.Id ?? raw.ID ?? 0
+  );
+
+  return { anio, numero, id };
+}
+
+function getFilenameFromContentDisposition(cd) {
+  if (!cd) return null;
+
+  let m = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cd);
+  if (m?.[1]) return decodeURIComponent(m[1].trim());
+
+  m = /filename\s*=\s*"([^"]+)"/i.exec(cd);
+  if (m?.[1]) return m[1].trim();
+
+  m = /filename\s*=\s*([^;]+)/i.exec(cd);
+  if (m?.[1]) return m[1].trim();
+
+  return null;
+}
+
+async function postAndDownload(url, payload, fallbackName = "export.bin") {
+  const res = await apiFetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Export failed: ${res.status} ${txt}`);
+  }
+
+  const blob = await res.blob();
+  const cd = res.headers.get("content-disposition") || "";
+  const filename = getFilenameFromContentDisposition(cd) || fallbackName;
+
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 export default function Reportes() {
-  const [tab, setTab] = useState("ofertas");
-  const [term, setTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
-  // Filtros compartidos (simple UI)
-  const [estado, setEstado] = useState("Todos");
-  const [sede, setSede] = useState("Todas");
-  const [q, setQ] = useState("Todos");      // I | II | III | Todos
-  const [year, setYear] = useState("Todos");
+  const [personas, setPersonas] = useState([]);
+  const [ofertas, setOfertas] = useState([]);
+  const [coordinaciones, setCoordinaciones] = useState([]);
 
-  // Paginación
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [page, setPage] = useState(1);
+  const [periodosCat, setPeriodosCat] = useState([]);
+  const [periodoMap, setPeriodoMap] = useState({});
+  const [motivoMap, setMotivoMap] = useState({});
 
-  // construir dataset filtrado por tab
-  const filtered = useMemo(() => {
-    if (tab === "ofertas") {
-      return DATA_OFERTAS.filter((o) => {
-        if (!matches(`${o.carrera} ${o.materia} ${o.codigo} ${o.docente} ${o.coordinador} ${o.periodo}`, term)) return false;
-        if (estado !== "Todos" && o.estado !== estado) return false;
-        if (sede !== "Todas" && o.sede !== sede) return false;
-        if (q !== "Todos" && !o.periodo.startsWith(q)) return false;
-        if (year !== "Todos" && !o.periodo.endsWith(year)) return false;
-        return true;
+  // ===== FILTROS GLOBALES (SOLO KPIs / GRÁFICOS) =====
+  const [qSearch, setQSearch] = useState("");
+  const [fProvincia, setFProvincia] = useState("Todas");
+  const [fSede, setFSede] = useState("Todas");
+
+  // ===== UI =====
+  const [showNomina, setShowNomina] = useState(false);
+  const [showPermanencia, setShowPermanencia] = useState(false);
+
+  // ===== NÓMINA: ENCABEZADO (NO depende de filtros globales) =====
+  const [nomEscuela, setNomEscuela] = useState("");
+  const [nomDireccion, setNomDireccion] = useState("");
+  const [nomSubdireccion, setNomSubdireccion] = useState("");
+  const [nomCoordinacion, setNomCoordinacion] = useState("");
+  const [nomSede, setNomSede] = useState("Todas");
+  const [nomPeriodoId, setNomPeriodoId] = useState("");
+
+  const periodoTexto = useMemo(() => {
+    if (!nomPeriodoId) return "";
+    return periodoMap[String(nomPeriodoId)] ?? "";
+  }, [nomPeriodoId, periodoMap]);
+
+  const loadData = async (showLoader = false) => {
+    setLoading(true);
+    setErr("");
+
+    try {
+      if (showLoader) {
+        alertService.loading("Actualizando...", "Cargando datos de reportes");
+      }
+
+      const [rPer, rOf, rCoo, rPerCat, rMot] = await Promise.all([
+        apiFetch(API_URL.personas),
+        apiFetch(API_URL.ofertas),
+        apiFetch(API_URL.coordinaciones),
+        apiFetch(API_URL.periodos),
+        apiFetch(API_URL.motivos),
+      ]);
+
+      if (!rPer.ok) throw new Error("GET /api/personas");
+      if (!rOf.ok) throw new Error("GET /api/ofertas");
+      if (!rCoo.ok) throw new Error("GET /api/coordinaciones");
+      if (!rPerCat.ok) throw new Error("GET /api/periodos");
+      if (!rMot.ok) throw new Error("GET /api/motivosdesvinculacion");
+
+      const jPer = await rPer.json();
+      const jOf = await rOf.json();
+      const jCoo = await rCoo.json();
+      const jPerCat = await rPerCat.json();
+      const jMot = await rMot.json();
+
+      const arrPer = Array.isArray(jPer) ? jPer : jPer.data ?? jPer.items ?? jPer.result ?? jPer.results ?? [];
+      const arrOf = Array.isArray(jOf) ? jOf : jOf.data ?? jOf.items ?? jOf.result ?? jOf.results ?? [];
+      const arrCoo = Array.isArray(jCoo) ? jCoo : jCoo.data ?? jCoo.items ?? jCoo.result ?? jCoo.results ?? [];
+      const arrPerCat = Array.isArray(jPerCat) ? jPerCat : jPerCat.data ?? jPerCat.items ?? jPerCat.result ?? jPerCat.results ?? [];
+      const arrMot = Array.isArray(jMot) ? jMot : jMot.data ?? jMot.items ?? jMot.result ?? jMot.results ?? [];
+
+      setPersonas(Array.isArray(arrPer) ? arrPer : []);
+      setOfertas(Array.isArray(arrOf) ? arrOf : []);
+      setCoordinaciones(Array.isArray(arrCoo) ? arrCoo : []);
+
+      const perList = (Array.isArray(arrPerCat) ? arrPerCat : []).map((x) => {
+        const id = String(x.periodoId ?? x.id ?? x.Id ?? x.ID);
+        const nombre = buildPeriodoLabel(x);
+        return { id, nombre, __raw: x };
       });
-    }
-    if (tab === "docentes") {
-      return DATA_DOCENTES.filter((d) => {
-        if (!matches(`${d.nombre} ${d.categoria} ${d.sede}`, term)) return false;
-        if (estado !== "Todos" && d.estado !== estado) return false;
-        if (sede !== "Todas" && d.sede !== sede) return false;
-        return true;
+      perList.sort((a, b) => {
+        const pa = getPeriodoSortKey(a);
+        const pb = getPeriodoSortKey(b);
+
+        if (pb.anio !== pa.anio) return pb.anio - pa.anio;
+        if (pb.numero !== pa.numero) return pb.numero - pa.numero;
+        return pb.id - pa.id;
       });
+      setPeriodosCat(perList);
+
+      const pMap = {};
+      perList.forEach((p) => (pMap[String(p.id)] = p.nombre));
+      setPeriodoMap(pMap);
+
+      const mMap = {};
+      (Array.isArray(arrMot) ? arrMot : []).forEach((m) => {
+        const id = String(m.motivoDesvinculacionId ?? m.id ?? m.Id ?? m.ID);
+        const nombre = String(m.motivo ?? m.nombre ?? m.descripcion ?? "");
+        if (id) mMap[id] = nombre;
+      });
+      setMotivoMap(mMap);
+
+      if (showLoader) {
+        alertService.close();
+        alertService.toastSuccess("Datos actualizados correctamente");
+      }
+    } catch (e) {
+      console.error(e);
+      setErr("No se pudieron cargar los datos de reportes.");
+      alertService.close();
+      alertService.error("Error", "No se pudieron cargar los datos de reportes.");
+    } finally {
+      setLoading(false);
     }
-    // coordinadores
-    return DATA_COORDS.filter((c) => {
-      if (!matches(`${c.nombre} ${c.sede}`, term)) return false;
-      if (sede !== "Todas" && c.sede !== sede) return false;
-      return true;
-    });
-  }, [tab, term, estado, sede, q, year]);
-
-  // chips de resumen por tab
-  const chips = useMemo(() => {
-    if (tab === "ofertas") {
-      const publicadas = filtered.filter((x) => x.estado === "Publicada").length;
-      const borrador   = filtered.filter((x) => x.estado === "Borrador").length;
-      const cerradas   = filtered.filter((x) => x.estado === "Cerrada").length;
-      return [
-        { text: `TOTAL: ${filtered.length}`,  className: "bg-[#2B338C]" },
-        { text: `PUBLICADAS: ${publicadas}`, className: "bg-green-600" },
-        { text: `BORRADOR: ${borrador}`,     className: "bg-blue-gray-600" },
-        { text: `CERRADAS: ${cerradas}`,     className: "bg-red-600" },
-      ];
-    }
-    if (tab === "docentes") {
-      const activos   = filtered.filter((x) => x.estado === "Activo").length;
-      const inactivos = filtered.filter((x) => x.estado === "Inactivo").length;
-      return [
-        { text: `TOTAL: ${filtered.length}`, className: "bg-[#2B338C]" },
-        { text: `ACTIVOS: ${activos}`,       className: "bg-emerald-600" },
-        { text: `INACTIVOS: ${inactivos}`,   className: "bg-red-600" },
-      ];
-    }
-    // coordinadores
-    const sedes = new Set(filtered.map((x) => x.sede)).size;
-    return [
-      { text: `TOTAL: ${filtered.length}`, className: "bg-[#2B338C]" },
-      { text: `SEDES: ${sedes}`,           className: "bg-indigo-600" },
-    ];
-  }, [filtered, tab]);
-
-  // paginación
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
-  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page, rowsPerPage, total]);
-
-  const pageData = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    return filtered.slice(start, start + rowsPerPage);
-  }, [filtered, page, rowsPerPage]);
-
-  // columnas por tab
-  const HEAD =
-    tab === "ofertas"
-      ? [
-          "Estado",
-          "Sede",
-          "Carrera",
-          "Código",
-          "Materia",
-          "Grupo",
-          "Periodo",
-          "Docente",
-          "Coordinador",
-        ]
-      : tab === "docentes"
-      ? ["Nombre", "Estado", "Categoría", "Sede", "Cursos", "Asignaciones"]
-      : ["Nombre", "Sede", "Ofertas a cargo", "Estado"];
-
-  const clearAll = () => {
-    setTerm("");
-    setEstado("Todos");
-    setSede("Todas");
-    setQ("Todos");
-    setYear("Todos");
-    setRowsPerPage(10);
-    setPage(1);
   };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // ===== CATÁLOGOS =====
+  const provincias = useMemo(() => {
+    const set = new Set();
+    personas.forEach((p) => {
+      const prov = p.provinciaNombre ?? p.provincia ?? p.Provincia ?? p.provinciaDescripcion ?? "";
+      const v = String(prov).trim();
+      if (v) set.add(v);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [personas]);
+
+  const sedes = useMemo(() => {
+    const set = new Set();
+    personas.forEach((p) => {
+      const s = String(p.sede ?? p.Sede ?? "").trim();
+      if (s) set.add(s);
+    });
+    ofertas.forEach((o) => {
+      const s = String(o.sede ?? "").trim();
+      if (s) set.add(s);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [personas, ofertas]);
+
+  // =========================================================
+  //  A) KPIs / GRÁFICOS -> USAN FILTROS GLOBALES
+  // =========================================================
+  const reportPersonas = useMemo(() => {
+    return personas.filter((p) => {
+      const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`.replace(/\s+/g, " ").trim();
+      const ced = String(p.cedula ?? "").trim();
+      const prov = p.provinciaNombre ?? p.provincia ?? p.Provincia ?? p.provinciaDescripcion ?? "";
+      const sedePersona = String(p.sede ?? p.Sede ?? "").trim();
+      const periodoIng = p.periodoIngresoEtiqueta ?? p.periodoIngresoNombre ?? p.periodoIngreso ?? "";
+      const periodoIngTrim = String(periodoIng).trim();
+
+      const textoBusqueda = [nombreCompleto, ced, prov, sedePersona, periodoIngTrim, p.estado, p.tipoContrato, p.atestado, p.genero]
+        .map((x) => x ?? "")
+        .join(" ");
+
+      if (!matches(textoBusqueda, qSearch)) return false;
+      if (fProvincia !== "Todas" && String(prov).trim() !== fProvincia) return false;
+      if (fSede !== "Todas" && sedePersona !== fSede) return false;
+
+      return true;
+    });
+  }, [personas, qSearch, fProvincia, fSede]);
+
+  const totalDocentes = reportPersonas.length;
+
+  const activos = useMemo(
+    () => reportPersonas.filter((p) => String(p.estado ?? "").toLowerCase() === "activo").length,
+    [reportPersonas]
+  );
+
+  const inactivos = useMemo(
+    () => reportPersonas.filter((p) => String(p.estado ?? "").toLowerCase() === "inactivo").length,
+    [reportPersonas]
+  );
+
+  const activosInactivosData = useMemo(
+    () => [
+      { name: "Activos", value: activos },
+      { name: "Inactivos", value: inactivos },
+    ],
+    [activos, inactivos]
+  );
+
+  const periodoNominaData = useMemo(() => {
+    const mapa = new Map();
+    reportPersonas.forEach((p) => {
+      const raw = p.periodoIngresoEtiqueta ?? p.periodoIngresoNombre ?? p.periodoIngreso ?? "";
+      if (isBlankOrSinDato(raw)) return;
+      const key = String(raw).trim();
+      mapa.set(key, (mapa.get(key) ?? 0) + 1);
+    });
+
+    return [...mapa.entries()]
+      .map(([name, value]) => ({ name, value: Number(value ?? 0) }))
+      .filter((x) => !isBlankOrSinDato(x.name) && x.value > 0)
+      .sort((a, b) => {
+        const pa = parsePeriodoEtiqueta(a.name);
+        const pb = parsePeriodoEtiqueta(b.name);
+        if (pa.year !== pb.year) return pa.year - pb.year;
+        if (pa.ciclo !== pb.ciclo) return pa.ciclo - pb.ciclo;
+        return a.name.localeCompare(b.name);
+      });
+  }, [reportPersonas]);
+
+  const atestadoData = useMemo(() => {
+    const mapa = new Map();
+    reportPersonas.forEach((p) => {
+      const raw = p.atestadoNombre ?? p.atestado ?? p.gradoAcademico ?? p.grado ?? "";
+      if (isBlankOrSinDato(raw)) return;
+      const a = String(raw).trim();
+      mapa.set(a, (mapa.get(a) ?? 0) + 1);
+    });
+
+    return [...mapa.entries()]
+      .map(([name, value]) => ({ name, value: Number(value ?? 0) }))
+      .filter((x) => !isBlankOrSinDato(x.name) && x.value > 0);
+  }, [reportPersonas]);
+
+  const generoData = useMemo(() => {
+    const mapa = new Map();
+    reportPersonas.forEach((p) => {
+      const raw = p.genero ?? p.generoNombre ?? "";
+      if (isBlankOrSinDato(raw)) return;
+      const g = String(raw).trim();
+      mapa.set(g, (mapa.get(g) ?? 0) + 1);
+    });
+
+    return [...mapa.entries()]
+      .map(([name, value]) => ({ name, value: Number(value ?? 0) }))
+      .filter((x) => !isBlankOrSinDato(x.name) && x.value > 0);
+  }, [reportPersonas]);
+
+  const contratoData = useMemo(() => {
+    let planilla = 0;
+    let honorarios = 0;
+
+    reportPersonas.forEach((p) => {
+      const t = String(p.tipoContrato ?? "").toLowerCase();
+      if (t.includes("planilla")) planilla++;
+      else if (t.includes("honorario")) honorarios++;
+    });
+
+    return [
+      { name: "Planilla", value: planilla },
+      { name: "Honorarios", value: honorarios },
+    ];
+  }, [reportPersonas]);
+
+  // =========================================================
+  //  B) NÓMINA y PERMANENCIA -> NO usan filtros globales
+  // =========================================================
+
+  const nominaRows = useMemo(() => {
+    return (personas ?? [])
+      .map((p) => {
+        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`.replace(/\s+/g, " ").trim();
+
+        const ingreso = p.periodoIngresoEtiqueta ?? p.periodoIngresoNombre ?? p.periodoIngreso ?? "";
+
+        const salida =
+          p.periodoDesvinculacionEtiqueta ??
+          p.periodoDesvinculacionNombre ??
+          (p.periodoDesvinculacionId != null ? periodoMap[String(p.periodoDesvinculacionId)] ?? "" : "") ??
+          p.periodoDesvinculacion ??
+          "";
+
+        const motivo =
+          p.motivoDesvinculacionNombre ??
+          p.motivoDesvinculacion ??
+          p.motivo ??
+          (p.motivoDesvinculacionId != null ? motivoMap[String(p.motivoDesvinculacionId)] ?? "" : "");
+
+        const estadoTxt =
+          typeof p.estado === "boolean"
+            ? p.estado ? "Activo" : "Inactivo"
+            : p.estado ?? p.estadoPersona ?? "";
+
+        const sedeTxt = String(p.sede ?? p.Sede ?? "").trim();
+
+        return {
+          id: p.personaId ?? p.id,
+          nombre: nombreCompleto || p.nombre || "",
+          ingreso,
+          salida,
+          estado: estadoTxt,
+          motivo,
+          sede: sedeTxt,
+        };
+      })
+      .sort((a, b) => {
+        const rank = (estado) => {
+          const s = String(estado ?? "").trim().toLowerCase();
+          if (/^inactivo\b/.test(s)) return 1;
+          if (/^activo\b/.test(s)) return 0;
+          return 2;
+        };
+        const ra = rank(a.estado);
+        const rb = rank(b.estado);
+        if (ra !== rb) return ra - rb;
+        return a.nombre.localeCompare(b.nombre);
+      });
+  }, [personas, periodoMap, motivoMap]);
+
+  const nominaDisplayRows = useMemo(() => {
+    if (!nomSede || nomSede === "Todas") return nominaRows;
+    return nominaRows.filter((r) => String(r.sede ?? "").trim() === String(nomSede).trim());
+  }, [nominaRows, nomSede]);
+
+  const nominaActivos = useMemo(
+    () => nominaDisplayRows.filter((r) => String(r.estado ?? "").toLowerCase() === "activo").length,
+    [nominaDisplayRows]
+  );
+
+  const nominaInactivos = useMemo(
+    () => nominaDisplayRows.filter((r) => String(r.estado ?? "").toLowerCase() === "inactivo").length,
+    [nominaDisplayRows]
+  );
+
+  const permanenciaMayor4 = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const rows = [];
+
+    (personas ?? []).forEach((p) => {
+      const estadoTxt =
+        typeof p.estado === "boolean"
+          ? (p.estado ? "Activo" : "Inactivo")
+          : String(p.estado ?? p.estadoPersona ?? "").trim();
+
+      if (estadoTxt.toLowerCase() !== "activo") return;
+
+      const etqIng =
+        p.periodoIngresoEtiqueta ??
+        p.periodoIngresoNombre ??
+        p.periodoIngreso ??
+        "";
+
+      const yIng = getYearFromEtiqueta(etqIng);
+      if (!yIng) return;
+
+      const diff = currentYear - yIng;
+
+      if (diff >= 4) {
+        const nombreCompleto = `${p.primerApellido ?? ""} ${p.segundoApellido ?? ""} ${p.nombre ?? ""}`
+          .replace(/\s+/g, " ")
+          .trim();
+
+        rows.push({
+          personaId: p.personaId ?? p.id,
+          nombre: nombreCompleto || p.nombre || "",
+          periodoIngreso: etqIng,
+          anios: diff,
+        });
+      }
+    });
+
+    rows.sort((a, b) => b.anios - a.anios || a.nombre.localeCompare(b.nombre));
+    return rows;
+  }, [personas]);
+
+  // ===== Payloads =====
+  const buildNominaPayload = () => ({
+    meta: {
+      escuela: nomEscuela,
+      direccion: nomDireccion,
+      subdireccion: nomSubdireccion,
+      coordinacion: nomCoordinacion,
+      sede: nomSede,
+      periodo: periodoTexto,
+      cantActivos: nominaActivos,
+      cantInactivos: nominaInactivos,
+    },
+    rows: nominaDisplayRows.map((r) => ({
+      nombreCompleto: r.nombre,
+      periodoIngreso: r.ingreso ?? "",
+      periodoDesvinculacion: r.salida ?? "",
+      estado: r.estado ?? "",
+      motivoDesvinculacion: r.motivo ?? "",
+    })),
+  });
+
+  const buildPermanenciaPayload = () => ({
+    meta: {
+      totalRegistros: permanenciaMayor4.length,
+    },
+    rows: permanenciaMayor4.map((r) => ({
+      nombreCompleto: r.nombre,
+      periodoIngreso: r.periodoIngreso ?? "",
+      aniosPermanencia: Number(r.anios ?? 0),
+    })),
+  });
+
+  // ===== Export Nómina =====
+  const handleExportExcel = async () => {
+    try {
+      alertService.loading("Exportando...", "Generando archivo Excel");
+      await postAndDownload(API_URL.nominaExcel, buildNominaPayload(), "Nomina_Docentes.xlsx");
+      alertService.close();
+      alertService.toastSuccess("Excel exportado correctamente");
+    } catch (e) {
+      console.error(e);
+      alertService.close();
+      alertService.error("Error", "No se pudo exportar Excel.");
+    }
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      alertService.loading("Exportando...", "Generando archivo PDF");
+      await postAndDownload(API_URL.nominaPdf, buildNominaPayload(), "Nomina_Docentes.pdf");
+      alertService.close();
+      alertService.toastSuccess("PDF exportado correctamente");
+    } catch (e) {
+      console.error(e);
+      alertService.close();
+      alertService.error("Error", "No se pudo exportar PDF.");
+    }
+  };
+
+  // ===== Export Permanencia +4 =====
+  const handleExportPermanenciaExcel = async () => {
+    try {
+      alertService.loading("Exportando...", "Generando Excel de permanencia");
+      await postAndDownload(
+        API_URL.permanenciaExcel,
+        buildPermanenciaPayload(),
+        "Docentes_Permanencia4.xlsx"
+      );
+      alertService.close();
+      alertService.toastSuccess("Excel de permanencia exportado correctamente");
+    } catch (e) {
+      console.error(e);
+      alertService.close();
+      alertService.error("Error", "No se pudo exportar Excel (+4 años).");
+    }
+  };
+
+  const handleExportPermanenciaPdf = async () => {
+    try {
+      alertService.loading("Exportando...", "Generando PDF de permanencia");
+      await postAndDownload(
+        API_URL.permanenciaPdf,
+        buildPermanenciaPayload(),
+        "Docentes_Permanencia4.pdf"
+      );
+      alertService.close();
+      alertService.toastSuccess("PDF de permanencia exportado correctamente");
+    } catch (e) {
+      console.error(e);
+      alertService.close();
+      alertService.error("Error", "No se pudo exportar PDF (+4 años).");
+    }
+  };
+  // ======================= RENDER =======================
   return (
     <div className="p-2 md:p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      {/* Encabezado */}
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <Typography className="text-2xl font-extrabold text-[#2B338C]">Reportes</Typography>
-          <Typography className="text-blue-gray-600">
-            Exportá información de <b>Ofertas</b>, <b>Docentes</b> y <b>Coordinadores</b>.
+          <Typography className="text-2xl font-extrabold text-[#2B338C]">
+            Reportes de Docentes
+          </Typography>
+          <Typography className="text-xs text-blue-gray-500">
+            KPIs & Nómina
           </Typography>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Tooltip content="Descargar CSV (UI)">
-            <Button variant="outlined" className="border-[#2B338C] text-[#2B338C] flex items-center gap-2">
-              <ArrowDownTrayIcon className="h-5 w-5" /> CSV
-            </Button>
-          </Tooltip>
-          <Tooltip content="Exportar PDF/Imprimir (UI)">
-            <Button className="bg-[#FFDA00] text-[#2B338C] flex items-center gap-2">
-              <PrinterIcon className="h-5 w-5" /> PDF
-            </Button>
-          </Tooltip>
-        </div>
+        <Button
+          size="md"
+          variant="outlined"
+          className="border-[#2B338C] text-[#2B338C]"
+          onClick={() => loadData(true)}
+          disabled={loading}
+        >
+          {loading ? "Actualizando..." : "Actualizar"}
+        </Button>
       </div>
 
-      {/* Tabs simples */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { k: "ofertas", label: "Ofertas" },
-          { k: "docentes", label: "Docentes" },
-          { k: "coordinadores", label: "Coordinadores" },
-        ].map((t) => (
-          <button
-            key={t.k}
-            onClick={() => { setTab(t.k); setPage(1); }}
-            className={`rounded-lg px-4 py-2 font-semibold transition
-              ${tab === t.k ? "bg-[#2B338C] text-white shadow-md" : "bg-white text-[#2B338C] border"}
-            `}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Filtros */}
-      <Card className="p-3">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-          <Input
-            crossOrigin=""
-            label={
-              tab === "ofertas"
-                ? "Buscar (código, materia, docente)"
-                : tab === "docentes"
-                ? "Buscar (nombre, categoría)"
-                : "Buscar (nombre, sede)"
-            }
-            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-          />
-
-          {/* Estado (en Ofertas y Docentes) */}
-          {(tab === "ofertas" || tab === "docentes") && (
-            <Select label="Estado" value={estado} onChange={setEstado}>
-              <Option value="Todos">Todos</Option>
-              {tab === "ofertas" ? (
-                <>
-                  <Option value="Publicada">Publicada</Option>
-                  <Option value="Borrador">Borrador</Option>
-                  <Option value="Cerrada">Cerrada</Option>
-                </>
-              ) : (
-                <>
-                  <Option value="Activo">Activo</Option>
-                  <Option value="Inactivo">Inactivo</Option>
-                  <Option value="Suspendido">Suspendido</Option>
-                </>
-              )}
-            </Select>
-          )}
-
-          {/* Sede (en todos) */}
-          <Select label="Sede" value={sede} onChange={setSede}>
-            <Option value="Todas">Todas</Option>
-            <Option value="San Pedro">San Pedro</Option>
-            <Option value="Heredia">Heredia</Option>
-            <Option value="Virtual">Virtual</Option>
-          </Select>
-
-          {/* Cuatrimestre (solo Ofertas) */}
-          {tab === "ofertas" && (
-            <>
-              <Select label="Cuatrimestre" value={q} onChange={setQ}>
-                <Option value="Todos">Todos</Option>
-                <Option value="I">I</Option>
-                <Option value="II">II</Option>
-                <Option value="III">III</Option>
-              </Select>
-              <Select label="Año" value={year} onChange={setYear}>
-                <Option value="Todos">Todos</Option>
-                <Option value="2025">2025</Option>
-                <Option value="2024">2024</Option>
-              </Select>
-            </>
-          )}
-
-          {/* Filas por página (arriba) */}
-          <Select
-            label="Filas por página"
-            value={String(rowsPerPage)}
-            onChange={(v) => setRowsPerPage(Number(v))}
-            containerProps={{ className: "min-w-[140px]" }}
-          >
-            <Option value="10">10</Option>
-            <Option value="20">20</Option>
-            <Option value="50">50</Option>
-          </Select>
-
-          <div className="flex items-center justify-end">
-            <Button variant="outlined" className="border-[#2B338C] text-[#2B338C]" onClick={clearAll}>
-              Limpiar filtros
-            </Button>
+      {/* Slicers (SOLO KPIs / gráficos) */}
+      <Card className="p-3 overflow-visible relative z-50 flex flex-col xl:flex-row xl:items-end gap-3 justify-between">
+        <div className="flex flex-col lg:flex-row gap-3 flex-1">
+          <div className="flex-1 min-w-[220px]">
+            <Input
+              label="Buscar (nombre, cédula, otros campos)"
+              value={qSearch}
+              onChange={(e) => setQSearch(e.target.value)}
+              crossOrigin=""
+              size="md"
+            />
           </div>
+
+          <div className="min-w-[180px]">
+            <Select
+              label="Provincia"
+              value={fProvincia}
+              onChange={(v) => setFProvincia(v || "Todas")}
+              selected={() => (fProvincia === "Todas" ? "Todas" : fProvincia)}
+              size="md"
+              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+              containerProps={{ className: CONT_CLS }}
+            >
+              <Option value="Todas">Todas</Option>
+              {provincias.map((p) => (
+                <Option key={p} value={p} className="bg-white">
+                  {p}
+                </Option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="min-w-[160px]">
+            <Select
+              label="Sede"
+              value={fSede}
+              onChange={(v) => setFSede(v || "Todas")}
+              selected={() => (fSede === "Todas" ? "Todas" : fSede)}
+              size="md"
+              menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+              containerProps={{ className: CONT_CLS }}
+            >
+              <Option value="Todas">Todas</Option>
+              {sedes.map((s) => (
+                <Option key={s} value={s} className="bg-white">
+                  {s}
+                </Option>
+              ))}
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outlined"
+            className="border-[#2B338C] text-[#2B338C]"
+            size="md"
+            onClick={() => {
+              setQSearch("");
+              setFProvincia("Todas");
+              setFSede("Todas");
+            }}
+          >
+            Limpiar filtros
+          </Button>
         </div>
       </Card>
 
-      {/* Chips resumen */}
-      <div className="flex flex-wrap gap-2">
-        {chips.map((c, i) => (
-          <Pill key={i} className={c.className}>{c.text}</Pill>
-        ))}
+      {/* Resumen numérico (KPIs) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Card className="p-4 flex flex-col gap-1">
+          <Typography className="text-xs font-semibold text-blue-gray-500">
+            TOTAL DOCENTES
+          </Typography>
+          <Typography className="text-2xl font-extrabold text-[#2B338C]">
+            {totalDocentes}
+          </Typography>
+        </Card>
+
+        <Card className="p-4 flex flex-col gap-1">
+          <Typography className="text-xs font-semibold text-blue-gray-500">
+            ACTIVOS
+          </Typography>
+          <Typography className="text-2xl font-extrabold text-green-600">
+            {activos}
+          </Typography>
+        </Card>
+
+        <Card className="p-4 flex flex-col gap-1">
+          <Typography className="text-xs font-semibold text-blue-gray-500">
+            INACTIVOS
+          </Typography>
+          <Typography className="text-2xl font-extrabold text-red-600">
+            {inactivos}
+          </Typography>
+        </Card>
       </div>
 
-      {/* Tabla */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1000px] w-full text-left">
-            <thead>
-              <tr className="bg-blue-gray-50 text-blue-gray-700">
-                {HEAD.map((h) => (
-                  <th key={h} className="p-3 text-sm font-semibold">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pageData.length === 0 ? (
-                <tr>
-                  <td colSpan={HEAD.length} className="p-6 text-center text-blue-gray-500">
-                    Sin registros.
-                  </td>
-                </tr>
-              ) : tab === "ofertas" ? (
-                pageData.map((o) => (
-                  <tr key={o.id} className="border-b">
-                    <td className="p-3">{o.estado}</td>
-                    <td className="p-3">{o.sede}</td>
-                    <td className="p-3">{o.carrera}</td>
-                    <td className="p-3">{o.codigo}</td>
-                    <td className="p-3">{o.materia}</td>
-                    <td className="p-3">{o.grupo}</td>
-                    <td className="p-3">{o.periodo}</td>
-                    <td className="p-3">{o.docente || <span className="text-blue-gray-400">Sin asignar</span>}</td>
-                    <td className="p-3">{o.coordinador}</td>
-                  </tr>
-                ))
-              ) : tab === "docentes" ? (
-                pageData.map((d) => (
-                  <tr key={d.id} className="border-b">
-                    <td className="p-3">{d.nombre}</td>
-                    <td className="p-3">{d.estado}</td>
-                    <td className="p-3">{d.categoria}</td>
-                    <td className="p-3">{d.sede}</td>
-                    <td className="p-3">{d.cursos}</td>
-                    <td className="p-3">{d.asignaciones}</td>
-                  </tr>
-                ))
-              ) : (
-                pageData.map((c) => (
-                  <tr key={c.id} className="border-b">
-                    <td className="p-3">{c.nombre}</td>
-                    <td className="p-3">{c.sede}</td>
-                    <td className="p-3">{c.ofertas}</td>
-                    <td className="p-3">{c.estado}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <Typography className="text-sm font-semibold text-blue-gray-700 mb-2">
+            Docentes activos vs inactivos
+          </Typography>
 
-        {/* Paginación abajo */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3">
-          <span className="text-sm text-blue-gray-600">
-            Mostrando{" "}
-            <b>{total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, total)}</b>{" "}
-            de <b>{total}</b>
-          </span>
-          <div className="flex items-center gap-1">
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Cargando…</div>
+          ) : err ? (
+            <div className="h-64 flex items-center justify-center text-red-500">{err}</div>
+          ) : (
+            <div className="h-64 min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+                <PieChart>
+                  <Pie data={activosInactivosData} dataKey="value" nameKey="name" outerRadius={80} label>
+                    {activosInactivosData.map((_, index) => (
+                      <Cell key={`cell-ai-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-4">
+          <Typography className="text-sm font-semibold text-blue-gray-700 mb-2">
+            Grado académico (Atestados)
+          </Typography>
+
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Cargando…</div>
+          ) : err ? (
+            <div className="h-64 flex items-center justify-center text-red-500">{err}</div>
+          ) : atestadoData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Sin datos de atestados.</div>
+          ) : (
+            <div className="h-64 min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+                <BarChart data={atestadoData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" name="Docentes">
+                    {atestadoData.map((_, index) => (
+                      <Cell key={`cell-at-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="p-4">
+          <Typography className="text-sm font-semibold text-blue-gray-700 mb-2">
+            Reporte por periodo de ingreso
+          </Typography>
+
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Cargando…</div>
+          ) : err ? (
+            <div className="h-64 flex items-center justify-center text-red-500">{err}</div>
+          ) : periodoNominaData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Sin datos.</div>
+          ) : (
+            <div className="h-64 min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+                <BarChart data={periodoNominaData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" name="Docentes">
+                    {periodoNominaData.map((_, index) => (
+                      <Cell key={`cell-per-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-4">
+          <Typography className="text-sm font-semibold text-blue-gray-700 mb-2">
+            Distribución por género
+          </Typography>
+
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Cargando…</div>
+          ) : err ? (
+            <div className="h-64 flex items-center justify-center text-red-500">{err}</div>
+          ) : generoData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Sin datos.</div>
+          ) : (
+            <div className="h-64 min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+                <PieChart>
+                  <Pie data={generoData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} label>
+                    {generoData.map((_, index) => (
+                      <Cell key={`cell-gen-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-4">
+          <Typography className="text-sm font-semibold text-blue-gray-700 mb-2">
+            Cantidad de Planilla vs Honorarios
+          </Typography>
+
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-blue-gray-400">Cargando…</div>
+          ) : err ? (
+            <div className="h-64 flex items-center justify-center text-red-500">{err}</div>
+          ) : (
+            <div className="h-64 min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+                <BarChart data={contratoData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" name="Docentes">
+                    {contratoData.map((_, index) => (
+                      <Cell key={`cell-ct-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* +4 años (NO depende de filtros globales) */}
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <Typography className="text-sm font-semibold text-blue-gray-700">
+            Docentes con más de 4 años de permanencia
+          </Typography>
+
+          <div className="flex gap-2">
             <Button
-              variant="outlined" size="sm"
-              className="border-[#2B338C] text-[#2B338C] px-3"
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              size="md"
+              className="bg-[#2B338C] text-white"
+              onClick={() => setShowPermanencia((v) => !v)}
             >
-              <ChevronLeftIcon className="h-4 w-4" />
+              {showPermanencia ? "Ocultar" : "VER DOCENTES + 4 AÑOS"}
             </Button>
-            <span className="px-2 text-sm">Página <b>{page}</b> de <b>{totalPages}</b></span>
-            <Button
-              variant="outlined" size="sm"
-              className="border-[#2B338C] text-[#2B338C] px-3"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
+
+            {showPermanencia && (
+              <>
+                <Button
+                  size="md"
+                  variant="outlined"
+                  className="border-[#2B338C] text-[#2B338C]"
+                  onClick={handleExportPermanenciaExcel}
+                  disabled={permanenciaMayor4.length === 0}
+                >
+                  Exportar Excel
+                </Button>
+                <Button
+                  size="md"
+                  variant="outlined"
+                  className="border-[#2B338C] text-[#2B338C]"
+                  onClick={handleExportPermanenciaPdf}
+                  disabled={permanenciaMayor4.length === 0}
+                >
+                  Exportar PDF
+                </Button>
+              </>
+            )}
           </div>
         </div>
+
+        {!showPermanencia ? null : permanenciaMayor4.length === 0 ? (
+          <div className="text-blue-gray-400 text-sm">
+            No hay docentes con más de 4 años según los periodos de ingreso / desvinculación.
+          </div>
+        ) : (
+          <div className="border border-blue-gray-200 rounded-md p-4 space-y-3 bg-white">
+            <div className="space-y-1 text-xs">
+              <Typography className="text-center font-bold text-base">
+                DOCENTES CON MÁS DE 4 AÑOS DE PERMANENCIA
+              </Typography>
+              <div className="flex justify-between">
+                <span>Total registros: {permanenciaMayor4.length}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 overflow-x-auto">
+              <table className="min-w-[700px] w-full text-left text-xs border border-blue-gray-200">
+                <thead>
+                  <tr className="bg-[#2B338C] text-white">
+                    <th className="border border-blue-gray-200 p-2">Nombre del docente</th>
+                    <th className="border border-blue-gray-200 p-2">Periodo de ingreso</th>
+                    <th className="border border-blue-gray-200 p-2">Años de permanencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {permanenciaMayor4.map((r, idx) => (
+                    <tr key={r.personaId} className={idx % 2 === 0 ? "bg-white" : "bg-blue-gray-50"}>
+                      <td className="border border-blue-gray-200 p-2">{r.nombre}</td>
+                      <td className="border border-blue-gray-200 p-2">{r.periodoIngreso}</td>
+                      <td className="border border-blue-gray-200 p-2">{r.anios}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* NÓMINA (NO depende de filtros globales) */}
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <Typography className="text-sm font-semibold text-blue-gray-700">
+            Nómina docente (vista tipo reporte)
+          </Typography>
+
+          <div className="flex gap-2">
+            <Button
+              size="md"
+              className="bg-[#2B338C] text-white"
+              onClick={() => setShowNomina((v) => !v)}
+            >
+              {showNomina ? "Ocultar Nómina" : "Ver Nómina"}
+            </Button>
+
+            {showNomina && (
+              <>
+                <Button
+                  size="md"
+                  variant="outlined"
+                  className="border-[#2B338C] text-[#2B338C]"
+                  onClick={handleExportExcel}
+                >
+                  Exportar Excel
+                </Button>
+                <Button
+                  size="md"
+                  variant="outlined"
+                  className="border-[#2B338C] text-[#2B338C]"
+                  onClick={handleExportPdf}
+                >
+                  Exportar PDF
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {showNomina && (
+          <>
+            <Card className="p-3 border border-blue-gray-200 overflow-visible">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Input label="Escuela" value={nomEscuela} onChange={(e) => setNomEscuela(e.target.value)} crossOrigin="" />
+                <Input label="Dirección" value={nomDireccion} onChange={(e) => setNomDireccion(e.target.value)} crossOrigin="" />
+                <Input label="Subdirección" value={nomSubdireccion} onChange={(e) => setNomSubdireccion(e.target.value)} crossOrigin="" />
+
+                <Input label="Coordinación" value={nomCoordinacion} onChange={(e) => setNomCoordinacion(e.target.value)} crossOrigin="" />
+
+                <Select
+                  label="Sede"
+                  value={nomSede}
+                  onChange={(v) => setNomSede(v || "Todas")}
+                  selected={() => (nomSede || "Todas")}
+                  menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                  containerProps={{ className: CONT_CLS }}
+                >
+                  <Option value="Todas">Todas</Option>
+                  {sedes.map((s) => (
+                    <Option key={s} value={s} className="bg-white">
+                      {s}
+                    </Option>
+                  ))}
+                </Select>
+
+                <Select
+                  label="Periodo"
+                  value={nomPeriodoId}
+                  onChange={(v) => setNomPeriodoId(v || "")}
+                  selected={() => (periodoTexto || "Seleccione")}
+                  menuProps={{ className: MENU_CLS, keepMounted: true, placement: "bottom-start" }}
+                  containerProps={{ className: CONT_CLS }}
+                >
+                  <Option value="">Seleccione</Option>
+                  {periodosCat.map((p) => (
+                    <Option key={p.id} value={p.id} className="bg-white">
+                      {p.nombre}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </Card>
+
+            <div className="border border-blue-gray-200 rounded-md p-4 space-y-3 bg-white">
+              <div className="text-xs">
+                <Typography className="text-center font-bold text-base">
+                  NÓMINA DOCENTE
+                </Typography>
+
+                <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1">
+                  <div className="space-y-1">
+                    <div>Escuela: {nomEscuela || "—"}</div>
+                    <div>Dirección: {nomDireccion || "—"}</div>
+                    <div>Subdirección: {nomSubdireccion || "—"}</div>
+                    <div>Coordinación: {nomCoordinacion || "—"}</div>
+                  </div>
+
+                  <div className="space-y-1 text-right">
+                    <div>Sede: {nomSede || "Todas"}</div>
+                    <div>Periodo: {periodoTexto || "—"}</div>
+                    <div>Cant. Docentes activos: {nominaActivos}</div>
+                    <div>Cant. Docentes inactivos: {nominaInactivos}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 overflow-x-auto">
+                <table className="min-w-[700px] w-full text-left text-xs border border-blue-gray-200">
+                  <thead>
+                    <tr className="bg-[#2B338C] text-white">
+                      <th className="border border-blue-gray-200 p-2">Nombre del docente</th>
+                      <th className="border border-blue-gray-200 p-2">Periodo de ingreso</th>
+                      <th className="border border-blue-gray-200 p-2">Periodo de desvinculación</th>
+                      <th className="border border-blue-gray-200 p-2">Estado actual</th>
+                      <th className="border border-blue-gray-200 p-2">Motivo de desvinculación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nominaDisplayRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="border border-blue-gray-200 p-2 text-center">
+                          Sin registros.
+                        </td>
+                      </tr>
+                    ) : (
+                      nominaDisplayRows.map((r, idx) => (
+                        <tr key={r.id} className={idx % 2 === 0 ? "bg-white" : "bg-blue-gray-50"}>
+                          <td className="border border-blue-gray-200 p-2">{r.nombre}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.ingreso}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.salida || "—"}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.estado}</td>
+                          <td className="border border-blue-gray-200 p-2">{r.motivo || "—"}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );

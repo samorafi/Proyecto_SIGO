@@ -1,15 +1,18 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
+﻿using MailKit.Security;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using MimeKit.Text;
+using SIGO.Api.Attributes;
 using SIGO.Application.Features.ConfigSmtp.Commands.CreateOrUpdate;
 using SIGO.Application.Features.ConfigSmtp.DTO;
 using SIGO.Application.Features.ConfigSmtp.Queries.Get;
 
 namespace SIGO.API.Controllers
 {
+    [Authorize]
+    [HasPermission("ADMIN_VIEW")]
     [ApiController]
     [Route("api/[controller]")]
     public class ConfSmtpController : ControllerBase
@@ -21,6 +24,8 @@ namespace SIGO.API.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
@@ -35,6 +40,8 @@ namespace SIGO.API.Controllers
             }
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPost]
         public async Task<IActionResult> CreateOrUpdateAsync([FromBody] CreateConfSmtpRequest request)
         {
@@ -56,6 +63,8 @@ namespace SIGO.API.Controllers
             }
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPost("test")]
         public async Task<IActionResult> TestConnectionAsync([FromBody] TestSmtpRequest request)
         {

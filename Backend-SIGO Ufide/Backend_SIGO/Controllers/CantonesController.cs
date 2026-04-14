@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Cantones.Queries.GetAll;
-using System.Threading.Tasks;
 
 namespace SIGO.Api.Controllers
 {
+
+    [Authorize]
     [ApiController]
     [Route("api/cantones")]
-    //[Authorize]
     public class CantonesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -18,6 +18,7 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

@@ -1,0 +1,6 @@
+export { default as ModalArchivarOfertas_v2 } from "./ModalArchivarOfertas_v2";
+export { default as ModalDuplicarOfertas_v2 } from "./ModalDuplicarOfertas_v2";
+export { default as ModalRegistrarOfertas_v2 } from "./ModalRegistrarOfertas_v2";
+export { default as ModalVerOferta_v2 } from "./ModalVerOferta_v2";
+export { default as ModalEditarOferta_v2 } from "./ModalEditarOferta_v2";
+export { default as ModalEnviarOfertaDocente_v2 } from "./ModalEnviarOfertaDocente_v2";

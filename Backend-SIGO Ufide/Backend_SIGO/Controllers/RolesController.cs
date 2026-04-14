@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Api.Attributes;
 using SIGO.Application.Features.Roles.Commands.AssignToUser;
 using SIGO.Application.Features.Roles.Commands.Create;
 using SIGO.Application.Features.Roles.Commands.Delete;
@@ -24,10 +26,8 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
-        // ======================================================
-        // GET: api/Roles
-        // Devuelve todos los roles existentes en la BD junto con sus permisos.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet]
         public async Task<IActionResult> GetAllRoles()
         {
@@ -35,10 +35,8 @@ namespace SIGO.Api.Controllers
             return Ok(result);
         }
 
-        // ======================================================
-        // GET: api/Roles/{id}
-        // Devuelve la información de un rol específico y sus permisos.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoleById(int id)
         {
@@ -47,10 +45,8 @@ namespace SIGO.Api.Controllers
             return Ok(result);
         }
 
-        // ======================================================
-        // POST: api/Roles
-        // Crea un nuevo rol en la BD y asigna los permisos seleccionados.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPost]
         public async Task<IActionResult> CreateRole([FromBody] CreateRolCommand command)
         {
@@ -58,10 +54,8 @@ namespace SIGO.Api.Controllers
             return Ok(new { RoleId = roleId, Message = "Rol creado con permisos asignados." });
         }
 
-        // ======================================================
-        // PUT: api/Roles/{id}
-        // Actualiza el nombre de un rol existente y re-asigna sus permisos.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRolCommand command)
         {
@@ -73,10 +67,8 @@ namespace SIGO.Api.Controllers
             return Ok(new { Message = "Rol actualizado correctamente." });
         }
 
-        // ======================================================
-        // DELETE: api/Roles/{id}
-        // Elimina un rol existente de la BD junto con sus permisos asignados.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
@@ -86,10 +78,7 @@ namespace SIGO.Api.Controllers
             return Ok(new { Message = "Rol eliminado correctamente." });
         }
 
-        // ======================================================
-        // GET: api/Roles/usuario/{id}/permisos
-        // Devuelve los roles y permisos asociados a un usuario específico.
-        // ======================================================
+        [Authorize]
         [HttpGet("usuario/{id}/permisos")]
         public async Task<IActionResult> GetRolesPermisos(int id)
         {
@@ -97,10 +86,8 @@ namespace SIGO.Api.Controllers
             return Ok(result);
         }
 
-        // ======================================================
-        // POST: api/Roles/asignar
-        // Asigna un rol existente a un usuario existente.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPost("asignar")]
         public async Task<IActionResult> AssignRoleToUser([FromBody] AssignRoleToUserCommand command)
         {
@@ -110,10 +97,8 @@ namespace SIGO.Api.Controllers
             return Ok(new { Message = "Rol asignado correctamente al usuario." });
         }
 
-        // ======================================================
-        // DELETE: api/Roles/remover
-        // Remueve un rol específico de un usuario.
-        // ======================================================
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpDelete("remover")]
         public async Task<IActionResult> RemoveRoleFromUser([FromBody] RemoveRoleFromUserCommand command)
         {
@@ -123,6 +108,8 @@ namespace SIGO.Api.Controllers
             return Ok(new { Message = "Rol removido correctamente del usuario." });
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet("{id:int}/usuarios")]
         public async Task<IActionResult> GetUsuariosDelRol(int id)
         {

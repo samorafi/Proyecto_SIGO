@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Common.Exceptions;
@@ -16,7 +17,7 @@ public class PeriodosController : ControllerBase
     private readonly IMediator _mediator;
     public PeriodosController(IMediator mediator) => _mediator = mediator;
 
-    // GET: /api/periodos/{id}
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<PeriodoDto>> GetById(int id, CancellationToken ct)
     {
@@ -26,12 +27,12 @@ public class PeriodosController : ControllerBase
             : Ok(dto);
     }
 
-    // GET: /api/periodos?estado=1
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<PeriodoDto>>> GetAll([FromQuery] bool? estado, CancellationToken ct)
         => Ok(await _mediator.Send(new GetPeriodosQuery(estado), ct));
 
-    // POST: /api/periodos
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<PeriodoDto>> Create([FromBody] CreatePeriodoRequest body, CancellationToken ct)
     {
@@ -54,7 +55,7 @@ public class PeriodosController : ControllerBase
         }
     }
 
-    // PUT: /api/periodos/{id}
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<PeriodoDto>> Update(int id, [FromBody] UpdatePeriodoRequest body, CancellationToken ct)
     {

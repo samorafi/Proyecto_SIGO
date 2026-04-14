@@ -1,45 +1,53 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Api.Attributes;
 using SIGO.Application.Common.Pagination;
+using SIGO.Application.Features.Ofertas.Commands.AgregarAsistenteOferta;
 using SIGO.Application.Features.Ofertas.Commands.ArchivarPorModalidad;
+using SIGO.Application.Features.Ofertas.Commands.AsignarAsistentes;
 using SIGO.Application.Features.Ofertas.Commands.Cancelar;
 using SIGO.Application.Features.Ofertas.Commands.Create;
 using SIGO.Application.Features.Ofertas.Commands.Duplicar;
 using SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales;
+using SIGO.Application.Features.Ofertas.Commands.QuitarAsistenteOferta;
 using SIGO.Application.Features.Ofertas.Commands.Update;
 using SIGO.Application.Features.Ofertas.Dto;
 using SIGO.Application.Features.Ofertas.Enums;
-using SIGO.Application.Features.Ofertas.Queries;
+using SIGO.Application.Features.Ofertas.Queries.Export;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertas;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasPorId;
+using SIGO.Application.Features.Ofertas.Queries.ObtenerOfertasReportes;
+using SIGO.Application.Features.Ofertas.Queries.ResumenEstadosOfertas;
 using SIGO.Application.Services;
+using SIGO.Application__Proyecto_Biblioteca_de_Clases_.NET_.Features.Ofertas.Queries.ObtenerOfertaNotificaciones;
 using System.Text.Json;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class OfertasController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IAuditService _auditService;
+
     public OfertasController(IMediator mediator, IAuditService auditService)
     {
         _mediator = mediator;
         _auditService = auditService;
     }
 
-    // API ANTIGUA
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<OfertaResponseDto>>> GetAll(CancellationToken ct)
-        => Ok(await _mediator.Send(new GetAllOfertasQuery(), ct));
-    
+        => Ok(await _mediator.Send(new GetAllOfertasReporteQuery(), ct));
 
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<OfertaResponseDto>>> GetPaged(
         [FromQuery] OfertaCategory category,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-
         [FromQuery] string? buscar = null,
         [FromQuery] int? sedeId = null,
         [FromQuery] int? modalidadId = null,
@@ -48,8 +56,6 @@ public class OfertasController : ControllerBase
         [FromQuery] int? horarioId = null,
         [FromQuery] int? accionId = null,
         [FromQuery] int? estadoOfertaId = null,
-
-
         CancellationToken ct = default)
     {
         var result = await _mediator.Send(
@@ -64,19 +70,27 @@ public class OfertasController : ControllerBase
                 AccionId = accionId,
                 EstadoOfertaId = estadoOfertaId,
             }, ct);
+
         return Ok(result);
     }
 
-    // Resumen de estados de las ofertas
+    [HttpGet("periodos-resumen")]
+    public async Task<ActionResult<IReadOnlyList<OfertasPeriodoResumenDto>>> GetPeriodosResumen(
+        [FromQuery] OfertaCategory category,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetOfertasPeriodosResumenQuery(category), ct);
+        return Ok(result);
+    }
+
     [HttpGet("summary")]
     public async Task<ActionResult<OfertasSummaryDto>> GetSummary(
-    [FromQuery] OfertaCategory category,
-    CancellationToken ct)
+        [FromQuery] OfertaCategory category,
+        CancellationToken ct)
     {
         var result = await _mediator.Send(new GetOfertasSummaryQuery(category), ct);
         return Ok(result);
     }
-
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<OfertaResponseDto>> GetById(int id, CancellationToken ct)
@@ -84,7 +98,7 @@ public class OfertasController : ControllerBase
 
     [HttpGet("{id:int}/ficha")]
     public async Task<ActionResult<OfertaResponseDto>> GetFicha(int id, CancellationToken ct)
-    => Ok(await _mediator.Send(new GetOfertaByIdQuery_v2(id), ct));
+        => Ok(await _mediator.Send(new GetOfertaByIdQuery(id), ct));
 
     [HttpPost]
     [AuditDisabled]
@@ -104,62 +118,34 @@ public class OfertasController : ControllerBase
             desc: "Creación de oferta"
         );
 
-        return CreatedAtAction(nameof(GetById), new { id }, id);
+        return CreatedAtAction(nameof(GetFicha), new { id }, id);
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:int}/editable")]
     [AuditDisabled]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateOfertaRequest body, CancellationToken ct)
+    public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest body, CancellationToken ct)
     {
-        // Obtener datos antes de actualizar
         var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
 
         await _mediator.Send(new UpdateOfertaCommand(id, body), ct);
 
-        // Serializar antes y después
         var oldJson = JsonSerializer.Serialize(oldData);
         var newJson = JsonSerializer.Serialize(body);
 
         await _auditService.LogManualAsync(
-            usuario: User?.Identity?.Name ?? "Anon",
+            usuario: User?.Identity?.Name ?? "Anonimous",
             tabla: "Ofertas",
-            accion: "Update",
+            accion: "UpdateEditable",
             registroId: id,
             oldValues: oldJson,
             newValues: newJson,
             ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-            desc: "Actualización de oferta"
+            desc: "Actualización editable de oferta"
         );
 
         return NoContent();
     }
 
-[HttpPut("{id:int}/editable")]
-[AuditDisabled]
-public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaRequest_v2 body, CancellationToken ct)
-{
-    var oldData = await _mediator.Send(new GetOfertaByIdQuery(id), ct);
-
-    await _mediator.Send(new UpdateOfertaCommand_v2(id, body), ct);
-
-    var oldJson = JsonSerializer.Serialize(oldData);
-    var newJson = JsonSerializer.Serialize(body);
-
-    await _auditService.LogManualAsync(
-        usuario: User?.Identity?.Name ?? "Anon",
-        tabla: "Ofertas",
-        accion: "UpdateEditable",
-        registroId: id,
-        oldValues: oldJson,
-        newValues: newJson,
-        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-        desc: "Actualización editable de oferta"
-    );
-
-    return NoContent();
-}
-
-    // Archivar ofertas
     [HttpPost("archivar-por-modalidad")]
     public async Task<IActionResult> ArchivarPorModalidad([FromBody] ArchivarOfertasPorModalidadCommand command)
     {
@@ -175,22 +161,16 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
     }
 
     [HttpPost("importar-presencial")]
-    [AuditDisabled] // Opcional: Desactiva auditoría automática fila por fila para mejorar rendimiento
+    [AuditDisabled]
     public async Task<IActionResult> ImportarPresencial([FromForm] ImportarOfertasPresencialesCommand command)
     {
-        // El 'command' ya incluye el IFormFile ArchivoExcel
-        // El PeriodoId se calculará internamente en el Handler leyendo la columna "Oferta Cuatrimestre"
-        // Pero si decides enviarlo desde el front como backup, asegúrate de tener la propiedad en el Command.
-
         var response = await _mediator.Send(command);
 
         if (response.Errores.Any())
         {
-            // Si hubo rebote (errores de validación), retornamos 400 Bad Request con la lista
             return BadRequest(response);
         }
 
-        // Si todo salió bien
         return Ok(response);
     }
 
@@ -205,4 +185,78 @@ public async Task<IActionResult> UpdateEditable(int id, [FromBody] UpdateOfertaR
         return Ok(new { ok = true });
     }
 
+    [HttpGet("export/presencial-en_linea")]
+    public async Task<IActionResult> ExportPresencialVirtual(
+        [FromQuery] int periodoId,
+        CancellationToken ct = default)
+    {
+        if (periodoId <= 0)
+            return BadRequest("Debe seleccionar un período válido para exportar.");
+
+        var bytes = await _mediator.Send(new ExportOfertasPresencialVirtualExcelQuery
+        {
+            PeriodoId = periodoId
+        }, ct);
+
+        var fileName = $"Oferta_Academica_{periodoId}_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+        return File(
+            bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName
+        );
+    }
+
+    [HttpGet("export/100%-virtual")]
+    public async Task<IActionResult> ExportEnLinea([FromQuery] int periodoId, CancellationToken ct = default)
+    {
+        if (periodoId <= 0)
+            return BadRequest("Debe seleccionar un período válido para exportar.");
+
+        var bytes = await _mediator.Send(new ExportOfertasEnLineaExcelQuery
+        {
+            PeriodoId = periodoId
+        }, ct);
+
+        var fileName = $"Oferta_EnLinea_{periodoId}_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+        return File(
+            bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName
+        );
+    }
+
+    [HttpPut("{ofertaId:int}/asistentes")]
+    public async Task<IActionResult> AsignarAsistentes(
+    int ofertaId,
+    [FromBody] AsignarAsistentesOfertaRequest request)
+    {
+        await _mediator.Send(new AsignarAsistentesOfertaCommand(
+            ofertaId,
+            request.PersonaIds ?? new List<int>()
+        ));
+
+        return NoContent();
+    }
+
+    [HttpPost("{ofertaId:int}/asistentes")]
+    public async Task<IActionResult> AgregarAsistente(int ofertaId, [FromBody] AgregarAsistenteOfertaCommand command)
+    {
+        if (ofertaId != command.OfertaId)
+            return BadRequest("El ofertaId de la ruta no coincide con el del cuerpo.");
+
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpDelete("{ofertaId:int}/asistentes/{personaId:int}")]
+    public async Task<IActionResult> QuitarAsistente(int ofertaId, int personaId)
+    {
+        await _mediator.Send(new QuitarAsistenteOfertaCommand
+        {
+            OfertaId = ofertaId,
+            PersonaId = personaId
+        });
+
+        return NoContent();
+    }
 }

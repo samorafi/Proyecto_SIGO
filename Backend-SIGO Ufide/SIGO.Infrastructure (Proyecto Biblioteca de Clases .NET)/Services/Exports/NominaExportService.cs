@@ -23,7 +23,7 @@ namespace SIGO.Infrastructure.Services.Exports
             ws.Column(1).Width = 45; // Nombre
             ws.Column(2).Width = 18; // Ingreso
             ws.Column(3).Width = 22; // Desv
-            ws.Column(4).Width = 14; // Estado
+            ws.Column(4).Width = 25; // Estado
             ws.Column(5).Width = 28; // Motivo
 
             int row = 1;

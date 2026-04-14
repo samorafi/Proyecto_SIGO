@@ -8,7 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SIGO.Application.Features.Autenticacion.Credenciales{
+namespace SIGO.Application__Proyecto_Biblioteca_de_Clases_.NET_.Features.Autenticacion.Credenciales
+{
     public class UpdatePasswordCommandHandler : IRequestHandler<UpdatePasswordCommand, bool>
     {
         private readonly IApplicationDbContext _context;

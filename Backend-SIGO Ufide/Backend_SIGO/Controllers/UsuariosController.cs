@@ -1,12 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SIGO.Api.Attributes;
 using SIGO.Application.Features.Usuarios.Commands.Create;
 using SIGO.Application.Features.Usuarios.Commands.Update;
 using SIGO.Application.Features.Usuarios.Queries.GetAll;
 
 namespace SIGO.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsuariosController : ControllerBase
@@ -18,6 +20,8 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -25,6 +29,8 @@ namespace SIGO.Api.Controllers
             return Ok(usuarios);
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUsuarioCommand command)
         {
@@ -38,6 +44,8 @@ namespace SIGO.Api.Controllers
             return CreatedAtAction(nameof(Create), new { Id = userId }, new { Id = userId, Message = "Usuario creado con éxito" });
         }
 
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUsuarioCommand command)
         {

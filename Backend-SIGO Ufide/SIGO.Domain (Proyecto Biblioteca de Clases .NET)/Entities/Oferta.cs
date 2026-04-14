@@ -26,4 +26,5 @@ public class Oferta
     public virtual Periodo? Periodo { get; set; }
     public virtual EstadoOferta EstadoOferta { get; set; }
     public virtual Persona? Persona { get; set; }
+    public ICollection<OfertaAsistente> OfertaAsistentes { get; set; } = new List<OfertaAsistente>();
 }

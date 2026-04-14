@@ -6,6 +6,7 @@ using SIGO.Application.Features.SolicitudesOferta.Commands.Responder;
 
 namespace SIGO.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SolicitudesOfertaController : ControllerBase
@@ -17,11 +18,7 @@ public class SolicitudesOfertaController : ControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>
-    /// Endpoint que usa el front para enviar una oferta a un docente.
-    /// POST /api/SolicitudesOferta
-    /// Body: { "ofertaId": 123, "personaId": 456 }
-    /// </summary>
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<int>> Enviar(
         [FromBody] EnviarSolicitudOfertaRequest request,
@@ -33,23 +30,16 @@ public class SolicitudesOfertaController : ControllerBase
         try
         {
             var id = await _mediator.Send(new EnviarSolicitudOfertaCommand(request), ct);
-            // devolvemos 200 OK con el id de la solicitud creada
             return Ok(id);
         }
         catch (InvalidOperationException ex)
         {
-            // Errores de negocio (oferta no existe, docente sin correo, duplicado, etc.)
             return BadRequest(new { message = ex.Message });
         }
     }
 
-    /// <summary>
-    /// Endpoint que usa el docente desde el correo para aceptar o rechazar la oferta.
-    /// Ejemplo:
-    /// GET /api/SolicitudesOferta/responder?token=...&accion=aceptar
-    /// </summary>
+    [AllowAnonymous]
     [HttpGet("responder")]
-    [AllowAnonymous] // IMPORTANTE: para que funcione sin login
     public async Task<IActionResult> Responder(
         [FromQuery] string token,
         [FromQuery] string accion,
@@ -58,7 +48,6 @@ public class SolicitudesOfertaController : ControllerBase
         var mensaje = await _mediator.Send(
             new ResponderSolicitudOfertaCommand(token, accion), ct);
 
-        // Devolvemos un HTML sencillito que el profe vea en el navegador
         var html = $@"
             <!DOCTYPE html>
             <html lang=""es"">

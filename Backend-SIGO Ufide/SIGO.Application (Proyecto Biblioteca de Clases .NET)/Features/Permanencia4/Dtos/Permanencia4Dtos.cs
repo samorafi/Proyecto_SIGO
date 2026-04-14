@@ -9,7 +9,6 @@
     {
         public string NombreCompleto { get; set; } = "";
         public string PeriodoIngreso { get; set; } = "";
-        public string PeriodoDesvinculacion { get; set; } = "";
         public int AniosPermanencia { get; set; }
     }
 }

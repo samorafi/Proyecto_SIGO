@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Common.Exceptions;
+using System.ComponentModel.DataAnnotations;
 
 namespace SIGO.Application.Features.Ofertas.Commands.Update;
 
@@ -18,50 +19,31 @@ public class UpdateOfertaCommandHandler : IRequestHandler<UpdateOfertaCommand, U
             .FirstOrDefaultAsync(x => x.OfertaId == request.OfertaId, ct)
             ?? throw new NotFoundException("Oferta", request.OfertaId);
 
-        var oldCursoId = entity.CursoId;
-        var oldSedeId = entity.SedeId;
-        var oldModalidadId = entity.ModalidadId;
-        var oldPeriodoId = entity.PeriodoId;
+        // Grupo requerido
+        if (r.Grupo <= 0)
+            throw new ValidationException("El grupo es requerido y debe ser mayor a 0.");
 
-        entity.CursoId = ToNullIfZero(r.CursoId);
-        entity.SedeId = ToNullIfZero(r.SedeId);
-        entity.ModalidadId = ToNullIfZero(r.ModalidadId);
+        // Evitar duplicado de grupo dentro de la misma combinación
+        var grupoDuplicado = await _db.Ofertas.AnyAsync(o =>
+            o.OfertaId != entity.OfertaId &&
+            o.CursoId == entity.CursoId &&
+            o.SedeId == entity.SedeId &&
+            o.ModalidadId == entity.ModalidadId &&
+            o.PeriodoId == entity.PeriodoId &&
+            o.Grupo == r.Grupo,
+            ct);
+
+        if (grupoDuplicado)
+            throw new ValidationException($"El grupo {r.Grupo} ya está asignado para esta oferta.");
+
+        // Solo editables
         entity.HorarioId = r.HorarioId;
-        entity.PeriodoId = ToNullIfZero(r.PeriodoId);
         entity.AccionId = ToNullIfZero(r.AccionId);
         entity.CoordinadorId = ToNullIfZero(r.CoordinadorId);
         entity.Comentarios = r.Comentarios;
-        entity.EstadoOfertaId = ToNullIfZero(r.EstadoOfertaId);
         entity.Cupo = r.Cupo;
         entity.Matriculados = r.Matriculados;
-        entity.Archivados = r.Archivados;
-        entity.PersonaId = ToNullIfZero(r.PersonaId);
         entity.Grupo = r.Grupo;
-
-        var newCursoId = entity.CursoId;
-        var newSedeId = entity.SedeId;
-        var newModalidadId = entity.ModalidadId;
-        var newPeriodoId = entity.PeriodoId;
-
-        var combinationChanged =
-            oldCursoId != newCursoId ||
-            oldSedeId != newSedeId ||
-            oldModalidadId != newModalidadId ||
-            oldPeriodoId != newPeriodoId;
-
-        if (combinationChanged)
-        {
-            var maxGrupo = await _db.Ofertas
-                .Where(o =>
-                    o.OfertaId != entity.OfertaId &&
-                    o.CursoId == newCursoId &&
-                    o.SedeId == newSedeId &&
-                    o.ModalidadId == newModalidadId &&
-                    o.PeriodoId == newPeriodoId)
-                .MaxAsync(o => (int?)o.Grupo, ct);
-
-            entity.Grupo = (maxGrupo ?? 0) + 1;
-        }
 
         await _db.SaveChangesAsync(ct);
         return Unit.Value;

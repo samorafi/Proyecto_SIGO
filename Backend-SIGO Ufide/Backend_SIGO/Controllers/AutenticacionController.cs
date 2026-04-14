@@ -2,33 +2,28 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SIGO.Api.Attributes;
 using SIGO.Application.Abstractions;
 using SIGO.Application.Features.Autenticacion.Credenciales;
-using SIGO.Application.Features.Autenticacion.Login; 
-using SIGO.Application.Features.Usuarios.Dto;
-using SIGO.Domain.Entities;
+using SIGO.Application.Features.Autenticacion.Login;
+using SIGO.Application.Features.Autenticacion.PasswordReset.Confirm;
+using SIGO.Application.Features.Autenticacion.PasswordReset.RequestOtp;
+using SIGO.Application.Features.Autenticacion.PasswordReset.VerifyOtp;
 using System.Security.Claims;
-using System.Threading;
 
-namespace SIGO.Api.Controllers {
-
-[Route("api/[controller]")]
-[ApiController]
-public class AutenticacionController : ControllerBase
+namespace SIGO.Api.Controllers
 {
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AutenticacionController : ControllerBase
+    {
         private readonly IMediator _mediator;
         private readonly IApplicationDbContext _context;
         private readonly IHashService _hashService;
         private readonly ILogger<AutenticacionController> _logger;
-
-        public class LoginRequest
-        {
-            public string Correo { get; set; } = "";
-            public string Contrasena { get; set; } = "";
-        }
 
         public AutenticacionController(IMediator mediator, IApplicationDbContext context, IHashService hashService, ILogger<AutenticacionController> logger)
         {
@@ -39,115 +34,143 @@ public class AutenticacionController : ControllerBase
         }
 
         //EndPoint: Login
+        [AllowAnonymous]
         [HttpPost("login")]
-		public async Task<IActionResult> Login([FromBody] LoginRequest request)
-		{
-			var correo = request.Correo?.Trim().ToLower();
+        public async Task<IActionResult> Login([FromBody] LoginCommand command)
+        {
+            var usuario = await _mediator.Send(command);
 
-			var user = await _context.Usuarios
-				.FirstOrDefaultAsync(u => u.Correo.Trim().ToLower() == correo);
+            if (usuario == null)
+                return Unauthorized(new { message = "Credenciales inválidas" });
 
-			if (user == null)
-				return Unauthorized(new { message = "Usuario no encontrado.", error = "UserNotFound" });
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim(ClaimTypes.Email, usuario.Correo)
+            };
 
-			var ok = _hashService.VerifyPassword(request.Contrasena, user.PasswordHash);
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
 
-			if (!ok)
-				return Unauthorized(new { message = "Contraseña incorrecta.", error = "WrongPassword" });
+            var principal = new ClaimsPrincipal(identity);
 
-			// Crear claims para la cookie
-			var claims = new List<Claim>
-			{
-				new Claim(ClaimTypes.NameIdentifier, user.UsuarioId.ToString()),
-				new Claim(ClaimTypes.Name, user.Nombre ?? ""),
-				new Claim(ClaimTypes.Email, user.Correo ?? ""),
-				new Claim(ClaimTypes.Role, "Admin") // o el rol real si lo tienes en BD
-			};
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = false,
+            };
 
-			var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-			var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignOutAsync();
 
-			await HttpContext.SignInAsync(
-				CookieAuthenticationDefaults.AuthenticationScheme,
-				principal);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                authProperties);
 
-			return Ok(new { message = "Login exitoso" });
-		}
-		
-        // EndPoint: Perfil
-        [Authorize] // Solo es accesible si hay un cookie VÁLIDO y ACTIVO
+            return Ok(usuario);
+        }
+
+        // EndPoint: Perfil -> Redirige a la pantalla principal del Front
+        [Authorize]
         [HttpGet("perfil")]
         public IActionResult GetPerfil()
         {
-            // Accede a los Claims guardados en el cookie
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Sesión inválida." });
+
             var nombre = User.FindFirstValue(ClaimTypes.Name);
             var correo = User.FindFirstValue(ClaimTypes.Email);
-            var rol = User.FindFirstValue(ClaimTypes.Role);
 
-            // Retorna la data que el frontend necesita para rehidratar el AuthContext
             return Ok(new
             {
                 usuarioId = userId,
-                nombre = nombre,
-                correo = correo,
-                rol = rol
+                nombre,
+                correo
             });
         }
 
         // EndPoint: Cierre de sesión
-        [HttpGet("logout")]
+        [Authorize]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Cierra la sesión del servidor y pide al navegador eliminar el cookie
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Ok(new { Message = "Logout exitoso" });
+            return Ok(new { message = "Logout exitoso" });
         }
 
-        // En caso que no tenga autorización
+        // EndPoint: Actualizar Contraseña - Desde administración del sistema del FrontEnd
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
+        [HttpPost("updatePassword")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommand request, CancellationToken cancellationToken)
+        {
+            if (request.UsuarioId <= 0)
+                return BadRequest(new { message = "UsuarioId inválido." });
+
+            if (string.IsNullOrWhiteSpace(request.Contrasena) || request.Contrasena.Length < 8)
+                return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.UsuarioId == request.UsuarioId, cancellationToken);
+
+            if (usuario == null || !usuario.Activo)
+                return NotFound(new { message = "Usuario no encontrado o inactivo." });
+
+            usuario.PasswordHash = _hashService.HashPassword(request.Contrasena);
+            usuario.AccessFailedCount = 0;
+            usuario.LockoutEnd = null;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { message = "Contraseña actualizada correctamente." });
+        }
+
+        // Endpoint: Solicitud de reseteo de contraseña -> Desde Login
+        [AllowAnonymous]
+        [HttpPost("password-reset/request")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto, CancellationToken ct)
+        {
+            var result = await _mediator.Send(new RequestPasswordResetOtpCommand(dto.Correo), ct);
+
+            // result trae: Sent, Message, CooldownSeconds
+            return Ok(result);
+        }
+
+        // Endpoint para verificar OTP
+        [AllowAnonymous]
+        [HttpPost("password-reset/verify")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyPasswordResetDto dto, CancellationToken ct)
+        {
+            var result = await _mediator.Send(new VerifyPasswordResetOtpCommand(dto.Correo, dto.Otp), ct);
+
+            if (result == null)
+                return BadRequest(new { message = "Código inválido o expirado." });
+
+            return Ok(result); // ResetTokenDto
+        }
+
+        // Endpoint confirmar nueva contraseña
+        [AllowAnonymous]
+        [HttpPost("password-reset/confirm")]
+        public async Task<IActionResult> ConfirmReset([FromBody] ConfirmPasswordResetDto dto, CancellationToken ct)
+        {
+            var success = await _mediator.Send(new ConfirmPasswordResetCommand(dto.ResetToken, dto.NewPassword), ct);
+
+            if (!success)
+                return BadRequest(new { message = "Token inválido o expirado." });
+
+            return Ok(new { message = "Contraseña actualizada correctamente." });
+        }
+
+        // EndPoint: Manejo de acceso sin autorización
+        [AllowAnonymous]
         [HttpGet("unauthorized")]
         public IActionResult UnauthorizedHandler()
         {
-            return Unauthorized(new { Message = "Sesión expirada o no autorizado." });
-        }
-
-        // EndPoint: Actualizar Contraseña
-        [HttpPost ("updatePassword")]
-        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommand command)
-        {
-
-            // Validaciones básicas
-            if (command == null)
-                return BadRequest(new { message = "Request body vacío." });
-
-            if (command.UsuarioId <= 0)
-                return BadRequest(new { message = "UsuarioId inválido." });
-
-            if (string.IsNullOrWhiteSpace(command.Contrasena))
-                return BadRequest(new { message = "La contraseña no puede estar vacía." });
-
-            if (command.Contrasena.Length < 8)
-                return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
-
-            try
-            {
-                var actualizado = await _mediator.Send(command);
-
-                if (!actualizado)
-                {
-                    // handler devolvió false => usuario no encontrado o no se actualizó
-                    return NotFound(new { message = "Usuario no encontrado o no se pudo actualizar la contraseña." });
-                }
-
-                return Ok(new { success = true, message = "Contraseña actualizada correctamente." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar la contraseña para usuario {UsuarioId}", command.UsuarioId);
-                // No devuelvas el stacktrace en producción
-                return StatusCode(500, new { message = "Error interno al actualizar la contraseña." });
-            }
-
+            return Unauthorized(new { message = "Sesión expirada o no autorizado." });
         }
     }
 }

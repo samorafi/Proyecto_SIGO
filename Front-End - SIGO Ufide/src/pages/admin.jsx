@@ -5,47 +5,64 @@ import {
   ShieldCheckIcon,
   UsersIcon,
   InboxArrowDownIcon,
+  ArrowDownTrayIcon,
   Cog6ToothIcon,
   DocumentMagnifyingGlassIcon,
   BellAlertIcon,
+  UserIcon,
+  BookmarkIcon,
+  CheckIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
+import { ArchiveBoxXMarkIcon, BookOpenIcon } from "@heroicons/react/24/solid";
 
 const tiles = [
   {
-    to: "/dashboard/admin/roles",
+    to: "/dashboard/admin/admUsuarios",
+    title: "Gestión de Usuarios de sistema",
+    desc: "Alta/baja, asignación de roles y estados.",
+    Icon: UsersIcon,
+  }, {
+    to: "/dashboard/admin/admRolesPermisos",
     title: "Administración de Roles",
     desc: "Crea roles y define permisos por módulo.",
     Icon: ShieldCheckIcon,
   },
   {
-    to: "/dashboard/admin/usuarios",
-    title: "Gestión de Usuarios",
-    desc: "Alta/baja, asignación de roles y estados.",
-    Icon: UsersIcon,
-  },
-  {
-    to: "/dashboard/admin/solicitudes",
-    title: "Solicitudes de registro",
-    desc: "Aprueba o rechaza nuevas cuentas.",
-    Icon: InboxArrowDownIcon,
-  },
-  {
-    to: "/dashboard/admin/parametros",
+    to: "/dashboard/parametros",
     title: "Parámetros del sistema",
     desc: "Catálogos, sedes, periodos y configuraciones.",
     Icon: Cog6ToothIcon,
   },
   {
-    to: "/dashboard/admin/auditoria",
+    to: "/dashboard/bitacoras",
     title: "Auditoría",
     desc: "Bitácora de accesos y acciones del sistema.",
     Icon: DocumentMagnifyingGlassIcon,
   },
   {
-    to: "/dashboard/admin/notificaciones",
-    title: "Notificaciones",
+    to: "/dashboard/admin/admSMTP",
+    title: "Parámetros de Notificaciones",
     desc: "Plantillas y reglas de correo/alertas.",
     Icon: BellAlertIcon,
+  },
+  {
+    to: "/dashboard/admin/importarDatos",
+    title: "Importación de datos",
+    desc: "Importar datos en tablas del sistema.",
+    Icon: InboxArrowDownIcon,
+  },
+  {
+    to: "/dashboard/admin/exportarDatos",
+    title: "Exportación de datos",
+    desc: "Exportar ofertas académicas a Excel por período.",
+    Icon: ArrowDownTrayIcon,
+  },
+  {
+    to: "/dashboard/admin/admCoordinadores",
+    title: "Gestión de Coordinadores",
+    desc: "Crea coordinadores y define sus carreras y cursos a cargo.",
+    Icon: PencilIcon,
   },
 ];
 
@@ -82,14 +99,8 @@ export default function Admin() {
           </Typography>
           <Typography className="text-blue-gray-600 max-w-2xl">
             Panel central de configuración de <b>SIGO</b>. Desde aquí gestionás
-            usuarios, roles, catálogos y parámetros generales. (UI maqueta)
+            usuarios, roles, catálogos y parámetros generales.
           </Typography>
-        </div>
-
-        {/* Badges de ejemplo (mock) */}
-        <div className="flex items-center gap-2">
-          <Chip value="6 módulos" className="bg-[#2B338C] text-white" />
-          <Chip value="2 pendientes" className="bg-[#FFDA00] text-[#2B338C]" />
         </div>
       </div>
 

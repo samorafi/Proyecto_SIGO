@@ -5,7 +5,6 @@
     /// Se utiliza unicamente para cuando la auditoria es manejada de forma manual 
     /// Atributo: [AuditDisabled]
 
-
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuditDisabledAttribute : Attribute
     {

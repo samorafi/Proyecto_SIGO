@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGO.Application.Features.Auditoria.Dto;
 using SIGO.Application.Features.Auditoria.Queries;
@@ -6,6 +7,7 @@ using SIGO.Application.Models.Common;
 
 namespace SIGO.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/auditoria")]
     public class BitacoraAuditoriaController : ControllerBase
@@ -17,6 +19,7 @@ namespace SIGO.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<PagedResponse<BitacoraAuditoriaDto>>> GetAll(
             [FromQuery] AuditQueryParams query,
@@ -26,6 +29,7 @@ namespace SIGO.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpGet("{tabla}/{registroId:int}")]
         public async Task<ActionResult<PagedResponse<BitacoraAuditoriaDto>>> GetByEntity(
             string tabla,
@@ -46,7 +50,7 @@ namespace SIGO.Api.Controllers
             return Ok(result);
         }
 
-
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<BitacoraAuditoriaDto>> GetById(int id, CancellationToken ct)
         {
