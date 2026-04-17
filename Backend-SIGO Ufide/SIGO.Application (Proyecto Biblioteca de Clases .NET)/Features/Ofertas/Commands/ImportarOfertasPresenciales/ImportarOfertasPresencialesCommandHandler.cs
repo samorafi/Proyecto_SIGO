@@ -257,6 +257,16 @@ namespace SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales
                 string profesor = row["Profesor"]?.ToString()?.Trim();
                 string accion = row["Acción"]?.ToString()?.Trim();
 
+                /* 
+                 * CAMBIO REALIZADO: Se comentan las validaciones obligatorias por Coordinador y Docente.
+                 * Esto permite que se carguen las ofertas desde el Excel aunque vengan sin un coordinador
+                 * o un docente asignado (quedarán en NULL en la base de datos). 
+                 * Posteriormente, la administradora les agregará los coordinadores y docentes respectivos.
+                 * Se deja el código original comentado por si a futuro se requiere volver a habilitar
+                 * esta exigencia estricta desde el Excel inicial.
+                 */
+
+                /*
                 // Regla 1: Coordinador Obligatorio
                 if (string.IsNullOrEmpty(coordinador))
                 {
@@ -269,6 +279,7 @@ namespace SIGO.Application.Features.Ofertas.Commands.ImportarOfertasPresenciales
                 {
                     errores.Add($"Fila {filaVisual}: Para la acción '{accion}', el campo Profesor es obligatorio.");
                 }
+                */
             }
             return errores;
         }
