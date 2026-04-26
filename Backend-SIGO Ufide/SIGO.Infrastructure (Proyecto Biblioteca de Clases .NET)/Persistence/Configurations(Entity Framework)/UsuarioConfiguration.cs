@@ -31,6 +31,17 @@ namespace SIGO.Infrastructure.Persistence.Configurations
             builder.Property(u => u.Activo)
                 .HasColumnName("activo")
                 .HasDefaultValue(true);
+
+            builder.Property(u => u.AccessFailedCount)
+                .HasColumnName("AccessFailedCount")
+                .HasDefaultValue(0);
+
+            builder.Property(u => u.LockoutEnd)
+                .HasColumnName("LockoutEnd");
+
+            builder.Property(u => u.LockoutEnabled)
+                .HasColumnName("LockoutEnabled")
+                .HasDefaultValue(true);
         }
     }
 }

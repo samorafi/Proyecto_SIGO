@@ -8,6 +8,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { apiFetch } from "@/services/apiClientService";
+import ModalDesbloquearUsuarios from "./modal/ModalDesbloquearUsuarios";
+import { useAlert } from "@/hooks/useAlert";
+
 
 export default function AdmUsuarios() {
   //******************************************************************************* */
@@ -100,6 +103,7 @@ export default function AdmUsuarios() {
 
   // Modal para asignar roles
   const [openRolesModal, setOpenRolesModal] = useState(false);
+  const [openDesbloquear, setOpenDesbloquear] = useState(false);
   const [roles, setRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [targetUser, setTargetUser] = useState(null);
@@ -327,17 +331,28 @@ export default function AdmUsuarios() {
   return (
     <div className="p-6">
       {/* Encabezado */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <Typography className="text-2xl font-extrabold text-[#2B338C]">
           Administrar Usuarios
         </Typography>
 
-        <Button
-          className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center gap-2"
-          onClick={handleOpen}
-        >
-          <PlusIcon className="h-5 w-5" /> Registrar nuevo usuario
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            className="bg-[#FFDA00] text-[#2B338C] font-semibold flex items-center justify-center gap-2 shadow-md"
+            onClick={handleOpen}
+          >
+            <PlusIcon className="h-5 w-5" />
+            Registrar nuevo usuario
+          </Button>
+
+          <Button
+            className="bg-[#2B338C] text-white font-semibold flex items-center justify-center gap-2 shadow-md hover:bg-[#20276d]"
+            onClick={() => setOpenDesbloquear(true)}
+          >
+            <KeyIcon className="h-5 w-5" />
+            Desbloquear usuarios
+          </Button>
+        </div>
       </div>
 
       {/* Modal: Asignar roles */}
@@ -605,6 +620,11 @@ export default function AdmUsuarios() {
           </Button>
         </DialogFooter>
       </Dialog>
+
+      <ModalDesbloquearUsuarios
+        open={openDesbloquear}
+        onClose={() => setOpenDesbloquear(false)}
+      />
 
     </div>
   );

@@ -11,6 +11,8 @@ using SIGO.Application.Features.Autenticacion.Login;
 using SIGO.Application.Features.Autenticacion.PasswordReset.Confirm;
 using SIGO.Application.Features.Autenticacion.PasswordReset.RequestOtp;
 using SIGO.Application.Features.Autenticacion.PasswordReset.VerifyOtp;
+using SIGO.Application.Features.Autenticacion.UnlockUsers.Commands;
+using SIGO.Application.Features.Autenticacion.UnlockUsers.Queries;
 using System.Security.Claims;
 
 namespace SIGO.Api.Controllers
@@ -171,6 +173,26 @@ namespace SIGO.Api.Controllers
         public IActionResult UnauthorizedHandler()
         {
             return Unauthorized(new { message = "Sesión expirada o no autorizado." });
+        }
+
+        // EndPoint: Obtener usuarios bloqueados
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
+        [HttpGet("bloqueados")]
+        public async Task<IActionResult> GetBloqueados()
+        {
+            var usuarios = await _mediator.Send(new GetLockedUsersQuery());
+            return Ok(usuarios);
+        }
+
+        // EndPoint: Desbloquear usuarios
+        [Authorize]
+        [HasPermission("ADMIN_VIEW")]
+        [HttpPost("desbloquear")]
+        public async Task<IActionResult> Desbloquear([FromBody] UnlockUserCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
     }
 }
