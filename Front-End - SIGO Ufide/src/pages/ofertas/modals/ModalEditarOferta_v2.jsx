@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
     Select,
     Option,
@@ -49,6 +49,25 @@ export default function ModalEditarOferta_v2({
     const [evalPeriodoAsistenteId, setEvalPeriodoAsistenteId] = useState("");
 
     const [tipoPeriodoAsistente, setTipoPeriodoAsistente] = useState("");
+
+    // Evita que los modales de confirmación/alerta cierren el modal padre.
+    const blockParentCloseRef = useRef(false);
+
+    const closeModal = useCallback(() => {
+        blockParentCloseRef.current = false;
+        onClose?.();
+    }, [onClose]);
+
+    const handleModalClose = useCallback(() => {
+        if (blockParentCloseRef.current) return;
+        onClose?.();
+    }, [onClose]);
+
+    const releaseParentClose = useCallback(() => {
+        setTimeout(() => {
+            blockParentCloseRef.current = false;
+        }, 0);
+    }, []);
 
     useEffect(() => {
         if (!open) {
@@ -280,7 +299,7 @@ export default function ModalEditarOferta_v2({
             if (res.ok) {
                 alertService.toastSuccess("Oferta actualizada correctamente");
                 onSuccess?.();
-                onClose?.();
+                closeModal();
             } else {
                 alertService.error("Error", res.error || "No se pudo actualizar la oferta.");
             }
@@ -337,6 +356,8 @@ export default function ModalEditarOferta_v2({
     const handleEnviarOfertaAsistente = async (asistente) => {
         if (!ofertaId || !asistente?.personaId) return;
 
+        blockParentCloseRef.current = true;
+
         const nombre =
             asistente?.nombreCompleto ||
             [asistente?.nombre, asistente?.primerApellido, asistente?.segundoApellido]
@@ -344,14 +365,21 @@ export default function ModalEditarOferta_v2({
                 .join(" ") ||
             "este asistente";
 
+        const esReenvio = asistente?.estadoSolicitudTexto === "Pendiente";
+
         const ok = await alertService.confirm({
-            title: "¿Enviar oferta al asistente?",
-            text: `Se enviará la oferta a ${nombre}.`,
-            confirmText: "Sí, enviar",
+            title: esReenvio ? "¿Reenviar oferta al asistente?" : "¿Enviar oferta al asistente?",
+            text: esReenvio
+                ? `Se reenviará la oferta a ${nombre}.`
+                : `Se enviará la oferta a ${nombre}.`,
+            confirmText: esReenvio ? "Sí, reenviar" : "Sí, enviar",
             cancelText: "Cancelar",
         });
 
-        if (!ok) return;
+        if (!ok) {
+            releaseParentClose();
+            return;
+        }
 
         try {
             setSavingAsistente(true);
@@ -381,6 +409,7 @@ export default function ModalEditarOferta_v2({
             alertService.error("Error", "Falló el envío de la oferta al asistente.");
         } finally {
             setSavingAsistente(false);
+            releaseParentClose();
         }
     };
 
@@ -420,7 +449,7 @@ export default function ModalEditarOferta_v2({
     return (
         <AppModal
             open={open}
-            onClose={onClose}
+            onClose={handleModalClose}
             size="lg"
             title={
                 <div className="flex items-center gap-3">
@@ -432,7 +461,7 @@ export default function ModalEditarOferta_v2({
                     <Button
                         variant="text"
                         color="blue-gray"
-                        onClick={onClose}
+                        onClick={closeModal}
                         disabled={loading || saving || savingAsistente}
                         className="w-full sm:w-auto capitalize font-bold"
                     >
@@ -756,11 +785,14 @@ export default function ModalEditarOferta_v2({
                                                                 saving ||
                                                                 savingAsistente ||
                                                                 isCancelada ||
-                                                                !a?.personaId ||
-                                                                a?.estadoSolicitudTexto === "Pendiente"
+                                                                !a?.personaId
                                                             }
                                                         >
-                                                            {savingAsistente ? "Enviando..." : "Enviar oferta"}
+                                                            {savingAsistente
+                                                                ? "Enviando..."
+                                                                : a?.estadoSolicitudTexto === "Pendiente"
+                                                                    ? "Reenviar oferta"
+                                                                    : "Enviar oferta"}
                                                         </Button>
 
                                                         <Button

@@ -66,16 +66,17 @@ public class EnviarSolicitudOfertaCommandHandler
         // Sobrescribir el docente asignado en la oferta
         oferta.PersonaId = docente.Id;
 
-        // Evitar solicitudes PENDIENTES duplicadas para la misma oferta/persona
-        var existePendiente = await _db.SolicitudesOferta
-            .AnyAsync(s =>
+        // Permitir reenvíos ilimitados.
+        // Si ya existe una solicitud pendiente para esta misma oferta/docente,
+        // reutilizamos ese registro, actualizando token, cuerpo, fecha y estado de envío.
+        // Esto evita duplicados pendientes y también invalida el enlace anterior.
+        var solicitudPendienteExistente = await _db.SolicitudesOferta
+            .Where(s =>
                 s.OfertaId == r.OfertaId &&
                 s.PersonaId == r.PersonaId &&
-                s.EstadoSolicitud == 0, // 0 = Pendiente
-                ct);
-
-        if (existePendiente)
-            throw new InvalidOperationException("Ya existe una solicitud pendiente para esta oferta y este docente.");
+                s.EstadoSolicitud == 0) // 0 = Pendiente
+            .OrderByDescending(s => s.FechaEnvio)
+            .FirstOrDefaultAsync(ct);
 
         // =========================
         // 2) Generar token y URLs
@@ -212,21 +213,44 @@ public class EnviarSolicitudOfertaCommandHandler
         // =========================
         // 5) Crear registro en solicitud_oferta
         // =========================
-        var solicitud = new SolicitudOferta
-        {
-            OfertaId = oferta.OfertaId,
-            PersonaId = docente.Id,
-            DestinatarioEmail = emailDestino,
-            Asunto = asunto,
-            Cuerpo = cuerpoHtml,      
-            EstadoSolicitud = 0,       
-            FechaEnvio = DateTime.UtcNow,
-            Token = token,
-            EstadoEnvio = 0,          
-            ErrorEnvio = null
-        };
+        var ahora = DateTime.UtcNow;
 
-        _db.SolicitudesOferta.Add(solicitud);
+        SolicitudOferta solicitud;
+
+        if (solicitudPendienteExistente is not null)
+        {
+            solicitud = solicitudPendienteExistente;
+
+            solicitud.DestinatarioEmail = emailDestino;
+            solicitud.Asunto = asunto;
+            solicitud.Cuerpo = cuerpoHtml;
+            solicitud.FechaEnvio = ahora;
+            solicitud.FechaRespuesta = null;
+            solicitud.Token = token;
+            solicitud.EstadoEnvio = 0;
+            solicitud.ErrorEnvio = null;
+        }
+        else
+        {
+            solicitud = new SolicitudOferta
+            {
+                OfertaId = oferta.OfertaId,
+                PersonaId = docente.Id,
+                DestinatarioEmail = emailDestino,
+                Asunto = asunto,
+                Cuerpo = cuerpoHtml,
+                EstadoSolicitud = 0,
+                FechaEnvio = ahora,
+                FechaRespuesta = null,
+                Token = token,
+                EstadoEnvio = 0,
+                ErrorEnvio = null
+            };
+
+            _db.SolicitudesOferta.Add(solicitud);
+        }
+
+        // Guardamos antes de enviar el correo para que el token del link exista en BD.
         await _db.SaveChangesAsync(ct);
 
         // =========================

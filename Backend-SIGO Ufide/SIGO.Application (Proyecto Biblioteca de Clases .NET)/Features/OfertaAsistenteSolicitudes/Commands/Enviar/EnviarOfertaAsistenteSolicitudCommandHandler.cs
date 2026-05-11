@@ -57,15 +57,16 @@ public class EnviarOfertaAsistenteSolicitudCommandHandler
         if (!estaAsignado)
             throw new InvalidOperationException("La persona indicada no está asignada como asistente en esta oferta.");
 
-        var existePendiente = await _db.OfertaAsistenteSolicitudes
-            .AnyAsync(x =>
+        // Permitir reenvíos ilimitados al asistente.
+        // Si ya existe una solicitud pendiente para esta oferta/asistente,
+        // se reutiliza actualizando token, cuerpo y fecha de envío.
+        var solicitudPendienteExistente = await _db.OfertaAsistenteSolicitudes
+            .Where(x =>
                 x.OfertaId == r.OfertaId &&
                 x.PersonaId == r.PersonaId &&
-                x.EstadoSolicitud == 0,
-                ct);
-
-        if (existePendiente)
-            throw new InvalidOperationException("Ya existe una solicitud pendiente para este asistente en esta oferta.");
+                x.EstadoSolicitud == 0)
+            .OrderByDescending(x => x.FechaEnvio)
+            .FirstOrDefaultAsync(ct);
 
         var token = Guid.NewGuid().ToString();
 
@@ -201,22 +202,43 @@ public class EnviarOfertaAsistenteSolicitudCommandHandler
   </div>
 </div>";
 
-        var solicitud = new OfertaAsistenteSolicitud
-        {
-            OfertaId = oferta.OfertaId,
-            PersonaId = asistente.Id,
-            DestinatarioEmail = asistente.Correo,
-            Asunto = asunto,
-            Cuerpo = cuerpoHtml,
-            EstadoSolicitud = 0,
-            FechaEnvio = DateTime.UtcNow,
-            FechaRespuesta = null,
-            Token = token,
-            EstadoEnvio = 0,
-            ErrorEnvio = null
-        };
+        var ahora = DateTime.UtcNow;
 
-        _db.OfertaAsistenteSolicitudes.Add(solicitud);
+        OfertaAsistenteSolicitud solicitud;
+
+        if (solicitudPendienteExistente is not null)
+        {
+            solicitud = solicitudPendienteExistente;
+
+            solicitud.DestinatarioEmail = asistente.Correo;
+            solicitud.Asunto = asunto;
+            solicitud.Cuerpo = cuerpoHtml;
+            solicitud.FechaEnvio = ahora;
+            solicitud.FechaRespuesta = null;
+            solicitud.Token = token;
+            solicitud.EstadoEnvio = 0;
+            solicitud.ErrorEnvio = null;
+        }
+        else
+        {
+            solicitud = new OfertaAsistenteSolicitud
+            {
+                OfertaId = oferta.OfertaId,
+                PersonaId = asistente.Id,
+                DestinatarioEmail = asistente.Correo,
+                Asunto = asunto,
+                Cuerpo = cuerpoHtml,
+                EstadoSolicitud = 0,
+                FechaEnvio = ahora,
+                FechaRespuesta = null,
+                Token = token,
+                EstadoEnvio = 0,
+                ErrorEnvio = null
+            };
+
+            _db.OfertaAsistenteSolicitudes.Add(solicitud);
+        }
+
         await _db.SaveChangesAsync(ct);
 
         var conf = await _mediator.Send(new GetConfSmtpQuery(), ct);

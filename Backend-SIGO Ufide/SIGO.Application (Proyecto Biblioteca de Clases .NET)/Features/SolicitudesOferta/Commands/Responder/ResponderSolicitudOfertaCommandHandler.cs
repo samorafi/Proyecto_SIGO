@@ -40,7 +40,7 @@ public class ResponderSolicitudOfertaCommandHandler
             .FirstOrDefaultAsync(s => s.Token == token, ct);
 
         if (solicitud is null)
-            return "La solicitud de oferta no fue encontrada o el enlace es incorrecto.";
+            return "La solicitud de oferta no fue encontrada o el enlace es incorrecto.\nRevisa si tienes una solicitud más reciente.";
 
         // 2) Verificar si ya fue respondida
         if (solicitud.EstadoSolicitud != 0) // 0 = Pendiente

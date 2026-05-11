@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Button, Input, Select, Option, Typography,
   Dialog, DialogHeader, DialogBody, DialogFooter, Switch, Textarea
@@ -937,9 +937,39 @@ function FichaDocente({ open, onClose, id }) {
 function AgregarDocente({ open, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [f, setF] = useState(EMPTY_FORM);
+  const blockParentCloseRef = useRef(false);
   const { cat, cantonesByProv, loadingCantones, loadCantones } = useDocenteCatalogs(open);
 
-  const onChange = (k, v) => setF((s) => ({ ...s, [k]: v }));
+  const closeModal = () => {
+    blockParentCloseRef.current = false;
+    onClose?.();
+  };
+
+  const handleModalClose = () => {
+    if (blockParentCloseRef.current) return;
+    onClose?.();
+  };
+
+  const showValidationError = () => {
+    blockParentCloseRef.current = true;
+    const result = alertService.error("Validación", "Completa los campos obligatorios.");
+
+    if (result && typeof result.finally === "function") {
+      result.finally(() => {
+        setTimeout(() => {
+          blockParentCloseRef.current = false;
+        }, 0);
+      });
+    }
+    // Si alertService.error no devuelve una promesa, mantenemos bloqueado
+    // el cierre automático hasta que el usuario edite un campo o presione Cancelar.
+    // Esto evita que el cierre del modal de alerta cierre también el modal de registro.
+  };
+
+  const onChange = (k, v) => {
+    blockParentCloseRef.current = false;
+    setF((s) => ({ ...s, [k]: v }));
+  };
 
   const onProvinciaChange = async (pid) => {
     const val = String(pid ?? "");
@@ -952,7 +982,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
 
   const submit = async () => {
     if (!validateForm(f)) {
-      alertService.error("Validación", "Completa los campos obligatorios.");
+      showValidationError();
       return;
     }
 
@@ -991,7 +1021,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
       alertService.toastSuccess("Docente agregado correctamente.");
 
       onSaved?.(newId);
-      onClose?.();
+      closeModal();
     } catch (e) {
       alertService.close();
       alertService.error("Error", "No fue posible guardar el docente.");
@@ -1007,7 +1037,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
   return (
     <AppModal
       open={open}
-      onClose={onClose}
+      onClose={handleModalClose}
       size="lg"
       title="Agregar Docente"
       footer={
@@ -1015,7 +1045,7 @@ function AgregarDocente({ open, onClose, onSaved }) {
           <Button
             variant="text"
             color="blue-gray"
-            onClick={onClose}
+            onClick={closeModal}
             disabled={saving}
             className="w-full sm:w-auto capitalize font-bold"
           >

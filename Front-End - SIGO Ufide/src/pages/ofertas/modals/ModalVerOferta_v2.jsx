@@ -134,6 +134,14 @@ export default function ModalVerOferta_v2({
                               <p className="text-gray-700 text-sm">
                                 {a.correo || "Sin correo"}
                               </p>
+
+                              <div className="mt-2">
+                                <EstadoSolicitudAsistenteChip
+                                  estadoSolicitudTexto={a.estadoSolicitudTexto}
+                                  estadoEnvio={a.estadoEnvio}
+                                  estadoEnvioTexto={a.estadoEnvioTexto}
+                                />
+                              </div>
                             </div>
                           );
                         })}
@@ -171,6 +179,37 @@ export default function ModalVerOferta_v2({
         </div>
       )}
     </AppModal>
+  );
+}
+
+
+function EstadoSolicitudAsistenteChip({ estadoSolicitudTexto, estadoEnvio, estadoEnvioTexto }) {
+  const texto = estadoSolicitudTexto || "No enviada";
+
+  let className =
+    "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold border";
+
+  if (texto === "Aceptada") {
+    className += " bg-green-50 text-green-700 border-green-200";
+  } else if (texto === "Rechazada") {
+    className += " bg-red-50 text-red-700 border-red-200";
+  } else if (texto === "Pendiente") {
+    className += " bg-amber-50 text-amber-700 border-amber-200";
+  } else {
+    className += " bg-blue-gray-50 text-blue-gray-600 border-blue-gray-200";
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <span className={className}>{texto}</span>
+
+      {estadoEnvioTexto && (
+        <span className="text-[10px] text-blue-gray-400 font-semibold">
+          Envío: {estadoEnvioTexto}
+          {estadoEnvio === 2 ? " ⚠️" : ""}
+        </span>
+      )}
+    </div>
   );
 }
 

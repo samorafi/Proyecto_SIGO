@@ -32,7 +32,7 @@ public class ResponderOfertaAsistenteSolicitudCommandHandler
             .FirstOrDefaultAsync(x => x.Token == token, ct);
 
         if (solicitud is null)
-            return "La solicitud del asistente no fue encontrada o el enlace es incorrecto.";
+            return "La solicitud del asistente no fue encontrada o el enlace es incorrecto.\nRevisa si tienes una solicitud más reciente.";
 
         if (solicitud.EstadoSolicitud != 0)
         {
